@@ -670,7 +670,18 @@ nav {
    text-align: left overrides the global `p { text-align: justify }` — justified
    text without hyphenation opens uneven word gaps (rivers) in a column this narrow. */
 .article-body { font-family: var(--font-prose); }
-.article-body p, .article-body li { text-align: left; text-wrap: pretty; }
+/* Justified body copy. Hyphenation is what makes this work — without it a
+   justified column of this width opens uneven word gaps ("rivers"). Needs
+   lang="en" on <html>, which the base layout sets. Figures stay centred. */
+.article-body p,
+.article-body li {
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+}
+.article-body p.figure { text-align: center; hyphens: none; }
 .article-body h2 { font-family: var(--font-display); }
 .article-body .lede {
   font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8;

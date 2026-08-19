@@ -168,28 +168,11 @@
   // ── SITE-WIDE SEARCH INDEX ──
   // All searchable content — urls are relative to yanga root
   const searchIndex = [
-    // Posts
-    { title: "Why AI Red Teaming Is Different", section: "ai", tagLabel: "POST", desc: "Three incidents, one root cause — instructions and data share a single channel in every LLM application.", tags: ["prompt injection", "ai red team", "owasp", "atlas", "trust boundary", "post"], url: "posts/why-ai-red-teaming-is-different.html" },
-
-    { title: "Huntress CTF 2024", section: "ctf", tagLabel: "WRITEUP", desc: "First CTF, written up end to end \u2014 reversing, forensics, malware and web challenges.", tags: ["ctf", "huntress", "writeup", "reversing", "forensics", "malware", "web"], url: "posts/huntress-ctf-2024.html" },
-    { title: "LoRA Supervised Fine-Tuning (LLaMA-Factory)", section: "ai", tagLabel: "GUIDE", desc: "Fine-tune an open-weight LLM with LoRA, merge the adapters, and run it locally.", tags: ["lora", "sft", "fine-tuning", "llama-factory", "qwen", "ollama", "cuda"], url: "posts/lora-supervised-fine-tuning.html" },
-
-    // Section hubs
-    { title: "AI Red Team", section: "hub", tagLabel: "SECTION", desc: "AI security research — prompt injection, model attacks, LLM vulnerabilities.", tags: ["ai", "red team", "llm", "prompt injection", "adversarial"], url: "sections/ai-red-teaming.html" },
-    { title: "CTF & Writeups", section: "hub", tagLabel: "SECTION", desc: "Machine walkthroughs and capture the flag writeups, documented end to end.", tags: ["ctf", "writeup", "walkthrough", "htb", "machines", "flags"], url: "sections/ctf.html" },
-
-    // Articles & labs
-    { title: "AI Red Teaming Primer", section: "ai", tagLabel: "ARTICLE", desc: "What pentesters need to know about attacking LLM applications.", tags: ["ai", "primer", "llm", "red team", "pentester"], url: "ai-redteam-primer.html" },
-    { title: "LLM Attack Surface Map", section: "ai", tagLabel: "REFERENCE", desc: "Hacker-focused architecture reference for LLM application attack surface.", tags: ["llm", "architecture", "attack surface", "reference", "map"], url: "llm-architecture.html" },
-    { title: "Stepping Into AI Red Team", section: "ai", tagLabel: "ARTICLE", desc: "The road from traditional pentesting into AI red teaming.", tags: ["ai", "career", "red team", "road"], url: "sections/ai/road-to-ai-red-team.html" },
-    { title: "Prompt Injection Lab", section: "ai", tagLabel: "LAB", desc: "Hands-on prompt injection lab against a local LLM application.", tags: ["lab", "prompt injection", "hands-on", "ollama"], url: "prompt-injection-lab.html" },
-    { title: "Lab 00 — Environment Setup", section: "ai", tagLabel: "LAB", desc: "Install Ollama, pull LLMs, build the project scaffold for AI red teaming.", tags: ["lab", "setup", "ollama", "environment"], url: "environment_setup.html" },
-    { title: "Thermoptic Camouflage", section: "ai", tagLabel: "ARTICLE", desc: "Evasion, cloaking, and staying quiet on the wire.", tags: ["evasion", "camouflage", "stealth", "opsec"], url: "thermoptic-camouflage.html" },
-
-    // Site pages
-    { title: "About — YANGA", section: "site", tagLabel: "PROFILE", desc: "Who I am, what I focus on, augmentations, clearance, and how to get in touch.", tags: ["about", "bio", "yanga", "skills", "certifications", "clearance", "augmentations", "contact"], url: "about.html" },
-    { title: "Tools & Resources", section: "site", tagLabel: "RESOURCE", desc: "Tools, bookmarks, and reference materials.", tags: ["tools", "resources", "reference"], url: "tools.html" },
-    { title: "Blog — Articles", section: "site", tagLabel: "INDEX", desc: "All research articles.", tags: ["blog", "posts", "articles", "index"], url: "blog.html" },
+    { title: "Pentesting", section: "hub", tagLabel: "SECTION", desc: "Offensive security \u2014 network and web exploitation, privilege escalation, Active Directory.", tags: ["pentesting", "offensive", "network", "web"], url: "sections/pentesting.html" },
+    { title: "AI Red Team", section: "hub", tagLabel: "SECTION", desc: "Attacking LLM applications and the agent infrastructure around them.", tags: ["ai", "red team", "llm", "prompt injection"], url: "sections/ai-red-teaming.html" },
+    { title: "CTF & Writeups", section: "hub", tagLabel: "SECTION", desc: "Machine walkthroughs and capture the flag writeups.", tags: ["ctf", "writeup", "walkthrough"], url: "sections/ctf.html" },
+    { title: "About", section: "site", tagLabel: "PROFILE", desc: "Who I am and how to get in touch.", tags: ["about", "whoami", "contact"], url: "about.html" },
+    { title: "Blog", section: "site", tagLabel: "INDEX", desc: "All articles.", tags: ["blog", "articles", "writing"], url: "blog.html" },
   ];
 
   // ── Calculate relative path prefix from current page to site root ──
@@ -800,6 +783,24 @@
             if (newUtils) newUtils.insertBefore(savedSwitcher, newUtils.firstChild);
           }
         }
+
+        // 7b. Carry over page-specific <head> styles.
+        // Pages can ship their own CSS via `headExtra`/`extraCss` in front
+        // matter. PJAX only swaps the body, so without this the first click
+        // through to such a page renders unstyled and only a full reload
+        // fixes it. Remove whatever the previous page injected, then adopt
+        // the new document's.
+        document.querySelectorAll('[data-pjax-style]').forEach(function(el) { el.remove(); });
+        var headBits = doc.head ? doc.head.querySelectorAll('style, link[rel="stylesheet"]') : [];
+        Array.prototype.forEach.call(headBits, function(node) {
+          var href = node.getAttribute && node.getAttribute('href');
+          // Skip the base stylesheet and third-party sheets already loaded.
+          if (href && document.querySelector('link[href="' + href + '"]')) return;
+          if (node.tagName === 'STYLE' && node.textContent.trim() === 'body{background:#0a0a0f}') return;
+          var clone = node.cloneNode(true);
+          clone.setAttribute('data-pjax-style', '');
+          document.head.appendChild(clone);
+        });
 
         // 8. Update page title
         var newTitle = doc.querySelector('title');

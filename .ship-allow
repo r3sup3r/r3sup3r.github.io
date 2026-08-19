@@ -1,0 +1,12 @@
+# Patterns exempt from ship.sh's credential scan (extended regex, one per line).
+#
+# Keep this list SHORT and justify every entry. It is the only thing standing
+# between you and publishing a real key. Never add a line to silence a hit you
+# have not personally read.
+#
+# --- entries ---
+#
+# Huntress CTF 2024 writeup. Contains the challenge's own encrypted PEM and
+# its flags, pasted from a public, completed event. Not our credential, and
+# GitHub push protection accepts it.
+src/_drafts/huntress-ctf-2024\.html

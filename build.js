@@ -319,6 +319,16 @@ Sitemap: ${SITE_URL}/sitemap.xml
 }
 
 function main() {
+  // Clear stale output FIRST — before static assets are copied in, or this
+  // deletes them again. Without it, pages you unpublish linger in _site and
+  // show up in local previews and link checks.
+  // (No-op where the filesystem forbids unlink; CI always starts clean.)
+  try {
+    if (fs.existsSync(OUT)) fs.rmSync(OUT, { recursive: true, force: true });
+  } catch (e) {
+    console.log(`  ! could not clear _site (${e.code}) — stale files may remain`);
+  }
+
   console.log('\n⚡ YANGA Build\n');
 
   // Ensure output dir exists (don't delete — server may have it locked)
