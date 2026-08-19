@@ -175,7 +175,6 @@
     { title: "LoRA Supervised Fine-Tuning (LLaMA-Factory)", section: "ai", tagLabel: "GUIDE", desc: "Fine-tune an open-weight LLM with LoRA, merge the adapters, and run it locally.", tags: ["lora", "sft", "fine-tuning", "llama-factory", "qwen", "ollama", "cuda"], url: "posts/lora-supervised-fine-tuning.html" },
 
     // Section hubs
-    { title: "Pentesting", section: "hub", tagLabel: "SECTION", desc: "Offensive security — web apps, privilege escalation, Active Directory, network exploitation.", tags: ["pentesting", "offensive", "network", "web", "privesc", "active directory"], url: "sections/pentesting.html" },
     { title: "AI Red Team", section: "hub", tagLabel: "SECTION", desc: "AI security research — prompt injection, model attacks, LLM vulnerabilities.", tags: ["ai", "red team", "llm", "prompt injection", "adversarial"], url: "sections/ai-red-teaming.html" },
     { title: "CTF & Writeups", section: "hub", tagLabel: "SECTION", desc: "Machine walkthroughs and capture the flag writeups, documented end to end.", tags: ["ctf", "writeup", "walkthrough", "htb", "machines", "flags"], url: "sections/ctf.html" },
 
@@ -190,7 +189,6 @@
     // Site pages
     { title: "About — YANGA", section: "site", tagLabel: "PROFILE", desc: "Who I am, what I focus on, augmentations, clearance, and how to get in touch.", tags: ["about", "bio", "yanga", "skills", "certifications", "clearance", "augmentations", "contact"], url: "about.html" },
     { title: "Tools & Resources", section: "site", tagLabel: "RESOURCE", desc: "Tools, bookmarks, and reference materials.", tags: ["tools", "resources", "reference"], url: "tools.html" },
-    { title: "Certification Roadmap", section: "site", tagLabel: "ROADMAP", desc: "Certification path and study roadmap.", tags: ["roadmap", "certifications", "study"], url: "roadmap.html" },
     { title: "Blog — Articles", section: "site", tagLabel: "INDEX", desc: "All research articles.", tags: ["blog", "posts", "articles", "index"], url: "blog.html" },
   ];
 

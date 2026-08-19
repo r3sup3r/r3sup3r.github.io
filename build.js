@@ -230,6 +230,94 @@ function buildPage(srcFile, relPath, layouts, partials) {
 
 // ── Main ────────────────────────────────────
 
+
+// ── Feeds ────────────────────────────────────
+// A blog without a feed doesn't get picked up by the aggregators this
+// audience actually reads, and the footer links to one.
+const SITE_URL = 'https://r3sup3r.github.io';
+const SITE_TITLE = 'YANGA';
+const SITE_DESC = 'Security research notes — penetration testing and AI red teaming.';
+
+function collectPosts() {
+  const dir = path.join(SRC, 'posts');
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(f => f.endsWith('.html'))
+    .map(f => {
+      const raw = fs.readFileSync(path.join(dir, f), 'utf8');
+      const m = raw.match(/^<!--\s*(\{[\s\S]*?\})\s*-->/);
+      if (!m) return null;
+      let d; try { d = JSON.parse(m[1]); } catch (e) { return null; }
+      if (!d.date) return null;
+      return {
+        url: `${SITE_URL}/posts/${f}`,
+        title: (d.title || f).replace(/\s*—\s*YANGA$/, ''),
+        desc: d.excerpt || d.description || '',
+        date: new Date(d.date + 'T12:00:00Z'),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.date - a.date);
+}
+
+const xmlEscape = s => String(s)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+function writeFeeds() {
+  const posts = collectPosts();
+
+  const items = posts.map(p => `    <item>
+      <title>${xmlEscape(p.title)}</title>
+      <link>${xmlEscape(p.url)}</link>
+      <guid isPermaLink="true">${xmlEscape(p.url)}</guid>
+      <description>${xmlEscape(p.desc)}</description>
+      <pubDate>${p.date.toUTCString()}</pubDate>
+    </item>`).join('\n');
+
+  fs.writeFileSync(path.join(OUT, 'rss.xml'),
+`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${xmlEscape(SITE_TITLE)}</title>
+    <link>${SITE_URL}/</link>
+    <description>${xmlEscape(SITE_DESC)}</description>
+    <language>en</language>
+    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
+${items}
+  </channel>
+</rss>
+`);
+
+  // sitemap over every built page
+  const urls = [];
+  (function walkOut(dir, rel) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.name.startsWith('.') || e.name === '_to_delete') continue;
+      const abs = path.join(dir, e.name);
+      if (e.isDirectory()) walkOut(abs, rel + e.name + '/');
+      else if (e.name.endsWith('.html') && e.name !== '404.html') {
+        urls.push(rel + e.name === 'index.html' ? '' : rel + e.name);
+      }
+    }
+  })(OUT, '');
+
+  const locs = urls.map(u => `  <url><loc>${SITE_URL}/${u}</loc></url>`).join('\n');
+  fs.writeFileSync(path.join(OUT, 'sitemap.xml'),
+`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${locs}
+</urlset>
+`);
+
+  fs.writeFileSync(path.join(OUT, 'robots.txt'),
+`User-agent: *
+Allow: /
+Sitemap: ${SITE_URL}/sitemap.xml
+`);
+  return posts.length;
+}
+
 function main() {
   console.log('\n⚡ YANGA Build\n');
 
@@ -264,9 +352,10 @@ function main() {
   // beginning with an underscore. .nojekyll turns that off.
   fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
+  const nPosts = writeFeeds();
+  console.log(`  ✓ rss.xml (${nPosts} posts), sitemap.xml, robots.txt`);
+
   console.log(`\n✅ Built ${count} pages → _site/\n`);
 }
-
-main();
 
 main();
