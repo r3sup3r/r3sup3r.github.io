@@ -1,0 +1,14 @@
+{
+  "name": "yanga",
+  "version": "1.0.0",
+  "description": "YANGA — Cybersecurity Research Blog",
+  "scripts": {
+    "build": "node build.js",
+    "serve": "node build.js && cd _site && python3 -m http.server 8080",
+    "dev": "node build.js && cd _site && python3 -m http.server 8080",
+    "clean": "rm -rf _site"
+  },
+  "keywords": [],
+  "author": "Laury",
+  "license": "ISC"
+}

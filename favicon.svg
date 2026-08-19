@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="4" fill="#0a0a0f"/>
+  <!-- Ghost body -->
+  <path d="M16 5C11 5 7 9 7 14v10c0 0 0 2 2 0s2-2 3 0 2 2 3 0 2-2 3 0 2 2 3 0 2-2 2 0V14c0-5-4-9-9-9z" fill="white"/>
+  <!-- Eyes -->
+  <circle cx="12.5" cy="14" r="2" fill="#0a0a0f"/>
+  <circle cx="19.5" cy="14" r="2" fill="#0a0a0f"/>
+  <!-- Eye shine -->
+  <circle cx="13.2" cy="13.3" r="0.7" fill="white"/>
+  <circle cx="20.2" cy="13.3" r="0.7" fill="white"/>
+</svg>

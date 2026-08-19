@@ -1,0 +1,416 @@
+<!--
+{
+  "title": "Certification Roadmap — YANGA",
+  "description": "Certification roadmap — from offensive security fundamentals to AI red team specialization",
+  "layout": "base",
+  "activeNav": "dossier"
+}
+-->
+
+<style>
+  /* Roadmap-specific scoped styles */
+  .roadmap-container {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .breadcrumb {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 2rem;
+    text-transform: lowercase;
+  }
+
+  .breadcrumb span {
+    color: var(--accent);
+  }
+
+  .roadmap-tagline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    color: #aaa;
+    margin-bottom: 3rem;
+    text-align: center;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .timeline-wrapper {
+    position: relative;
+    padding: 2rem 0;
+  }
+
+  /* Central timeline line */
+  .timeline-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent) 100%);
+    transform: translateX(-50%);
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+
+  .timeline-phase {
+    margin-bottom: 4rem;
+  }
+
+  .phase-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    border-top: 1px solid rgba(0, 255, 157, 0.3);
+    border-bottom: 1px solid rgba(0, 255, 157, 0.3);
+  }
+
+  .phase-header h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .phase-header.phase-1 h2,
+  .phase-header.phase-2 h2 {
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+  }
+
+  .phase-header.phase-3 h2 {
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(255, 0, 110, 0.5);
+  }
+
+  .timeline-nodes {
+    position: relative;
+  }
+
+  .timeline-node {
+    position: relative;
+    margin-bottom: 3rem;
+    opacity: 0;
+    animation: slideIn 0.6s ease-out forwards;
+  }
+
+  .timeline-node:nth-child(1) { animation-delay: 0.1s; }
+  .timeline-node:nth-child(2) { animation-delay: 0.2s; }
+  .timeline-node:nth-child(3) { animation-delay: 0.3s; }
+  .timeline-node:nth-child(4) { animation-delay: 0.4s; }
+  .timeline-node:nth-child(5) { animation-delay: 0.5s; }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .timeline-node.left {
+    padding-right: calc(50% + 40px);
+  }
+
+  .timeline-node.right {
+    padding-left: calc(50% + 40px);
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    background: #0a0a0f;
+    border: 3px solid;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  .timeline-node.left .timeline-dot {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.6);
+  }
+
+  .timeline-node.right .timeline-dot {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(255, 0, 110, 0.6);
+  }
+
+  .timeline-node.in-progress .timeline-dot {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(0, 255, 157, 0.6), 0 0 30px rgba(0, 255, 157, 0.2);
+      transform: translateX(-50%) scale(1);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(0, 255, 157, 0.8), 0 0 50px rgba(0, 255, 157, 0.4);
+      transform: translateX(-50%) scale(1.2);
+    }
+  }
+
+  .node-card {
+    background: linear-gradient(135deg, rgba(10, 10, 15, 0.8), rgba(20, 20, 30, 0.8));
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .node-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .node-card:hover::before {
+    left: 100%;
+  }
+
+  .timeline-node.left .node-card {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+  }
+
+  .timeline-node.left .node-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+    transform: translateX(-4px);
+  }
+
+  .timeline-node.right .node-card {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(255, 0, 110, 0.2);
+  }
+
+  .timeline-node.right .node-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(255, 0, 110, 0.4);
+    transform: translateX(4px);
+  }
+
+  .timeline-node.planned .node-card {
+    border-style: dashed;
+    opacity: 0.6;
+  }
+
+  .node-card.clickable {
+    cursor: pointer;
+  }
+
+  .node-card.clickable:hover {
+    cursor: pointer;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.8rem;
+    gap: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.3rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+    flex: 1;
+  }
+
+  .timeline-node.left .card-title {
+    color: var(--accent);
+  }
+
+  .timeline-node.right .card-title {
+    color: var(--accent);
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .status-completed {
+    background: rgba(0, 255, 157, 0.2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  .status-in-progress {
+    background: rgba(0, 255, 157, 0.3);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+
+  @keyframes badgePulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .status-planned {
+    background: rgba(100, 100, 120, 0.2);
+    color: #999;
+    border: 1px dashed #666;
+  }
+
+  .card-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    color: #bbb;
+    margin: 0.5rem 0 0 0;
+    font-weight: normal;
+  }
+
+  .card-description {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem;
+    color: #aaa;
+    margin: 1rem 0 0 0;
+    line-height: 1.5;
+  }
+
+  .card-checkmark {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 255, 157, 0.2);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .card-checkmark i {
+    color: var(--accent);
+    font-size: 0.8rem;
+  }
+
+  .node-card a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .timeline-node.in-progress .node-card {
+    border-color: var(--accent);
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .timeline-line {
+      left: 20px;
+    }
+
+    .phase-header {
+      margin-bottom: 2rem;
+    }
+
+    .phase-header h2 {
+      font-size: 1.4rem;
+    }
+
+    .timeline-node {
+      margin-bottom: 2.5rem;
+    }
+
+    .timeline-node.left,
+    .timeline-node.right {
+      padding-left: 60px;
+      padding-right: 0;
+    }
+
+    .timeline-dot {
+      left: 20px;
+    }
+
+    .node-card {
+      padding: 1.2rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+    }
+
+    .card-description {
+      font-size: 0.9rem;
+    }
+
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .status-badge {
+      align-self: flex-start;
+    }
+  }
+</style>
+
+<section class="project-hero">
+  <h1>ROADMAP</h1>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><span class="current">roadmap</span></div>
+  <p class="project-tagline">Learning path and progression targets for the road to AI security expert.</p>
+  <div class="accent-bar green"></div>
+</section>
+
+<div class="project-content">
+</div>
+
+<script>
+  // Intersection Observer for scroll animations
+  const observerOptions = {
+    threshold: 0.2,
+    rootMargin: '0px 0px -100px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe all timeline nodes
+  document.querySelectorAll('.timeline-node').forEach(node => {
+    observer.observe(node);
+  });
+</script>

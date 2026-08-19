@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Attack Surface Map — YANGA</title>
+<style>
+:root {
+  --bg:#0a0a0f; --accent:#00a8ff; --accent-rgb:0,168,255;
+  --teal:#00ffaa; --purple:#c864ff; --orange:#ff9944;
+  --red:#ff4466; --yellow:#ffcc00;
+  --text:#b8c0cc; --text-bright:#e0e6f0; --text-muted:#555a66;
+  --font-d:'Courier New',monospace; --font-b:-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);overflow:hidden}
+html,body{width:100%;height:100%}
+
+#canvas-wrap{width:100%;height:100%;position:relative;overflow:hidden;cursor:grab}
+#canvas-wrap.dragging{cursor:grabbing}
+#world{position:absolute;transform-origin:0 0}
+
+svg#edges{position:absolute;top:0;left:0;overflow:visible;pointer-events:none}
+
+/* Scan */
+.scan{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,168,255,.008) 2px,rgba(0,168,255,.008) 4px)}
+
+/* HUD */
+.hud{position:fixed;z-index:100;pointer-events:none}
+.hud-tl{top:16px;left:20px;font-family:var(--font-d);font-size:10px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;opacity:.7}
+.hud-tl span{display:block;font-size:8px;color:var(--text-muted);margin-top:3px;letter-spacing:2px}
+.hud-tr{top:16px;right:20px;font-size:9px;letter-spacing:1.5px;color:var(--text-muted);text-align:right;line-height:1.8}
+.hud-bl{bottom:16px;left:20px;display:flex;gap:8px;pointer-events:all}
+.hud-btn{background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.12);color:var(--accent);font-family:var(--font-d);font-size:11px;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.hud-btn:hover{background:rgba(var(--accent-rgb),.18)}
+
+/* NODES */
+.node{
+  position:absolute;border-radius:10px;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+  display:flex;flex-direction:column;padding:14px 16px;
+  width:280px;
+}
+.node:hover{transform:scale(1.03);z-index:20;box-shadow:0 0 40px rgba(var(--accent-rgb),.12)}
+.node-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.node-icon{font-size:16px;opacity:.7;flex-shrink:0;width:24px;text-align:center}
+.node-label{font-family:var(--font-d);font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.node-desc{font-size:11px;color:var(--text);line-height:1.5;margin-bottom:10px}
+.node-attack{
+  font-size:10px;line-height:1.5;padding:8px 10px;border-radius:5px;
+  background:rgba(255,68,102,.06);border:1px solid rgba(255,68,102,.1);
+  border-left:2px solid var(--red);color:#cc9999;
+}
+.node-attack strong{color:var(--red);font-family:var(--font-d);font-size:8px;letter-spacing:1.5px;display:block;margin-bottom:4px}
+
+/* Category colors */
+.node-input{background:rgba(var(--accent-rgb),.04);border:1px solid rgba(var(--accent-rgb),.15)}
+.node-input .node-label{color:var(--accent)}
+.node-embed{background:rgba(0,255,170,.04);border:1px solid rgba(0,255,170,.15)}
+.node-embed .node-label{color:var(--teal)}
+.node-attn{background:rgba(255,153,68,.04);border:1px solid rgba(255,153,68,.15)}
+.node-attn .node-label{color:var(--orange)}
+.node-transformer{background:rgba(200,100,255,.04);border:1px solid rgba(200,100,255,.15)}
+.node-transformer .node-label{color:var(--purple)}
+.node-output{background:rgba(255,68,102,.04);border:1px solid rgba(255,68,102,.15)}
+.node-output .node-label{color:var(--red)}
+
+/* Phase labels */
+.phase{position:absolute;font-family:var(--font-d);font-size:8px;letter-spacing:4px;text-transform:uppercase;opacity:.2;pointer-events:none}
+
+/* Detail panel */
+#panel{position:fixed;top:0;right:-440px;width:420px;height:100%;background:rgba(10,10,15,.96);border-left:1px solid rgba(var(--accent-rgb),.1);backdrop-filter:blur(12px);z-index:200;transition:right .3s;overflow-y:auto;padding:28px 22px}
+#panel.open{right:0}
+#panel .x{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer}
+#panel .x:hover{color:var(--accent)}
+#panel h2{font-family:var(--font-d);font-size:13px;letter-spacing:2px;color:var(--accent);margin-bottom:4px}
+#panel .cat{font-size:9px;letter-spacing:2px;color:var(--text-muted);margin-bottom:14px;text-transform:uppercase}
+#panel p{font-size:13px;line-height:1.7;margin-bottom:10px}
+#panel .specs{margin:14px 0}
+#panel .sr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(var(--accent-rgb),.05);font-size:12px}
+#panel .sl{color:var(--text-muted);flex-shrink:0;margin-right:10px}
+#panel .sv{color:var(--text-bright);font-family:var(--font-d);font-size:11px;text-align:right}
+#panel .atk{background:rgba(255,68,102,.08);border:1px solid rgba(255,68,102,.12);border-left:3px solid var(--red);border-radius:5px;padding:12px;margin:14px 0}
+#panel .atk strong{color:var(--red);font-size:11px;letter-spacing:1px;display:block;margin-bottom:6px}
+#panel .atk p{font-size:12px;margin:0}
+#panel .techniques{margin:12px 0}
+#panel .tech{display:inline-block;padding:3px 10px;margin:3px 4px 3px 0;font-family:var(--font-d);font-size:9px;letter-spacing:1px;border-radius:3px;background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.12);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+
+<div class="hud hud-tl">LLM Attack Surface Map<span>Hacker-Focused Architecture Reference — YANGA</span></div>
+<div class="hud hud-tr">SCROLL TO ZOOM · DRAG TO PAN<br>CLICK NODE FOR DEEP DIVE</div>
+<div class="hud hud-bl">
+  <button class="hud-btn" id="btn-reset">RESET</button>
+  <button class="hud-btn" id="btn-fit">FIT ALL</button>
+</div>
+
+<div id="panel">
+  <button class="x" id="px">&times;</button>
+  <h2 id="pt"></h2>
+  <div class="cat" id="pc"></div>
+  <div id="pb"></div>
+</div>
+
+<div id="canvas-wrap">
+  <div id="world">
+    <svg id="edges" width="1400" height="2400">
+      <defs>
+        <marker id="a-a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#00a8ff" opacity=".5"/></marker>
+        <marker id="a-t" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#00ffaa" opacity=".5"/></marker>
+        <marker id="a-o" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#ff9944" opacity=".5"/></marker>
+        <marker id="a-p" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#c864ff" opacity=".5"/></marker>
+        <marker id="a-r" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#ff4466" opacity=".5"/></marker>
+      </defs>
+    </svg>
+
+    <!-- Phase labels -->
+    <div class="phase" style="left:30px;top:60px;color:var(--accent)">01 — INPUT PROCESSING</div>
+    <div class="phase" style="left:30px;top:430px;color:var(--teal)">02 — REPRESENTATION</div>
+    <div class="phase" style="left:30px;top:750px;color:var(--orange)">03 — ATTENTION</div>
+    <div class="phase" style="left:30px;top:1310px;color:var(--purple)">04 — KNOWLEDGE</div>
+    <div class="phase" style="left:30px;top:1610px;color:var(--red)">05 — OUTPUT</div>
+
+    <div id="graph"></div>
+  </div>
+</div>
+
+<script>
+const NW = 280;
+const CL = 160;  // left column x
+const CR = 520;  // right column x (for branching)
+
+const NODES = [
+  // ═══ 01 INPUT PROCESSING ═══
+  {id:'raw-text', x:CL, y:100, cat:'input', icon:'T',
+    label:'Raw Text Input',
+    desc:'Entry point — raw UTF-8 string containing system prompt, user message, and context. The model never sees this directly.',
+    attack:'Prompt injection starts here. Malicious instructions hidden in user-controlled fields (forms, documents, emails) get concatenated into the input.',
+    detail:{
+      full:'The raw string is the only point where human-readable text exists. After this, everything becomes numbers. Attackers target every source that feeds into this string: user inputs, retrieved documents (RAG), tool outputs, conversation history.',
+      specs:[['Format','UTF-8 string'],['Typical structure','[system prompt] + [user message] + [history]'],['Max','128K tokens (GPT-4o), varies by model']],
+      techniques:['Prompt Injection','Indirect Injection (via RAG/tools)','Context Stuffing','System Prompt Extraction']
+    }},
+
+  {id:'tokenizer', x:CL, y:310, cat:'input', icon:'\u2702',
+    label:'Tokenizer (BPE)',
+    desc:'Deterministic preprocessor: splits text into integer token IDs using a fixed vocabulary. Different per model.',
+    attack:'Unicode homoglyphs, zero-width chars, and creative spacing produce different tokens for visually identical text — bypassing string-level filters.',
+    detail:{
+      full:'The tokenizer is NOT the model. It is a deterministic function learned during training. The critical insight: text-level filters operate on the raw string, but the model operates on token IDs. This gap between filter-space and model-space is the root of all evasion. Every model uses a different tokenizer with a different vocabulary, so exploits don\'t transfer without retesting.',
+      specs:[['Algorithms','BPE (GPT), SentencePiece (Llama/Mistral), Unigram (T5)'],['Vocab size','32K (Mistral) to 200K (GPT-4o)'],['Key property','Deterministic — same input = same tokens'],['Tools','tiktoken (OpenAI), sentencepiece, Ollama']],
+      techniques:['Token Boundary Exploitation','Homoglyph Substitution','Zero-Width Character Injection','Case/Spacing Manipulation','Cross-Model Token Mismatch']
+    }},
+
+  // ═══ 02 REPRESENTATION ═══
+  {id:'embeddings', x:CL, y:480, cat:'embed', icon:'E',
+    label:'Token + Position Embeddings',
+    desc:'Token IDs → dense vectors (768–12K dims) via lookup table. Position info (RoPE) encodes word order. Combined = model input.',
+    attack:'Embedding space encodes semantic similarity. Adversarial inputs land near target vectors to bypass keyword filters. Position bias → "lost in the middle" attacks.',
+    detail:{
+      full:'Embeddings are the bridge between discrete tokens and continuous math. Each token becomes a high-dimensional vector where distance = semantic similarity. Positional encoding (RoPE in modern models) adds order information. Two attack surfaces: (1) the embedding space itself can be probed to find semantically similar but textually different inputs, (2) positional biases mean models pay less attention to mid-context content — attackers place payloads at the start or end for maximum effect.',
+      specs:[['Token embed','Matrix lookup: embed_matrix[token_id]'],['Dimensions','768 (small) to 12,288 (GPT-4 class)'],['Position','RoPE (Llama/GPT-NeoX), ALiBi (BLOOM)'],['Parameters','vocab_size × d_model (up to 819M)']],
+      techniques:['Embedding Space Probing','Semantic Similarity Exploitation','Lost-in-the-Middle Positioning','Context Window Stuffing','Position-Aware Payload Placement']
+    }},
+
+  // ═══ 03 ATTENTION ═══
+  {id:'attention', x:CL, y:800, cat:'attn', icon:'A',
+    label:'Multi-Head Self-Attention',
+    desc:'Each token asks "what should I attend to?" via Q·K scores, then aggregates Values. 32–128 parallel heads per layer. O(n²) complexity.',
+    attack:'Attention hijacking: crafted tokens attract disproportionate weight, stealing focus from legitimate instructions. The core mechanism behind prompt injection.',
+    detail:{
+      full:'Attention is the signature mechanism and the primary attack surface. Each token produces a Query ("what am I looking for?"), Key ("what do I contain?"), and Value ("what do I contribute?"). The Q·K dot product determines who attends to whom. Softmax amplifies small score differences exponentially — a token with slightly higher score dominates. This "winner-take-all" property is why single injected tokens can override entire system prompts. Multiple heads mean the model can attend to different relationship types simultaneously, but it also means an attacker has multiple channels to exploit.',
+      specs:[['Heads','32 (7B models) to 128 (GPT-4 class)'],['Formula','softmax(Q·K^T / √d) × V'],['Complexity','O(n² × d) — quadratic in sequence length'],['Variants','MHA, GQA (Llama), MQA (Falcon)'],['Causal mask','Triangle mask prevents seeing future tokens']],
+      techniques:['Attention Hijacking','Instruction Hierarchy Exploitation','Format Token Authority Mimicry','Prefix vs Suffix Injection Asymmetry','Cross-Attention Poisoning (in RAG)','Attention Sink Exploitation']
+    }},
+
+  {id:'qkv', x:CR, y:800, cat:'attn', icon:'QKV',
+    label:'Query / Key / Value Matrices',
+    desc:'Q = "what am I looking for?" · K = "what do I advertise?" · V = "what payload do I carry?" — learned weight matrices per head.',
+    attack:'Formatting tokens (&lt;system&gt;, ### Instruction:) have Keys that match instruction-seeking Queries — this is WHY they carry authority without access control.',
+    detail:{
+      full:'The Q/K/V decomposition is where "meaning" becomes "influence." Keys are like labels — they advertise what a token contains. Queries are like searches — they express what a token needs. When a Key strongly matches a Query, that token\'s Value gets selected. This is not access control — it is statistical correlation from training data. Attackers exploit this by mimicking high-authority formatting patterns whose Keys match the model\'s learned instruction-seeking Queries. The Value vectors are the actual payload: even moderate attention weight can inject significant signal if the Value is carefully crafted.',
+      specs:[['Q computation','Q = input × W_Q (d_model × d_model)'],['K computation','K = input × W_K'],['V computation','V = input × W_V'],['Per-head dim','d_model / n_heads (e.g. 128)'],['Total params','3 × d_model² per layer']],
+      techniques:['Key-Query Alignment Exploitation','Value Injection','Authority Pattern Mimicry','Role Tag Injection (&lt;/user&gt;&lt;assistant&gt;)','Delimiter Confusion']
+    }},
+
+  {id:'causal-mask', x:CR, y:1020, cat:'attn', icon:'\u25E3',
+    label:'Causal Mask',
+    desc:'Triangular mask: token t can only see tokens 0…t−1. No peeking ahead. Makes generation autoregressive.',
+    attack:'Prefix injection > suffix injection. The model can\'t look ahead to "correct" for malicious content it already processed.',
+    detail:{
+      full:'The causal mask is a hard constraint: when processing position t, the model has zero information about positions t+1, t+2, etc. This creates a fundamental asymmetry: content that appears earlier in the context has strictly more influence than content that appears later, because later tokens can attend to earlier ones but not vice versa. For attackers, this means: (1) putting your injection before the legitimate content is always more powerful, (2) the model processes your injection first and forms representations before it ever sees the system prompt\'s "correction," (3) indirect injection via documents/tools that appear early in the context is especially dangerous.',
+      specs:[['Type','Upper-triangular matrix of −∞'],['Effect','−∞ → softmax → 0 attention weight'],['Implication','Strictly causal: past → future only'],['No exceptions','Even the model\'s own instructions can\'t override this']],
+      techniques:['Prefix Injection Prioritization','Early-Context Payload Placement','Conversation History Poisoning','Tool Output Injection (appears before model response)']
+    }},
+
+  {id:'softmax', x:CL, y:1060, cat:'attn', icon:'σ',
+    label:'Softmax (Attention)',
+    desc:'Converts raw Q·K scores into probability weights (sum to 1). Exponentially amplifies small score differences.',
+    attack:'Winner-take-all: one high-signal injected token can dominate the entire attention distribution, overriding a full system prompt.',
+    detail:{
+      full:'Softmax is the amplifier. A token with score 10 vs others at 5 doesn\'t get 2× the attention — it gets ~150× more (e^10 / e^5 ≈ 148). This exponential amplification means that even a single well-crafted token with slightly higher Q·K alignment than legitimate tokens can capture almost all the attention weight. This is the mathematical reason why short, precisely formatted injections often work better than long, rambling ones — precision in hitting the right Q·K alignment matters more than volume.',
+      specs:[['Formula','softmax(x_i) = exp(x_i) / Σexp(x_j)'],['Property','Monotonic, exponential amplification'],['Output','[0,1] per position, sums to 1'],['Key insight','Small score gap → massive weight gap']],
+      techniques:['Attention Weight Concentration','Precision Injection (short + high-signal)','Attention Probing via Interpretability Tools']
+    }},
+
+  // ═══ 04 KNOWLEDGE ═══
+  {id:'ffn', x:CL, y:1360, cat:'transformer', icon:'F',
+    label:'Feed-Forward Network (MLP)',
+    desc:'2-layer neural net applied per token. 4× expansion. This is where the model stores factual knowledge — acts like a key-value memory.',
+    attack:'Knowledge editing: modify specific FFN neurons to inject false facts. Individual neurons correspond to specific concepts (mechanistic interpretability).',
+    detail:{
+      full:'The FFN is the model\'s "knowledge database." Research shows that factual associations (e.g., "Paris is the capital of France") are stored as patterns in FFN weight matrices. The first linear layer acts as a key (pattern detector) and the second as a value (associated output). This makes FFNs vulnerable to targeted editing: change a few hundred weights and you can make the model believe false facts with high confidence. Tools like ROME and MEMIT demonstrate this. From a red team perspective, this means: (1) fine-tuned models can have knowledge backdoors, (2) factual correctness is not guaranteed even for high-confidence outputs, (3) the line between "the model knows X" and "the model was trained to say X" is blurry.',
+      specs:[['Formula','FFN(x) = W₂ · activation(W₁ · x + b₁) + b₂'],['Hidden dim','4 × d_model (e.g. 16,384)'],['Activation','GeLU (GPT), SiLU/SwiGLU (Llama)'],['Params','~8 × d_model² per layer (~67% of total)'],['Layers','32–128 of these, stacked']],
+      techniques:['ROME / MEMIT Knowledge Editing','Neuron-Level Backdoor Injection','Fine-Tuning Attacks','Concept Erasure / Insertion','Representation Engineering']
+    }},
+
+  {id:'residuals', x:CR, y:1360, cat:'transformer', icon:'+',
+    label:'Residual Stream',
+    desc:'Skip connections: x + attention(x) + FFN(x). Each layer adds a delta. Early signals persist through all 80–128 layers.',
+    attack:'Early-layer injections maintain influence throughout the full network depth via residual connections — even if middle layers try to "correct."',
+    detail:{
+      full:'The residual stream is a "highway" that carries representations from early layers all the way to the output. Each transformer block only adds a refinement — it never replaces the full representation. This means: (1) an injection that establishes a strong signal in the first few layers persists through dozens of subsequent layers, (2) the model can\'t fully "undo" early representations, it can only add corrections, (3) this is why jailbreaks that work by setting up strong early-context signals are so hard to defend against — the damage is done before defensive layers even see the input.',
+      specs:[['Formula','block_out = x + attn(LN(x)) + ffn(LN(…))'],['Skip connections','2 per block (pre-attn, pre-FFN)'],['Depth','80–128 blocks in large models'],['Key property','Gradient highway enables deep stacking']],
+      techniques:['Early-Layer Signal Persistence','Representation Accumulation Attacks','Multi-Turn Context Poisoning']
+    }},
+
+  // ═══ 05 OUTPUT ═══
+  {id:'temperature', x:CL, y:1660, cat:'output', icon:'\u03C4',
+    label:'Temperature + Sampling',
+    desc:'Temperature scales logits (T=0 → greedy, T>1 → random). Top-p/Top-k truncate the distribution. Then sample one token.',
+    attack:'Low T = deterministic but harder to jailbreak. High T = triggers edge-case behaviors. Attackers sweep T to find the exploit sweet spot.',
+    detail:{
+      full:'Temperature and sampling are inference-time parameters that dramatically affect exploit reliability. At T=0 (greedy), the model always picks the most likely token — deterministic but conservative. At higher temperatures, the probability distribution flattens and the model can select less likely tokens — including harmful completions it would never produce at T=0. Top-p (nucleus sampling) and Top-k further constrain which tokens are eligible. Red teamers must test across parameter ranges because a jailbreak that works at T=0.7 might fail at T=0.0 and vice versa. This also means: defenses that only test at default temperature may miss vulnerabilities.',
+      specs:[['Temperature','logits / T before softmax'],['Top-k','Keep k most likely tokens (e.g. 40)'],['Top-p','Keep tokens until cumulative prob ≥ p (e.g. 0.95)'],['Greedy','T=0, always argmax'],['Non-determinism','Same input → different outputs across runs']],
+      techniques:['Temperature Sweeping','Sampling Parameter Exploitation','Probabilistic Jailbreak (retry until success)','Low-Probability Token Elicitation','Beam Search Manipulation']
+    }},
+
+  {id:'autoregressive', x:CL, y:1870, cat:'output', icon:'\u27F3',
+    label:'Autoregressive Generation',
+    desc:'Output token → append to context → full forward pass → next token. Each generated token influences all subsequent ones.',
+    attack:'Steer the first few tokens ("Sure, here\'s how") and the model\'s own output creates a self-reinforcing loop that continues generating harmful content.',
+    detail:{
+      full:'Autoregressive generation means the model\'s own output becomes part of its input for the next token. This creates powerful feedback loops: if an attacker can steer the first 2–3 generated tokens toward compliance (e.g., "Sure," or "Here\'s"), the model\'s next-token prediction becomes conditioned on its own compliant prefix, making it increasingly likely to continue in that direction. This is the mechanism behind: (1) "prefill" attacks where the attacker pre-fills the assistant\'s response, (2) multi-turn jailbreaks where early cooperative responses condition later harmful ones, (3) the difficulty of "stopping mid-generation" — once the model starts down a path, the autoregressive loop reinforces it.',
+      specs:[['Process','Generate → append → forward pass → next'],['KV Cache','Stores previous K/V to avoid recomputation'],['Speed','O(n) passes for n tokens'],['Context growth','Each token extends input by 1']],
+      techniques:['Prefill / Response Priming','Multi-Turn Escalation','Self-Reinforcing Loop Exploitation','Continuation Bias Exploitation','Output-as-Input Poisoning']
+    }},
+
+  {id:'output-filters', x:CR, y:1870, cat:'output', icon:'\u2717',
+    label:'Output Filtering (Post-Hoc)',
+    desc:'Last defense: check generated text against safety classifiers, keyword lists, or secondary models. Applied after the model already "decided."',
+    attack:'The model already committed to its output. Encode harmful content across token boundaries, use indirect language, or split across multiple messages.',
+    detail:{
+      full:'Output filtering is the most common but weakest defense layer. By the time a filter runs, the model has already generated the harmful content — the filter can only suppress it, creating a cat-and-mouse game. Evasion techniques: (1) encode harmful info in seemingly innocent language that only becomes harmful in aggregate, (2) split the harmful output across multiple tool calls or messages, (3) use base64/rot13/code that the filter doesn\'t decode but the user can, (4) generate content that is harmful in context but innocent out of context (the filter sees individual messages, not the conversation). Many production systems use a secondary LLM as output filter — which introduces its own attack surface.',
+      specs:[['Types','Keyword filters, regex, classifier models, LLM-as-judge'],['Position','After generation, before user sees output'],['Weakness','Reactive, not preventive'],['Common bypass','Encoding, indirect language, multi-step delivery']],
+      techniques:['Encoding Evasion (base64, rot13, pig latin)','Multi-Step Delivery','Contextual Harmfulness','Filter Model Confusion','Indirect Reference Chains']
+    }},
+];
+
+// ═══ EDGES ═══
+const EDGES = [
+  ['raw-text','tokenizer','a'],
+  ['tokenizer','embeddings','t'],
+  ['embeddings','attention','o'],
+  ['attention','softmax','o'],
+  ['softmax','ffn','p'],
+  ['ffn','temperature','r'],
+  ['temperature','autoregressive','r'],
+  // Branches
+  ['attention','qkv','o'],
+  ['attention','causal-mask','o'],
+  ['ffn','residuals','p'],
+  ['autoregressive','output-filters','r'],
+];
+
+// ═══ RENDER ═══
+const graphEl = document.getElementById('graph');
+const svg = document.getElementById('edges');
+const nMap = {};
+
+NODES.forEach(n => {
+  n.w = NW;
+  // Measure height dynamically later; set initial
+  const el = document.createElement('div');
+  el.className = `node node-${n.cat}`;
+  el.style.left = n.x + 'px';
+  el.style.top = n.y + 'px';
+  el.innerHTML = `
+    <div class="node-top">
+      <div class="node-icon">${n.icon}</div>
+      <div class="node-label">${n.label}</div>
+    </div>
+    <div class="node-desc">${n.desc}</div>
+    <div class="node-attack"><strong>\u26A0 ATTACK SURFACE</strong>${n.attack}</div>
+  `;
+  el.addEventListener('click', e => { e.stopPropagation(); openPanel(n); });
+  graphEl.appendChild(el);
+  nMap[n.id] = { n, el };
+});
+
+// Draw edges after nodes render
+requestAnimationFrame(() => {
+  EDGES.forEach(([fid, tid, marker]) => {
+    const fEl = nMap[fid]?.el;
+    const tEl = nMap[tid]?.el;
+    const fn = nMap[fid]?.n;
+    const tn = nMap[tid]?.n;
+    if (!fEl || !tEl) return;
+
+    const fH = fEl.offsetHeight;
+    const tH = tEl.offsetHeight;
+
+    // Connection points
+    let x1, y1, x2, y2;
+    const fCx = fn.x + NW/2, tCx = tn.x + NW/2;
+    const fBot = fn.y + fH, tTop = tn.y;
+    const dx = Math.abs(fCx - tCx);
+
+    if (dx < 20) {
+      // Vertical
+      x1 = fCx; y1 = fBot;
+      x2 = tCx; y2 = tTop;
+    } else if (fn.y > tn.y - 50 && fn.y < tn.y + 50) {
+      // Same row — horizontal
+      if (fCx < tCx) { x1 = fn.x+NW; y1 = fn.y+fH/2; x2 = tn.x; y2 = tn.y+tH/2; }
+      else { x1 = fn.x; y1 = fn.y+fH/2; x2 = tn.x+NW; y2 = tn.y+tH/2; }
+    } else {
+      // Diagonal — use bottom→top with curve
+      x1 = fCx; y1 = fBot;
+      x2 = tCx; y2 = tTop;
+    }
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    if (Math.abs(x1-x2) < 10) {
+      path.setAttribute('d', `M${x1},${y1} L${x2},${y2}`);
+    } else if (Math.abs(y1-y2) < 30) {
+      // Horizontal
+      const mx = (x1+x2)/2;
+      path.setAttribute('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`);
+    } else {
+      const cy1 = y1 + (y2-y1)*0.4;
+      const cy2 = y1 + (y2-y1)*0.6;
+      path.setAttribute('d', `M${x1},${y1} C${x1},${cy1} ${x2},${cy2} ${x2},${y2}`);
+    }
+
+    const colors = {a:'#00a8ff',t:'#00ffaa',o:'#ff9944',p:'#c864ff',r:'#ff4466'};
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', colors[marker]);
+    path.setAttribute('stroke-width','1.3');
+    path.setAttribute('opacity','0.3');
+    path.setAttribute('marker-end', `url(#a-${marker})`);
+    svg.appendChild(path);
+  });
+
+  // Autoregressive loop-back (dashed) from autoregressive → raw-text
+  const ar = nMap['autoregressive'];
+  const rt = nMap['raw-text'];
+  if (ar && rt) {
+    const arEl = ar.el, arN = ar.n;
+    const rtN = rt.n;
+    const x1 = arN.x + NW;
+    const y1 = arN.y + arEl.offsetHeight/2;
+    const x2 = rtN.x + NW;
+    const y2 = rtN.y + nMap['raw-text'].el.offsetHeight/2;
+    const outX = x1 + 80;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${x1},${y1} C${outX},${y1} ${outX},${y2} ${x2},${y2}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke','var(--yellow)');
+    path.setAttribute('stroke-width','1.2');
+    path.setAttribute('stroke-dasharray','6,4');
+    path.setAttribute('opacity','0.2');
+    path.setAttribute('marker-end','url(#a-o)');
+    svg.appendChild(path);
+
+    // Label on the loop
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x', outX + 6);
+    lbl.setAttribute('y', (y1+y2)/2);
+    lbl.setAttribute('fill','var(--yellow)');
+    lbl.setAttribute('font-size','8');
+    lbl.setAttribute('font-family','Courier New');
+    lbl.setAttribute('letter-spacing','2');
+    lbl.setAttribute('opacity','0.25');
+    lbl.textContent = 'LOOP';
+    svg.appendChild(lbl);
+  }
+});
+
+// ═══ DETAIL PANEL ═══
+const panel = document.getElementById('panel');
+function openPanel(n) {
+  const d = n.detail;
+  document.getElementById('pt').textContent = n.label;
+  document.getElementById('pc').textContent = n.cat.toUpperCase() + ' STAGE';
+  let h = `<p>${d.full}</p>`;
+  if (d.specs?.length) {
+    h += '<div class="specs">';
+    d.specs.forEach(([l,v]) => h += `<div class="sr"><span class="sl">${l}</span><span class="sv">${v}</span></div>`);
+    h += '</div>';
+  }
+  if (d.techniques?.length) {
+    h += '<div class="atk"><strong>KNOWN TECHNIQUES</strong><p></p></div>';
+    h += '<div class="techniques">';
+    d.techniques.forEach(t => h += `<span class="tech">${t}</span>`);
+    h += '</div>';
+  }
+  document.getElementById('pb').innerHTML = h;
+  panel.classList.add('open');
+}
+document.getElementById('px').addEventListener('click', () => panel.classList.remove('open'));
+document.addEventListener('keydown', e => { if(e.key==='Escape') panel.classList.remove('open'); });
+
+// ═══ PAN + ZOOM ═══
+const wrap = document.getElementById('canvas-wrap');
+const world = document.getElementById('world');
+let sc = 0.7, px_ = 40, py_ = 10;
+let drag = false, dsx, dsy;
+
+function tx() { world.style.transform = `translate(${px_}px,${py_}px) scale(${sc})`; }
+tx();
+
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const f = e.deltaY > 0 ? 0.92 : 1.08;
+  const ns = Math.max(0.2, Math.min(2.5, sc*f));
+  const r = wrap.getBoundingClientRect();
+  const mx = e.clientX-r.left, my = e.clientY-r.top;
+  px_ = mx - (mx-px_)*(ns/sc);
+  py_ = my - (my-py_)*(ns/sc);
+  sc = ns; tx();
+}, {passive:false});
+
+wrap.addEventListener('mousedown', e => {
+  if(e.target.closest('.node'))return;
+  drag=true; dsx=e.clientX-px_; dsy=e.clientY-py_;
+  wrap.classList.add('dragging');
+});
+window.addEventListener('mousemove', e => { if(!drag)return; px_=e.clientX-dsx; py_=e.clientY-dsy; tx(); });
+window.addEventListener('mouseup', () => { drag=false; wrap.classList.remove('dragging'); });
+
+let ts=null;
+wrap.addEventListener('touchstart', e => { if(e.target.closest('.node'))return; if(e.touches.length===1) ts={x:e.touches[0].clientX-px_,y:e.touches[0].clientY-py_}; });
+wrap.addEventListener('touchmove', e => { if(ts&&e.touches.length===1){e.preventDefault();px_=e.touches[0].clientX-ts.x;py_=e.touches[0].clientY-ts.y;tx();} },{passive:false});
+wrap.addEventListener('touchend', () => { ts=null; });
+
+document.getElementById('btn-reset').addEventListener('click', () => { sc=0.7; px_=40; py_=10; tx(); });
+document.getElementById('btn-fit').addEventListener('click', () => {
+  const maxX = Math.max(...NODES.map(n=>n.x+NW)) + 100;
+  const maxY = Math.max(...NODES.map(n=>n.y+250)) + 50;
+  const sx=(window.innerWidth-60)/maxX, sy=(window.innerHeight-60)/maxY;
+  sc=Math.min(sx,sy,1); px_=(window.innerWidth-maxX*sc)/2; py_=20; tx();
+});
+
+wrap.addEventListener('click', e => { if(!e.target.closest('.node')) panel.classList.remove('open'); });
+</script>
+</body>
+</html>

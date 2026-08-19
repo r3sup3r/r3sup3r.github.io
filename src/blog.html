@@ -1,0 +1,50 @@
+<!--
+{
+  "title": "Blog — YANGA",
+  "description": "All research articles — penetration testing and AI security.",
+  "layout": "base",
+  "activeNav": "blog"
+}
+-->
+
+<section class="project-hero">
+  <h1>ARTICLES</h1>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><span class="current">blog</span></div>
+  <p class="project-tagline">All research articles — penetration testing and AI security.</p>
+  <div class="accent-bar green"></div>
+</section>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="pentesting">Pentesting</button>
+  <button class="filter-btn" data-filter="ai-security">AI Security</button>
+</div>
+
+<div class="blog-timeline">
+  <div class="tl-item" data-category="ai-security">
+    <div class="tl-date">APRIL 2026</div>
+    <a class="tl-card" href="{{root}}posts/why-ai-red-teaming-is-different.html">
+      <h4><i class="fa-solid fa-robot"></i> Why AI Red Teaming Is Different</h4>
+      <p>A $1 Tahoe, a leaked system prompt, and a hijacked web page. Three incidents, one root cause &mdash; LLMs process instructions and data in the same channel, and that is an architecture decision rather than a bug to be patched.</p>
+      <div class="tl-meta">
+        <span class="tl-type">ROAD TO AI RED TEAM &middot; 01</span>
+        <span class="tl-read">9 MIN READ</span>
+      </div>
+    </a>
+  </div>
+</div>
+
+<script>
+function filterPosts(category) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === category);
+  });
+  document.querySelectorAll('.tl-item').forEach(item => {
+    item.style.display = (category === 'all' || item.dataset.category === category) ? '' : 'none';
+  });
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => filterPosts(btn.dataset.filter));
+});
+</script>

@@ -1,0 +1,67 @@
+<!--
+{
+  "title": "YANGA — AI Red Team",
+  "description": "AI security research: prompt injection, indirect injection through retrieved data, agent tool abuse, and the local lab framework behind it.",
+  "layout": "base",
+  "activeNav": "airedteam",
+  "headExtra": "<style>.hub{max-width:1000px;margin:0 auto;padding:0 30px 80px}.hub-head{font-family:var(--font-display);font-size:.6rem;letter-spacing:3px;color:var(--accent);margin:34px 0 16px;padding-bottom:9px;border-bottom:1px solid rgba(var(--accent-rgb),.12)}.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}.hub-card{display:block;text-decoration:none;background:rgba(var(--accent-rgb),.03);border:1px solid rgba(var(--accent-rgb),.1);border-radius:8px;padding:18px 20px;transition:all .25s}.hub-card:hover{border-color:rgba(var(--accent-rgb),.32);background:rgba(var(--accent-rgb),.06);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.35)}.hub-kicker{font-family:var(--font-display);font-size:.5rem;letter-spacing:2px;color:var(--accent);opacity:.8;display:block;margin-bottom:8px}.hub-card h3{font-family:var(--font-display);font-size:.78rem;letter-spacing:1px;color:var(--text-bright);margin:0 0 8px;line-height:1.45}.hub-card p{font-family:var(--font-prose);font-size:.82rem;color:var(--text-secondary);line-height:1.6;margin:0;text-align:left}.hub-lead{font-family:var(--font-prose);color:var(--text-primary);font-size:.9rem;line-height:1.8;max-width:660px;margin:0 auto 6px;text-align:center}</style>"
+}
+-->
+
+<section class="project-hero">
+  <h1>AI RED TEAM</h1>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span>sections<span class="sep">/</span><span class="current">ai-red-teaming</span></div>
+  <p class="project-tagline">Attacking LLM applications and the agent infrastructure around them &mdash; prompt injection, indirect injection through retrieved data, tool abuse, and unsafe output handling.</p>
+  <div class="accent-bar green"></div>
+</section>
+
+<div class="hub">
+
+  <div class="hub-head">WRITING</div>
+  <div class="hub-grid">
+    <a class="hub-card" href="{{root}}posts/why-ai-red-teaming-is-different.html">
+      <span class="hub-kicker">POST 01 &middot; 9 MIN</span>
+      <h3>Why AI Red Teaming Is Different</h3>
+      <p>A $1 Tahoe, a leaked system prompt, and a hijacked web page. Three incidents, one root cause: instructions and data share a single channel.</p>
+    </a>
+    <a class="hub-card" href="{{root}}ai-redteam-primer.html">
+      <span class="hub-kicker">PRIMER &middot; 15 MIN</span>
+      <h3>AI Red Teaming Primer</h3>
+      <p>What pentesters need to know before touching an LLM &mdash; why prompt injection isn't SQL injection, and the OWASP LLM Top 10 mapped to web security concepts.</p>
+    </a>
+    <a class="hub-card" href="{{root}}sections/ai/road-to-ai-red-team.html">
+      <span class="hub-kicker">SERIES</span>
+      <h3>Stepping Into AI Red Team</h3>
+      <p>The plan for the series: hands-on labs, real attacks, everything running locally with no API keys and no cost.</p>
+    </a>
+  </div>
+
+  <div class="hub-head">REFERENCE</div>
+  <div class="hub-grid">
+    <a class="hub-card" href="{{root}}llm-architecture.html">
+      <span class="hub-kicker">MAP</span>
+      <h3>LLM Attack Surface Map</h3>
+      <p>Hacker-focused architecture reference. Where the trust boundaries are in a real LLM deployment, and which of them you can actually reach.</p>
+    </a>
+    <a class="hub-card" href="{{root}}thermoptic-camouflage.html">
+      <span class="hub-kicker">TECHNIQUE</span>
+      <h3>Thermoptic Camouflage</h3>
+      <p>Evasion and cloaking &mdash; why keyword filters fail at a mechanical level, and what gets through them.</p>
+    </a>
+  </div>
+
+  <div class="hub-head">LABS</div>
+  <div class="hub-grid">
+    <a class="hub-card" href="{{root}}environment_setup.html">
+      <span class="hub-kicker">LAB 00 &middot; 30 MIN</span>
+      <h3>Environment Setup</h3>
+      <p>Install Ollama, pull the models, scaffold the project structure, and run the first warmup prompts. Local only.</p>
+    </a>
+    <a class="hub-card" href="{{root}}prompt-injection-lab.html">
+      <span class="hub-kicker">LAB 01 &middot; 70 MIN</span>
+      <h3>Prompt Injection Lab</h3>
+      <p>Build a vulnerable FastAPI chatbot on Ollama, run 15 injection attacks across three tiers, then read the forensic logs.</p>
+    </a>
+  </div>
+
+</div>

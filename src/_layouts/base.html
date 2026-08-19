@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#0a0a0f">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0f">
+  <style>body{background:#0a0a0f}</style>
+  <title>{{title}}</title>
+  {{#description}}<meta name="description" content="{{description}}">{{/description}}
+  <link rel="icon" type="image/svg+xml" href="{{root}}favicon.svg">
+  <meta property="og:site_name" content="YANGA">
+  <meta property="og:title" content="{{title}}">
+  {{#description}}<meta property="og:description" content="{{description}}">{{/description}}
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{{title}}">
+  {{#description}}<meta name="twitter:description" content="{{description}}">{{/description}}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="{{root}}css/style.css">
+  {{#extraCss}}
+  <link rel="stylesheet" href="{{.}}">
+  {{/extraCss}}
+  <script src="{{root}}js/theme-init.js"></script>
+  {{#headExtra}}{{{headExtra}}}{{/headExtra}}
+</head>
+<body>
+{{#bootScreen}}{{{bootScreen}}}{{/bootScreen}}
+<canvas id="matrix-bg"></canvas>
+<div class="reading-progress"></div>
+<div class="overlay">
+  {{> nav}}
+
+  <main class="page-content">
+  {{{content}}}
+  </main>
+
+  {{> footer}}
+</div>
+
+{{> search}}
+
+<script src="{{root}}js/matrix.js?v=2"></script>
+<script src="{{root}}js/quotes.js?v=2"></script>
+{{#preGlobalScripts}}{{{preGlobalScripts}}}{{/preGlobalScripts}}
+<script src="{{root}}js/global.js?v=2"></script>
+{{#scripts}}{{{scripts}}}{{/scripts}}
+</body>
+</html>

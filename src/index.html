@@ -1,0 +1,1091 @@
+<!--
+{
+  "title": "YANGA — Penetration Testing & Security Research",
+  "description": "Cybersecurity research blog covering penetration testing, AI red teaming, and blockchain security.",
+  "layout": "base",
+  "activeNav": "home",
+  "bootScreen": "<div id=\"bootScreen\" style=\"position:fixed;inset:0;background:#0a0a0f;z-index:99999;overflow:hidden;\"><canvas id=\"bootCanvas\" style=\"display:block;image-rendering:pixelated;\"></canvas><div style=\"position:fixed;inset:0;z-index:100000;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);\"></div></div>"
+}
+-->
+  <div class="home-layout">
+
+    <!-- MAIN CONTENT -->
+    <div class="home-main">
+      <section class="hero">
+        <div class="hero-subtitle">// Penetration Testing &amp; Security Research</div>
+        <h1><span class="flag-green">Offensive</span> <span class="flag-red">Security</span></h1>
+        <div class="quote-typer-wrap">
+          <div class="quote-typer">
+            <div class="quote-text"><span id="quote-output"></span><span class="typer-cursor"></span></div>
+            <div class="quote-attribution" id="quote-attr">
+              <span class="quote-author" id="quote-author"></span>
+              <span class="quote-source" id="quote-source"></span>
+              <span class="quote-year" id="quote-year"></span>
+            </div>
+          </div>
+        </div>
+        <div class="mini-terminal">
+          <div class="term-input-line">
+            <span class="term-prompt">guest@yanga:~$&nbsp;</span>
+            <input class="term-input" type="text" autocomplete="off" spellcheck="false" placeholder="type help…">
+          </div>
+          <div class="term-output"></div>
+        </div>
+        <div class="term-hint">This terminal is interactive — try a few commands</div>
+      </section>
+
+
+    </div>
+
+  </div>
+
+<!-- scripts -->
+<script>
+// === MINI TERMINAL ===
+function initTerminal() {
+  var input = document.querySelector('.term-input');
+  var output = document.querySelector('.term-output');
+  var terminal = document.querySelector('.mini-terminal');
+  if (!input || !output) return;
+  // Clone input to strip any stale event listeners (bfcache restore)
+  var freshInput = input.cloneNode(true);
+  input.parentNode.replaceChild(freshInput, input);
+  input = freshInput;
+  if (terminal) terminal.addEventListener('click', function() { input.focus(); });
+
+  // ── Helpers ──
+  var A = 'style="color:var(--accent);"';
+  function acc(s) { return '<span class="term-accent" ' + A + '>' + s + '</span>'; }
+
+  // ── Timer registry ──────────────────────────────────────────────────────
+  // Animated commands (cmatrix, hack, ghost, glitch, rm -rf /brain, skills
+  // --detail) drive the output on timers. Without a way to cancel them, a
+  // running animation keeps overwriting output.innerHTML and swallows every
+  // command typed after it — cmatrix alone held the terminal for 7.2s.
+  // Shadowing setTimeout/setInterval inside this closure registers every timer
+  // automatically, so stopAllTimers() below can hand the terminal to the next
+  // command. Declared as functions so hoisting covers uses defined above.
+  var _timers = [];
+  function setTimeout(fn, ms) { var id = window.setTimeout(fn, ms); _timers.push(id); return id; }
+  function setInterval(fn, ms) { var id = window.setInterval(fn, ms); _timers.push(id); return id; }
+  function stopAllTimers() {
+    for (var i = 0; i < _timers.length; i++) {
+      window.clearTimeout(_timers[i]);
+      window.clearInterval(_timers[i]);
+    }
+    _timers = [];
+    // animated commands leave these behind
+    output.style.fontFamily = '';
+    output.style.fontSize = '';
+    output.style.lineHeight = '';
+    input.disabled = false;
+  }
+
+  // ── Figlet mini font (3x5 block letters) ──
+  var FIGFONT = {
+    'A':['_##_','#__#','####','#__#','#__#'],'B':['###_','#__#','###_','#__#','###_'],
+    'C':['_###','#___','#___','#___','_###'],'D':['###_','#__#','#__#','#__#','###_'],
+    'E':['####','#___','###_','#___','####'],'F':['####','#___','###_','#___','#___'],
+    'G':['_###','#___','#_##','#__#','_###'],'H':['#__#','#__#','####','#__#','#__#'],
+    'I':['###','_#_','_#_','_#_','###'],'J':['__##','___#','___#','#__#','_##_'],
+    'K':['#__#','#_#_','##__','#_#_','#__#'],'L':['#___','#___','#___','#___','####'],
+    'M':['#___#','##_##','#_#_#','#___#','#___#'],'N':['#__#','##_#','#_##','#__#','#__#'],
+    'O':['_##_','#__#','#__#','#__#','_##_'],'P':['###_','#__#','###_','#___','#___'],
+    'Q':['_##_','#__#','#__#','#_##','_###'],'R':['###_','#__#','###_','#_#_','#__#'],
+    'S':['_###','#___','_##_','___#','###_'],'T':['#####','__#__','__#__','__#__','__#__'],
+    'U':['#__#','#__#','#__#','#__#','_##_'],'V':['#__#','#__#','#__#','_##_','__#_'],
+    'W':['#___#','#___#','#_#_#','##_##','#___#'],'X':['#__#','_##_','__#_','_##_','#__#'],
+    'Y':['#___#','_#_#_','__#__','__#__','__#__'],'Z':['####','___#','__#_','_#__','####'],
+    '0':['_##_','#__#','#__#','#__#','_##_'],'1':['_#_','##_','_#_','_#_','###'],
+    '2':['_##_','#__#','__#_','_#__','####'],'3':['###_','___#','_##_','___#','###_'],
+    '4':['#__#','#__#','####','___#','___#'],'5':['####','#___','###_','___#','###_'],
+    '6':['_##_','#___','###_','#__#','_##_'],'7':['####','___#','__#_','_#__','_#__'],
+    '8':['_##_','#__#','_##_','#__#','_##_'],'9':['_##_','#__#','_###','___#','_##_'],
+    ' ':['___','___','___','___','___'],'.':['_','_','_','_','#'],
+    '!':['#','#','#','_','#'],'-':['____','____','####','____','____'],
+    '?':['_##_','#__#','__#_','____','__#_'],'/':['___#','__#_','_#__','#___','____'],
+    ':':['_','#','_','#','_'],'@':['_##_','#__#','#_##','#___','_###']
+  };
+
+  function figlet(text) {
+    var chars = text.toUpperCase().split('');
+    var rows = ['','','','',''];
+    for (var i = 0; i < chars.length; i++) {
+      var g = FIGFONT[chars[i]] || FIGFONT['?'];
+      for (var r = 0; r < 5; r++) {
+        rows[r] += (g[r] || '') + ' ';
+      }
+    }
+    return rows.map(function(r) {
+      return r.replace(/#/g, '█').replace(/_/g, ' ');
+    }).join('\n');
+  }
+
+  // ── Animated commands ──
+
+  function cmdCmatrix() {
+    output.style.fontFamily = '"Share Tech Mono", monospace';
+    output.style.lineHeight = '1.1';
+    output.style.fontSize = '11px';
+    var cols = 50, rows = 14;
+    var grid = [];
+    for (var r = 0; r < rows; r++) {
+      grid[r] = [];
+      for (var c = 0; c < cols; c++) grid[r][c] = ' ';
+    }
+    var drops = [];
+    for (var c = 0; c < cols; c++) {
+      drops.push({ y: -Math.floor(Math.random() * rows * 2), speed: 1 + Math.floor(Math.random() * 2), len: 4 + Math.floor(Math.random() * 8) });
+    }
+    var chars = '01アイウエオカキクケコサシスセソ';
+    var frames = 0;
+    var iv = setInterval(function() {
+      frames++;
+      for (var c = 0; c < cols; c++) {
+        var d = drops[c];
+        if (frames % d.speed === 0) d.y++;
+        for (var r = 0; r < rows; r++) {
+          var dist = d.y - r;
+          if (dist >= 0 && dist < d.len) {
+            grid[r][c] = chars[Math.floor(Math.random() * chars.length)];
+          } else if (dist >= d.len) {
+            grid[r][c] = ' ';
+          }
+        }
+        if (d.y - d.len > rows) {
+          d.y = -Math.floor(Math.random() * rows);
+          d.len = 4 + Math.floor(Math.random() * 8);
+          d.speed = 1 + Math.floor(Math.random() * 2);
+        }
+      }
+      var html = '';
+      for (var r = 0; r < rows; r++) {
+        var line = '';
+        for (var c = 0; c < cols; c++) {
+          var ch = grid[r][c];
+          var dist = drops[c].y - r;
+          if (ch !== ' ' && dist >= 0 && dist < drops[c].len) {
+            var bright = dist === 0 ? 1 : Math.max(0.2, 1 - dist / drops[c].len);
+            line += '<span style="color:var(--accent);opacity:' + bright.toFixed(2) + ';">' + ch + '</span>';
+          } else {
+            line += ' ';
+          }
+        }
+        html += line + '\n';
+      }
+      output.innerHTML = '<pre style="margin:0;overflow:hidden;">' + html + '</pre>';
+      if (frames > 120) {
+        clearInterval(iv);
+        output.style.fontSize = '';
+        output.style.lineHeight = '';
+        output.innerHTML = acc('cmatrix') + ' — session ended.';
+      }
+    }, 60);
+  }
+
+  function cmdSkillsDetail() {
+    var skills = [
+      { name: 'Web App Pentesting', pct: 100 },
+      { name: 'Active Directory', pct: 90 },
+      { name: 'WiFi Hacking', pct: 80 },
+      { name: 'Network Pentesting', pct: 75 },
+      { name: 'Reverse Engineering', pct: 45 },
+      { name: 'AI Security', pct: 30 },
+      { name: 'Malware Analysis', pct: 25 }
+    ];
+    var maxName = 20;
+    var barLen = 20;
+    var step = 0;
+    var maxSteps = barLen;
+    output.innerHTML = acc('Scanning skill matrix...');
+    var iv = setInterval(function() {
+      step++;
+      var html = '';
+      for (var i = 0; i < skills.length; i++) {
+        var s = skills[i];
+        var padded = s.name;
+        while (padded.length < maxName) padded += ' ';
+        var filled = Math.min(step, Math.round(s.pct / 100 * barLen));
+        var bar = '';
+        for (var b = 0; b < barLen; b++) {
+          bar += b < filled ? '█' : '░';
+        }
+        var pctStr = step >= maxSteps ? (' ' + s.pct + '%') : '';
+        html += padded + ' ' + acc(bar) + pctStr + '\n';
+      }
+      output.innerHTML = '<pre style="margin:0;font-size:12px;">' + html + '</pre>';
+      if (step >= maxSteps) clearInterval(iv);
+    }, 50);
+  }
+
+  function cmdGlitch() {
+    var overlay = document.querySelector('.overlay');
+    if (!overlay) { output.innerHTML = acc('glitch') + ' — no target found.'; return; }
+    output.innerHTML = acc('GLITCH ACTIVATED');
+    overlay.style.animation = 'none';
+    var style = document.createElement('style');
+    style.textContent = '@keyframes termGlitch{0%{transform:translate(0);filter:none}10%{transform:translate(-3px,1px);filter:hue-rotate(90deg)}20%{transform:translate(2px,-2px) skewX(-2deg);filter:saturate(3) hue-rotate(180deg)}30%{transform:translate(-1px,3px);filter:invert(1)}40%{transform:translate(4px,-1px) skewX(3deg);filter:hue-rotate(270deg) brightness(1.5)}50%{transform:translate(-2px,0);filter:saturate(5)}60%{transform:translate(1px,2px) skewX(-1deg);filter:contrast(2) hue-rotate(45deg)}70%{transform:translate(-3px,-2px);filter:brightness(0.3)}80%{transform:translate(2px,1px) skewX(2deg);filter:hue-rotate(135deg) invert(0.5)}90%{transform:translate(0,-1px);filter:none}100%{transform:translate(0);filter:none}}';
+    document.head.appendChild(style);
+    overlay.style.animation = 'termGlitch 0.15s linear 8';
+    overlay.addEventListener('animationend', function() {
+      overlay.style.animation = '';
+      style.remove();
+    }, { once: true });
+  }
+
+  function cmdRmBrain() {
+    output.innerHTML = acc('rm: removing /brain...');
+    input.disabled = true;
+    var overlay = document.querySelector('.overlay');
+    var body = document.body;
+    var phase = 0;
+    var msgs = [
+      { t: 400, msg: 'Wiping neural networks...' },
+      { t: 800, msg: 'Deleting knowledge base... 23%' },
+      { t: 1200, msg: 'Deleting knowledge base... 67%' },
+      { t: 1600, msg: 'Deleting knowledge base... 99%' },
+      { t: 2000, msg: acc('CRITICAL ERROR:') + ' Kernel panic — brain not synced' },
+      { t: 2400, msg: 'SYSTEM FAILURE: segfault at 0x00000000deadbeef' }
+    ];
+    msgs.forEach(function(m) {
+      setTimeout(function() { output.innerHTML += '<br>' + m.msg; }, m.t);
+    });
+    // Phase 1: heavy glitch at 2.8s
+    setTimeout(function() {
+      var style = document.createElement('style');
+      style.id = 'brainCrashStyle';
+      style.textContent = '@keyframes brainCrash{0%{transform:translate(0) skewX(0);filter:none}5%{transform:translate(-8px,3px) skewX(-5deg);filter:hue-rotate(90deg) saturate(5)}10%{transform:translate(5px,-4px) skewX(8deg);filter:invert(1)}15%{transform:translate(-3px,6px) skewX(-3deg);filter:hue-rotate(270deg) brightness(2)}20%{transform:translate(6px,-2px) skewX(6deg);filter:contrast(3) hue-rotate(180deg)}25%{transform:translate(0);filter:invert(0.8) brightness(0.2)}30%{transform:translate(-10px,5px) skewX(-10deg);filter:hue-rotate(45deg) saturate(8)}35%{transform:translate(8px,-6px) skewX(12deg);filter:brightness(3)}40%{filter:brightness(0)}50%{filter:brightness(0)}100%{filter:brightness(0)}}';
+      document.head.appendChild(style);
+      body.style.animation = 'brainCrash 2s ease-in forwards';
+    }, 2800);
+    // Phase 2: black screen + reboot text
+    setTimeout(function() {
+      var crash = document.createElement('div');
+      crash.id = 'brainCrashScreen';
+      crash.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;font:14px "Share Tech Mono",monospace;color:var(--accent);';
+      crash.innerHTML = '<div id="brainRebootText"></div>';
+      document.body.appendChild(crash);
+      var reboot = document.getElementById('brainRebootText');
+      var lines = [
+        '> SYSTEM HALTED',
+        '> AI security neurons are write-protected.',
+        '> Cannot delete: /brain/yanga/core',
+        '',
+        '> Restoring from backup...',
+        '> Reinitializing neural pathways...',
+        '> ' + acc('RESTORE COMPLETE.')
+      ];
+      lines.forEach(function(line, i) {
+        setTimeout(function() {
+          reboot.innerHTML += line + '<br>';
+        }, i * 400);
+      });
+      // Fade back to normal
+      setTimeout(function() {
+        crash.style.transition = 'opacity 0.8s';
+        crash.style.opacity = '0';
+        body.style.animation = '';
+        var s = document.getElementById('brainCrashStyle');
+        if (s) s.remove();
+        setTimeout(function() {
+          crash.remove();
+          input.disabled = false;
+          output.innerHTML = acc('System restored.') + ' Nice try though.';
+        }, 800);
+      }, lines.length * 400 + 600);
+    }, 4800);
+  }
+
+  function cmdSudoRm() {
+    input.disabled = true;
+    var body = document.body;
+    output.innerHTML = acc('sudo rm -rf /') + ' — initiating...';
+
+    // Inject all animation styles upfront
+    var style = document.createElement('style');
+    style.id = 'sudoRmStyle';
+    style.textContent =
+      '@keyframes sudoGlitch{0%{transform:none;filter:none;clip-path:inset(0)}5%{transform:skewX(-8deg) translateX(-5px);filter:hue-rotate(90deg) saturate(5);clip-path:inset(10% 0 30% 0)}10%{transform:skewX(6deg) translateX(3px);filter:invert(1);clip-path:inset(40% 0 10% 0)}15%{transform:none;filter:hue-rotate(270deg) brightness(2);clip-path:inset(0)}20%{transform:skewX(-4deg);filter:hue-rotate(180deg) contrast(3);clip-path:inset(60% 0 5% 0)}25%{transform:translateX(8px) skewX(10deg);filter:invert(0.8) saturate(8);clip-path:inset(5% 0 50% 0)}30%{transform:none;filter:none;clip-path:inset(0)}100%{transform:none;filter:none;clip-path:inset(0)}}'
+      + '@keyframes sudoHeavyGlitch{0%{transform:none;filter:none;clip-path:inset(0)}8%{transform:skewX(-15deg) translateX(-10px);filter:hue-rotate(90deg) saturate(8) brightness(2);clip-path:inset(5% 0 40% 0)}16%{transform:skewX(12deg) scaleY(1.05);filter:invert(1) hue-rotate(180deg);clip-path:inset(50% 0 5% 0)}24%{transform:translateX(8px) skewY(-3deg);filter:hue-rotate(270deg) contrast(5) brightness(0.5);clip-path:inset(20% 0 20% 0)}32%{transform:skewX(-8deg) scaleX(1.02);filter:saturate(10) hue-rotate(45deg);clip-path:inset(70% 0 0 0)}40%{transform:none;filter:invert(0.5) blur(1px);clip-path:inset(0 0 60% 0)}50%{transform:none;filter:none;clip-path:inset(0)}100%{transform:none;filter:none;clip-path:inset(0)}}'
+      + '@keyframes sudoFlicker{0%,100%{opacity:1}50%{opacity:0}}'
+      + '@keyframes sudoMelt{0%{transform:scaleY(1);filter:none;opacity:1}40%{transform:scaleY(1.05) skewX(2deg);filter:hue-rotate(90deg) saturate(3)}70%{transform:scaleY(0.3) skewX(-5deg);filter:hue-rotate(180deg) blur(2px);opacity:0.5}100%{transform:scaleY(0) skewX(10deg);filter:blur(8px);opacity:0}}'
+      + '@keyframes sudoBSOD{0%{opacity:0}10%{opacity:1}}'
+      + '.sudo-deleted{animation:sudoMelt 0.6s ease-in forwards !important;}';
+    document.head.appendChild(style);
+
+    // Phase 1: filesystem deletion log with progress bar
+    var dirs = [
+      { t: 300,  path: '/etc',                size: '2.1M' },
+      { t: 600,  path: '/var/log',             size: '847K' },
+      { t: 900,  path: '/home/ghost',          size: '13.4M' },
+      { t: 1200, path: '/usr/bin',             size: '156M' },
+      { t: 1500, path: '/opt/yanga/tools',  size: '89M' },
+      { t: 1800, path: '/srv/databases',       size: '2.3G' },
+      { t: 2100, path: '/boot/vmlinuz',        size: '12M' }
+    ];
+    var progressChars = 30;
+    dirs.forEach(function(d, i) {
+      setTimeout(function() {
+        var filled = Math.round(((i + 1) / dirs.length) * progressChars);
+        var bar = '';
+        for (var b = 0; b < progressChars; b++) bar += b < filled ? '█' : '░';
+        var pct = Math.round(((i + 1) / dirs.length) * 100);
+        output.innerHTML = acc('sudo rm -rf /') + ' — ' + acc('DELETING') + '<br><br>';
+        for (var j = 0; j <= i; j++) {
+          output.innerHTML += '<span style="color:#ff3c3c;">✗</span> rm: removed \'' + dirs[j].path + '\' (' + dirs[j].size + ')<br>';
+        }
+        output.innerHTML += '<br>[' + acc(bar) + '] ' + pct + '%';
+      }, d.t);
+    });
+
+    // Phase 2: page elements start visually "deleting" — melting away one by one
+    setTimeout(function() {
+      var targets = document.querySelectorAll('.cat-card, .post-card, .section-heading, .hero-sub, nav a');
+      var arr = Array.prototype.slice.call(targets);
+      // Shuffle
+      for (var i = arr.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+      }
+      arr.forEach(function(el, idx) {
+        setTimeout(function() {
+          el.classList.add('sudo-deleted');
+        }, idx * 150);
+      });
+    }, 2400);
+
+    // Phase 3: glitch corruption
+    setTimeout(function() {
+      body.style.animation = 'sudoGlitch 0.4s ease infinite';
+      output.innerHTML += '<br><br>' + acc('CRITICAL:') + ' filesystem integrity compromised';
+    }, 3500);
+
+    // Phase 4: kernel panic — heavy glitch
+    setTimeout(function() {
+      body.style.animation = 'sudoHeavyGlitch 0.25s ease infinite';
+      output.innerHTML += '<br>' + acc('KERNEL PANIC') + ' — not syncing: Attempted to kill init!';
+      output.innerHTML += '<br>CPU: 0 PID: 1 Comm: systemd Tainted: G      D';
+      output.innerHTML += '<br>Stack: ' + acc('0xDEADBEEF 0xCAFEBABE 0x1337BEEF');
+    }, 4200);
+
+    // Phase 5: rapid flicker then blackout
+    setTimeout(function() {
+      body.style.animation = 'sudoFlicker 0.08s steps(1) 8';
+    }, 4800);
+
+    // Phase 6: BSOD-style crash screen with ASCII skull
+    setTimeout(function() {
+      body.style.animation = '';
+      var crash = document.createElement('div');
+      crash.id = 'sudoRmScreen';
+      crash.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;font:13px "Share Tech Mono",monospace;color:var(--accent);animation:sudoBSOD 0.3s ease;padding:40px;overflow:auto;';
+      var skull =
+        '            ██████████\n'
+        + '        ████          ████\n'
+        + '      ██                  ██\n'
+        + '    ██    ████      ████    ██\n'
+        + '    ██    ████      ████    ██\n'
+        + '    ██                      ██\n'
+        + '      ██    ████████    ██\n'
+        + '        ██          ██\n'
+        + '        ██  ██  ██  ██\n'
+        + '        ██  ██  ██  ██\n'
+        + '          ██████████\n';
+      crash.innerHTML = '<pre style="color:var(--accent);margin:0;text-align:center;line-height:1.2;">' + skull + '</pre>'
+        + '<div id="sudoRmText" style="max-width:600px;text-align:left;margin-top:20px;"></div>';
+      document.body.appendChild(crash);
+
+      var reboot = document.getElementById('sudoRmText');
+      var lines = [
+        { msg: '> ' + acc('SYSTEM HALTED — FATAL ERROR'), delay: 500 },
+        { msg: '> All filesystems destroyed. Disk: 0 bytes remaining.', delay: 1000 },
+        { msg: '> Memory dump: 0xDEAD...BEEF', delay: 1500 },
+        { msg: '', delay: 2000 },
+        { msg: '> Attempting recovery...', delay: 2800 },
+        { msg: '> Scanning for backup partitions... ' + acc('FOUND: /ghost/shadow'), delay: 3500 },
+        { msg: '> Decrypting shadow backup...', delay: 4200 },
+        { msg: '> Rebuilding /etc .......... ' + acc('OK'), delay: 4900 },
+        { msg: '> Rebuilding /var .......... ' + acc('OK'), delay: 5300 },
+        { msg: '> Rebuilding /home ......... ' + acc('OK'), delay: 5700 },
+        { msg: '> Rebuilding /boot ......... ' + acc('OK'), delay: 6100 },
+        { msg: '> Restoring kernel image ... ' + acc('OK'), delay: 6500 },
+        { msg: '', delay: 6800 },
+        { msg: '> ' + acc('RESTORE COMPLETE.') + ' All systems nominal.', delay: 7300 },
+        { msg: '> Don\'t try that again.', delay: 7900 }
+      ];
+      lines.forEach(function(l) {
+        setTimeout(function() {
+          reboot.innerHTML += l.msg + '<br>';
+        }, l.delay);
+      });
+
+      // Phase 7: fade out crash screen, restore everything
+      setTimeout(function() {
+        crash.style.transition = 'opacity 1s';
+        crash.style.opacity = '0';
+        // Restore melted elements
+        document.querySelectorAll('.sudo-deleted').forEach(function(el) {
+          el.classList.remove('sudo-deleted');
+          el.style.transform = '';
+          el.style.filter = '';
+          el.style.opacity = '1';
+        });
+        setTimeout(function() {
+          crash.remove();
+          var s = document.getElementById('sudoRmStyle');
+          if (s) s.remove();
+          input.disabled = false;
+          output.innerHTML = acc('System restored.') + ' Everything\'s still here. ' + acc('yanga can\'t be killed.');
+        }, 1000);
+      }, 8800);
+    }, 5300);
+  }
+
+  function cmdGhost() {
+    input.disabled = true;
+    output.innerHTML = acc('THERMOPTIC CAMOUFLAGE') + ' — engaging...';
+
+    // Inject styles
+    var style = document.createElement('style');
+    style.id = 'ghostThermStyle';
+    style.textContent =
+      '@keyframes thermCloak{0%{filter:none;opacity:1}15%{filter:hue-rotate(180deg) saturate(0.3) brightness(1.5);opacity:0.7}30%{filter:hue-rotate(90deg) saturate(0) brightness(2) blur(1px);opacity:0.3}50%{filter:saturate(0) brightness(3) blur(2px) contrast(0.5);opacity:0.08}70%{filter:saturate(0) brightness(3) blur(2px);opacity:0.05}100%{filter:saturate(0) brightness(3) blur(3px);opacity:0.03}}'
+      + '@keyframes thermScanline{0%{background-position:0 0}100%{background-position:0 100%}}'
+      + '@keyframes thermShimmer{0%,100%{opacity:0.03;filter:blur(3px)}25%{opacity:0.08;filter:blur(2px) hue-rotate(40deg)}50%{opacity:0.04;filter:blur(4px)}75%{opacity:0.1;filter:blur(1px) hue-rotate(-40deg)}}'
+      + '@keyframes thermDecloak{0%{filter:saturate(0) brightness(3) blur(3px);opacity:0.03}20%{filter:hue-rotate(90deg) saturate(0.5) blur(2px);opacity:0.2}40%{filter:hue-rotate(180deg) saturate(2) brightness(1.5) blur(1px);opacity:0.5}60%{filter:hue-rotate(90deg) saturate(3);opacity:0.7}80%{filter:hue-rotate(30deg) saturate(1.5);opacity:0.9}100%{filter:none;opacity:1}}'
+      + '.therm-scanline{position:fixed;inset:0;z-index:99998;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,157,0.03) 2px,rgba(0,255,157,0.03) 4px);background-size:100% 8px;animation:thermScanline 3s linear infinite;}'
+      + '.therm-hexgrid{position:fixed;inset:0;z-index:99997;pointer-events:none;opacity:0;transition:opacity 1s;}'
+      + '.therm-click-zone{position:fixed;inset:0;z-index:99999;cursor:pointer;}'
+      + '.therm-msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100000;font:24px "Share Tech Mono",monospace;color:var(--accent);pointer-events:none;opacity:0;transition:opacity 0.5s;text-align:center;text-shadow:0 0 20px var(--accent),0 0 40px var(--accent);}';
+    document.head.appendChild(style);
+
+    // Create scanline overlay
+    var scanline = document.createElement('div');
+    scanline.className = 'therm-scanline';
+    document.body.appendChild(scanline);
+
+    // Create hex grid overlay
+    var hexgrid = document.createElement('canvas');
+    hexgrid.className = 'therm-hexgrid';
+    hexgrid.width = window.innerWidth;
+    hexgrid.height = window.innerHeight;
+    document.body.appendChild(hexgrid);
+    var hctx = hexgrid.getContext('2d');
+    var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00a8ff';
+    function drawHexGrid() {
+      hctx.clearRect(0, 0, hexgrid.width, hexgrid.height);
+      hctx.strokeStyle = accentColor;
+      hctx.lineWidth = 0.5;
+      hctx.globalAlpha = 0.15;
+      var size = 30;
+      var h = size * Math.sqrt(3);
+      for (var row = -1; row < hexgrid.height / h + 1; row++) {
+        for (var col = -1; col < hexgrid.width / (size * 1.5) + 1; col++) {
+          var x = col * size * 1.5;
+          var y = row * h + (col % 2 ? h / 2 : 0);
+          hctx.beginPath();
+          for (var i = 0; i < 6; i++) {
+            var angle = Math.PI / 3 * i - Math.PI / 6;
+            var px = x + size * Math.cos(angle);
+            var py = y + size * Math.sin(angle);
+            if (i === 0) hctx.moveTo(px, py);
+            else hctx.lineTo(px, py);
+          }
+          hctx.closePath();
+          hctx.stroke();
+        }
+      }
+    }
+    drawHexGrid();
+
+    // Phase 1: terminal readout
+    var msgs = [
+      { t: 400, msg: '> Initializing optical camouflage array...' },
+      { t: 900, msg: '> Calibrating refraction index...' },
+      { t: 1400, msg: '> Bending light around surface...' },
+      { t: 1900, msg: '> ' + acc('CLOAKING') }
+    ];
+    msgs.forEach(function(m) {
+      setTimeout(function() { output.innerHTML += '<br>' + m.msg; }, m.t);
+    });
+
+    // Phase 2: cloak EVERYTHING — apply to documentElement so nothing escapes
+    var root = document.documentElement;
+    setTimeout(function() {
+      root.style.animation = 'thermCloak 2s ease-in forwards';
+      hexgrid.style.opacity = '1';
+    }, 2200);
+
+    // Phase 3: cloaked state — shimmering invisibility
+    setTimeout(function() {
+      root.style.animation = 'thermShimmer 2s ease-in-out infinite';
+
+      // Show message + click zone
+      var msg = document.createElement('div');
+      msg.className = 'therm-msg';
+      msg.id = 'thermMsg';
+      msg.innerHTML = acc('[ CLOAKED ]') + '<br><span style="font-size:14px;opacity:0.7;">thermoptic camouflage active</span><br><span style="font-size:12px;opacity:0.4;margin-top:12px;display:inline-block;">click anywhere to decloak</span>';
+      document.body.appendChild(msg);
+      setTimeout(function() { msg.style.opacity = '1'; }, 200);
+
+      var clickZone = document.createElement('div');
+      clickZone.className = 'therm-click-zone';
+      clickZone.id = 'thermClickZone';
+      document.body.appendChild(clickZone);
+
+      // Wait for click to decloak
+      clickZone.addEventListener('click', function decloak() {
+        clickZone.removeEventListener('click', decloak);
+        clickZone.remove();
+        msg.style.opacity = '0';
+
+        // Decloak everything
+        root.style.animation = 'thermDecloak 1.5s ease-out forwards';
+        hexgrid.style.opacity = '0';
+
+        setTimeout(function() {
+          root.style.animation = '';
+          root.style.filter = '';
+          root.style.opacity = '';
+          scanline.remove();
+          hexgrid.remove();
+          msg.remove();
+          var s = document.getElementById('ghostThermStyle');
+          if (s) s.remove();
+          output.innerHTML = acc('>> DECLOAK COMPLETE.') + ' Ghost in the shell.';
+          input.disabled = false;
+        }, 1500);
+      });
+    }, 4200);
+  }
+
+  function cmdHack() {
+    input.disabled = true;
+    output.innerHTML = acc('INTRUSION DETECTED') + ' — unknown entity taking control...';
+
+    var style = document.createElement('style');
+    style.id = 'hackPossessStyle';
+    style.textContent =
+      '@keyframes hackGlitch{0%,100%{transform:none;filter:none}25%{transform:skewX(-2deg);filter:hue-rotate(90deg)}50%{transform:skewX(3deg) translateX(-2px);filter:hue-rotate(180deg) invert(0.2)}75%{transform:skewX(-1deg) translateX(1px);filter:hue-rotate(270deg)}}'
+      + '@keyframes hackPulse{0%,100%{text-shadow:0 0 30px #ff3c3c,0 0 60px #ff0000,0 0 100px #ff0000}50%{text-shadow:0 0 60px #ff3c3c,0 0 100px #ff0000,0 0 160px #ff0000}}';
+    document.head.appendChild(style);
+
+    // Gather all visible text nodes on the page
+    var textEls = document.querySelectorAll('h1, h2, h3, p, a, span, .cat-card, .hero-title, .hero-sub, .section-heading, .term-prompt');
+    var originals = [];
+    var possessed = [];
+    var scrambleChars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン@#$%&!?/<>[]{}=+~^|\\';
+
+    textEls.forEach(function(el) {
+      originals.push({ el: el, html: el.innerHTML });
+      possessed.push(el);
+    });
+
+    // Phase 1: page starts glitching
+    var body = document.body;
+    setTimeout(function() {
+      body.style.animation = 'hackGlitch 0.2s ease infinite';
+    }, 500);
+
+    // Phase 2: text scrambles progressively — wave across the page
+    var scrambleIntervals = [];
+    setTimeout(function() {
+      possessed.forEach(function(el, idx) {
+        setTimeout(function() {
+          var orig = el.textContent;
+          var interval = setInterval(function() {
+            var scrambled = '';
+            for (var i = 0; i < orig.length; i++) {
+              if (orig[i] === ' ' || orig[i] === '\n') { scrambled += orig[i]; continue; }
+              scrambled += scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+            }
+            el.textContent = scrambled;
+          }, 60);
+          scrambleIntervals.push(interval);
+        }, idx * 80);
+      });
+    }, 1200);
+
+    // Phase 3: screen flashes red briefly
+    setTimeout(function() {
+      body.style.animation = 'hackGlitch 0.08s ease infinite';
+      var flash = document.createElement('div');
+      flash.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(255,0,0,0.15);pointer-events:none;';
+      document.body.appendChild(flash);
+      setTimeout(function() { flash.style.background = 'rgba(255,0,0,0.3)'; }, 100);
+      setTimeout(function() { flash.style.background = 'rgba(255,0,0,0.1)'; }, 200);
+      setTimeout(function() { flash.remove(); }, 400);
+    }, 2800);
+
+    // Phase 4: "PWNED" takeover — stays until click
+    setTimeout(function() {
+      body.style.animation = '';
+      scrambleIntervals.forEach(function(iv) { clearInterval(iv); });
+
+      var overlay = document.createElement('div');
+      overlay.id = 'hackOverlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:999999;background:#000;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;';
+
+      var msgEl = document.createElement('div');
+      msgEl.style.cssText = 'font:60px "Share Tech Mono",monospace;color:#ff3c3c;letter-spacing:12px;opacity:0;transition:opacity 0.3s;animation:hackPulse 2s ease-in-out infinite;';
+      msgEl.textContent = 'SYSTEM PWNED';
+      overlay.appendChild(msgEl);
+
+      var subEl = document.createElement('div');
+      subEl.style.cssText = 'font:16px "Share Tech Mono",monospace;color:var(--accent);margin-top:20px;opacity:0;transition:opacity 0.5s;';
+      subEl.textContent = 'connection traced // identity compromised';
+      overlay.appendChild(subEl);
+
+      // Fake terminal typing
+      var termDiv = document.createElement('div');
+      termDiv.style.cssText = 'font:13px "Share Tech Mono",monospace;color:var(--accent);margin-top:40px;text-align:left;max-width:500px;opacity:0;transition:opacity 0.3s;';
+      overlay.appendChild(termDiv);
+
+      var hackLines = [
+        '> extracting credentials...',
+        '> dumping /etc/shadow... ' + acc('ACCESS DENIED'),
+        '> brute forcing root...',
+        '> ...',
+        '> ' + acc('FAILED.') + ' yanga defenses held.',
+        '> intruder expelled.'
+      ];
+
+      // Click hint at the bottom
+      var hint = document.createElement('div');
+      hint.style.cssText = 'position:absolute;bottom:40px;font:12px "Share Tech Mono",monospace;color:rgba(255,255,255,0.2);opacity:0;transition:opacity 0.5s;';
+      hint.textContent = 'click anywhere to regain control';
+      overlay.appendChild(hint);
+
+      document.body.appendChild(overlay);
+
+      setTimeout(function() { msgEl.style.opacity = '1'; }, 100);
+      setTimeout(function() { subEl.style.opacity = '1'; }, 800);
+      setTimeout(function() { termDiv.style.opacity = '1'; }, 1500);
+      hackLines.forEach(function(line, i) {
+        setTimeout(function() {
+          termDiv.innerHTML += line + '<br>';
+        }, 1800 + i * 600);
+      });
+      // Show click hint after all lines
+      setTimeout(function() { hint.style.opacity = '1'; }, 1800 + hackLines.length * 600 + 400);
+
+      // Wait for click to restore
+      overlay.addEventListener('click', function restore() {
+        overlay.removeEventListener('click', restore);
+        overlay.style.transition = 'opacity 1s';
+        overlay.style.opacity = '0';
+
+        // Restore all original text
+        originals.forEach(function(o) { o.el.innerHTML = o.html; });
+
+        setTimeout(function() {
+          overlay.remove();
+          var s = document.getElementById('hackPossessStyle');
+          if (s) s.remove();
+          output.innerHTML = acc('>> INTRUSION REPELLED.') + ' All systems secured. ' + acc('Nice try, script kiddie.');
+          input.disabled = false;
+        }, 1000);
+      });
+    }, 3500);
+  }
+
+  function cmdNeofetch() {
+    var logo = [
+      '██╗   ██╗ █████╗ ',
+      '╚██╗ ██╔╝██╔══██╗',
+      ' ╚████╔╝ ███████║',
+      '  ╚██╔╝  ██╔══██║',
+      '   ██║   ██║  ██║',
+      '   ╚═╝   ╚═╝  ╚═╝'
+    ];
+    var t = (window.__yangaGetTheme && window.__yangaGetTheme()) || 'blue';
+    function pad(label, width) {
+      var spaces = '';
+      for (var i = label.length; i < width; i++) spaces += ' ';
+      return acc(label) + spaces;
+    }
+    var W = 10; // align all values after 10 chars
+    var info = [
+      acc('guest@yanga'),
+      '──────────────────',
+      pad('OS:', W) + 'YangaOS 6.6.6-hardened',
+      pad('Host:', W) + 'YANGA Terminal v2.0',
+      pad('Kernel:', W) + 'neural-net-4.2.0-lts',
+      pad('Shell:', W) + 'ghostsh 1.33.7',
+      pad('Theme:', W) + t,
+      pad('Uptime:', W) + '∞',
+      pad('Packages:', W) + '1337 (apt) 42 (pip)',
+      pad('Memory:', W) + '████████░░ 80%',
+      pad('CPU:', W) + '████████████ 100%',
+      '',
+      '  🟥 🟧 🟨 🟩 🟦 🟪 ⬛ ⬜'
+    ];
+    var html = '<pre style="margin:0;font-size:11px;line-height:1.4;">';
+    for (var r = 0; r < Math.max(logo.length, info.length); r++) {
+      var left = r < logo.length ? logo[r] : '                  ';
+      var right = r < info.length ? info[r] : '';
+      html += acc(left) + '  ' + right + '\n';
+    }
+    html += '</pre>';
+    output.innerHTML = html;
+  }
+
+  // ── Static commands ──
+  var commands = {
+    help: '__HELP__',
+    ls: 'pentesting/  ai-red-team/  ctf/  blog/  tools/  about.txt  skills.txt',
+    whoami: 'YANGA — pentester pivoting to AI red teaming. Breaking systems to make them stronger.',
+    'cat about.txt': 'Offensive security researcher building <a href="about.html">YANGA</a> — a hub for pentesting, AI security, and emerging threat research.',
+    'cat skills.txt': 'Web App Pentesting ██████████ 100%\nActive Directory   █████████░ 90%\nWiFi Hacking       ████████░░ 80%\nAI Security        ███░░░░░░░ 30%',
+    // Easter eggs
+    'rm -rf /': acc('Permission denied.') + ' You don\'t have that kind of power. Try with ' + acc('sudo') + ' if you dare.',
+    'ping google.com': 'PING google.com (142.250.80.46): 56 data bytes\n' + acc('all packets intercepted by yanga') + '\n--- 0 packets transmitted, 0 received, 100% loss ---',
+    'nmap yanga': 'Starting Nmap 7.94 ( https://nmap.org )\nPORT     STATE   SERVICE\n22/tcp   filtered ssh\n80/tcp   open     http\n443/tcp  open     https\n1337/tcp open     ' + acc('ghost-protocol') + '\n8080/tcp filtered http-proxy\nNmap done: ' + acc('1 host up') + ', scanned in 0.42s',
+    'whoami --verbose': 'Name:    YANGA\nAlias:   @yanga\nRole:    Pentester → AI Red Teamer\nMission: Break AI systems before they break us\nETA:     2028\nStatus:  ' + acc('ACTIVE'),
+    'cat /etc/shadow': acc('Permission denied.') + ' But nice instinct.',
+    'matrix': acc('You take the red pill, you stay in Wonderland...'),
+    'sl': '      ====        ________\n  _D _|  |_______/        \\__I_\n   |(_)---  |   H\\________/ |  |\n   /     |  |   H  |  |     |  |\n  |      |  |   H  |__|     |  |\n  |_____||__|___H__|__|_____|__|\n    O    O      O  / /     O   O\n   _______________/ /____________\n  |_______________|/____________|',
+    'sudo': acc('sudo:') + ' specify a command. (Hint: you\'re already root.)'
+  };
+
+  var gotos = {
+    pentesting: 'sections/pentesting.html',
+    'ai-red-teaming': 'sections/ai-red-teaming.html',
+    'ai-red-team': 'sections/ai-red-teaming.html',
+    ai: 'sections/ai-red-teaming.html',
+    ctf: 'sections/ctf.html',
+    writeups: 'sections/ctf.html',
+    blog: 'blog.html', tools: 'tools.html',
+    about: 'about.html', home: 'index.html'
+  };
+
+  // ── Command history (up to 5) ──
+  var cmdHistory = [];
+  var historyIndex = -1;
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (cmdHistory.length === 0) return;
+      if (historyIndex < cmdHistory.length - 1) historyIndex++;
+      input.value = cmdHistory[cmdHistory.length - 1 - historyIndex];
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex > 0) {
+        historyIndex--;
+        input.value = cmdHistory[cmdHistory.length - 1 - historyIndex];
+      } else {
+        historyIndex = -1;
+        input.value = '';
+      }
+      return;
+    }
+    if (e.key !== 'Enter') return;
+    var rawCmd = input.value.trim();
+    var cmd = rawCmd.toLowerCase();
+    input.value = '';
+    if (!cmd) return;
+    stopAllTimers();   // a new command always takes over the terminal
+    cmdHistory.push(rawCmd);
+    if (cmdHistory.length > 5) cmdHistory.shift();
+    historyIndex = -1;
+
+    if (cmd === 'clear') { output.innerHTML = ''; return; }
+    if (cmd === 'exit' || cmd === 'quit') { output.innerHTML = ''; input.blur(); return; }
+
+    // ── Dynamic commands ──
+
+    if (cmd.startsWith('theme')) {
+      var parts = cmd.split(/\s+/);
+      var color = parts[1];
+      var currentTheme = (window.__yangaGetTheme && window.__yangaGetTheme()) || 'blue';
+      if (!color || !{ green:1, blue:1, red:1 }[color]) {
+        output.innerHTML = 'Usage: ' + acc('theme [green|blue|red]') + '\nCurrent: ' + acc(currentTheme);
+        return;
+      }
+      // Theme dots are no longer in the DOM — call the exposed applier directly.
+      if (window.__yangaApplyTheme) {
+        window.__yangaApplyTheme(color);
+        output.innerHTML = acc('Theme set to ' + color + '.');
+      } else {
+        output.innerHTML = acc('Theme switcher not initialized yet.');
+      }
+      return;
+    }
+
+    if (cmd === 'neofetch') { cmdNeofetch(); return; }
+    if (cmd === 'skills --detail') { cmdSkillsDetail(); return; }
+    if (cmd === 'cmatrix') { cmdCmatrix(); return; }
+    if (cmd === 'glitch') { cmdGlitch(); return; }
+    if (cmd === 'rm -rf /brain') { cmdRmBrain(); return; }
+    if (cmd === 'ghost') { cmdGhost(); return; }
+    if (cmd === 'hack') { cmdHack(); return; }
+    if (cmd === 'reboot') {
+      output.innerHTML = acc('Rebooting YANGA...');
+      sessionStorage.removeItem('yanga_booted');
+      setTimeout(function() { window.location.reload(); }, 600);
+      return;
+    }
+    if (cmd === 'sudo rm -rf /' || cmd === 'sudo rm -rf / --no-preserve-root') { cmdSudoRm(); return; }
+
+    if (cmd === 'quotes' || cmd === 'quote') {
+      var qs = window.yangaQuotes || [];
+      if (!qs.length) { output.innerHTML = acc('No quotes loaded.'); return; }
+      function esc(s) { return String(s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+      var html = '<pre style="margin:0;font-size:11px;line-height:1.5;white-space:pre-wrap;">';
+      html += acc('YANGA // archived quotes (' + qs.length + ')') + '\n\n';
+      for (var i = 0; i < qs.length; i++) {
+        var q = qs[i];
+        var src = q.source ? ' // ' + esc(q.source) : '';
+        var yr = q.year ? ' (' + esc(q.year) + ')' : '';
+        html += acc('[' + String(i + 1).padStart(2, '0') + ']') + ' "' + esc(q.text) + '"\n';
+        html += '     — ' + esc(q.author) + src + yr + '\n\n';
+      }
+      html += '</pre>';
+      output.innerHTML = html;
+      return;
+    }
+
+    // Direct navigation shortcuts
+    if (cmd === 'ai') { output.innerHTML = acc('Navigating to AI Red Teaming...'); setTimeout(function() { window.location.href = 'sections/ai-red-teaming.html'; }, 400); return; }
+    if (cmd === 'pentest' || cmd === 'pentesting') { output.innerHTML = acc('Navigating to Pentesting...'); setTimeout(function() { window.location.href = 'sections/pentesting.html'; }, 400); return; }
+    if (cmd === 'ctf' || cmd === 'writeups') { output.innerHTML = acc('Navigating to CTF & Writeups...'); setTimeout(function() { window.location.href = 'sections/ctf.html'; }, 400); return; }
+    if (cmd === 'blog') { output.innerHTML = acc('Navigating to Blog...'); setTimeout(function() { window.location.href = 'blog.html'; }, 400); return; }
+    if (cmd === 'tools') { output.innerHTML = acc('Navigating to Tools...'); setTimeout(function() { window.location.href = 'tools.html'; }, 400); return; }
+    if (cmd === 'about') { output.innerHTML = acc('Navigating to About...'); setTimeout(function() { window.location.href = 'about.html'; }, 400); return; }
+    if (cmd === 'void') { output.innerHTML = acc('Entering the void...') + ' signal lost.'; setTimeout(function() { window.location.href = 'void'; }, 600); return; }
+
+    if (cmd.startsWith('figlet')) {
+      var text = rawCmd.slice(6).trim() || 'GHOST';
+      output.innerHTML = '<pre style="margin:0;font-size:11px;line-height:1.2;color:var(--accent);">' + figlet(text) + '</pre>';
+      return;
+    }
+
+    if (cmd.startsWith('goto ')) {
+      var target = cmd.slice(5).trim();
+      if (gotos[target]) { window.location.href = gotos[target]; return; }
+      output.innerHTML = acc('Unknown destination:') + ' ' + target + '. Try: ' + Object.keys(gotos).join(', ');
+      return;
+    }
+
+    if (cmd === 'help' || cmd === '--help' || cmd === '-h') {
+      output.innerHTML = '<pre style="margin:0;font-size:11px;line-height:1.5;">'
+        + acc('YANGA Terminal') + '\n'
+        + '\n'
+        + acc('Usage:') + '\n'
+        + '  ghostsh [command]\n'
+        + '  ghostsh [command] [options]\n'
+        + '\n'
+        + acc('Navigation:') + '\n'
+        + '  ai                      Go to AI Red Teaming\n'
+        + '  pentest                 Go to Pentesting\n'
+        + '  ctf                     Go to CTF &amp; Writeups\n'
+        + '  blog                    Go to Blog\n'
+        + '  tools                   Go to Tools\n'
+        + '  about                   Go to About\n'
+        + '  void                    Enter the void\n'
+        + '  goto [page]             Navigate to a page\n'
+        + '\n'
+        + acc('Information:') + '\n'
+        + '  whoami                  Display identity\n'
+        + '  whoami --verbose        Extended identity card\n'
+        + '  cat about.txt           About YANGA\n'
+        + '  cat skills.txt          Skill overview\n'
+        + '  skills --detail         Animated skill matrix\n'
+        + '  neofetch                System info card\n'
+        + '  quotes                  List all archived quotes\n'
+        + '\n'
+        + acc('Fun:') + '\n'
+        + '  ghost                   Thermoptic camouflage\n'
+        + '  hack                    Try to hack yanga\n'
+        + '  reboot                  Replay boot sequence\n'
+        + '  figlet [text]           Render text as ASCII block art\n'
+        + '  cmatrix                 Matrix rain animation\n'
+        + '  glitch                  Glitch the page\n'
+        + '  theme [green|blue|red]  Switch site color theme\n'
+        + '\n'
+        + acc('System:') + '\n'
+        + '  clear                   Clear terminal output\n'
+        + '\n'
+        + acc('Flags:') + '\n'
+        + '  -h, --help              Show this help message\n'
+        + '\n'
+        + 'Try ' + acc('sudo rm -rf /') + ' . See what happens.\n'
+        + '</pre>';
+      return;
+    }
+
+    if (commands[cmd]) {
+      var val = typeof commands[cmd] === 'function' ? commands[cmd]() : commands[cmd];
+      output.innerHTML = val.replace(/\n/g, '<br>');
+    } else {
+      output.innerHTML = acc('Command not found:') + ' ' + cmd + '. Type ' + acc('help') + ' for available commands.';
+    }
+  });
+}
+initTerminal();
+
+// Re-init terminal on bfcache restore (back/forward navigation)
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) initTerminal();
+});
+
+// === CLICK OUTSIDE TO UNFOCUS TERMINAL ===
+document.addEventListener('click', function(e) {
+  var terminal = document.querySelector('.mini-terminal');
+  var input = document.querySelector('.term-input');
+  var output = document.querySelector('.term-output');
+  if (!terminal || !input) return;
+  if (!terminal.contains(e.target)) {
+    input.blur();
+    if (output) output.innerHTML = '';
+  }
+});
+
+// === TERMINAL GLITCH (every ~5s) ===
+(function() {
+  var term = document.querySelector('.mini-terminal');
+  if (!term) return;
+  var glitchStyle = document.createElement('style');
+  glitchStyle.textContent =
+    '@keyframes termGlitch1{0%{transform:none;opacity:1}20%{transform:skewX(-2deg) translateX(-2px);opacity:0.8}40%{transform:skewX(1deg) translateX(1px);opacity:1}60%{transform:skewX(-1deg);opacity:0.85}80%{transform:translateX(1px);opacity:0.95}100%{transform:none;opacity:1}}'
+    + '@keyframes termGlitch2{0%{clip-path:inset(0)}25%{clip-path:inset(30% 0 50% 0)}50%{clip-path:inset(60% 0 10% 0)}75%{clip-path:inset(10% 0 70% 0)}100%{clip-path:inset(0)}}';
+  document.head.appendChild(glitchStyle);
+  var glitches = [
+    function() { term.style.animation = 'termGlitch1 0.15s ease'; },
+    function() { term.style.animation = 'termGlitch2 0.12s steps(4)'; },
+    function() {
+      term.style.borderColor = 'rgba(var(--accent-rgb),1)';
+      term.style.boxShadow = '0 0 15px rgba(var(--accent-rgb),0.4)';
+      setTimeout(function() { term.style.borderColor = ''; term.style.boxShadow = ''; }, 100);
+    }
+  ];
+  function doGlitch() {
+    var g = glitches[Math.floor(Math.random() * glitches.length)];
+    g();
+    setTimeout(function() { term.style.animation = ''; }, 200);
+    setTimeout(doGlitch, 4000 + Math.random() * 2000);
+  }
+  setTimeout(doGlitch, 3000 + Math.random() * 2000);
+})();
+
+// === STICKY TERMINAL ===
+(function() {
+  var term = document.querySelector('.mini-terminal');
+  if (!term) return;
+  var placeholder = document.createElement('div');
+  placeholder.style.display = 'none';
+  term.parentNode.insertBefore(placeholder, term.nextSibling);
+  var stuck = false;
+
+  window.addEventListener('scroll', function() {
+    var rect = stuck ? placeholder.getBoundingClientRect() : term.getBoundingClientRect();
+    var triggerTop = 70; // just below nav
+
+    if (!stuck && rect.top <= triggerTop) {
+      placeholder.style.display = 'block';
+      placeholder.style.height = term.offsetHeight + 'px';
+      placeholder.style.width = '100%';
+      term.classList.add('is-stuck');
+      stuck = true;
+    } else if (stuck && placeholder.getBoundingClientRect().top > triggerTop) {
+      placeholder.style.display = 'none';
+      term.classList.remove('is-stuck');
+      stuck = false;
+    }
+  });
+})();
+
+window.addEventListener('pageshow', function(e) {
+  if (e.persisted) {
+    var inp = document.querySelector('.term-input');
+    if (inp) inp.removeAttribute('data-term-init');
+    initTerminal();
+  }
+});
+</script>
+<!-- Boot Sequence Script — reveal transition only (logo boot removed) -->
+<script>
+(function() {
+  var boot = document.getElementById('bootScreen');
+  if (!boot) return;
+  if (sessionStorage.getItem('yanga_booted')) {
+    boot.remove();
+    return;
+  }
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+  document.querySelector('.overlay').style.opacity = '0';
+  document.getElementById('matrix-bg').style.opacity = '0';
+
+  var REVEAL_DURATION = 1200; // block-dissolve transition into the main menu
+
+  function finish() {
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    sessionStorage.setItem('yanga_booted', '1');
+    window.dispatchEvent(new Event('bootComplete'));
+  }
+
+  // Black screen dissolves left-to-right to reveal the main menu.
+  function startReveal() {
+    boot.remove();
+    document.querySelector('.overlay').style.opacity = '1';
+    document.getElementById('matrix-bg').style.opacity = '0.15';
+
+    var revealGrid = document.createElement('div');
+    revealGrid.id = 'revealGrid';
+    revealGrid.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;display:grid;';
+    var bCols = Math.ceil(window.innerWidth / 40);
+    var bRows = Math.ceil(window.innerHeight / 40);
+    revealGrid.style.gridTemplateColumns = 'repeat(' + bCols + ',1fr)';
+    revealGrid.style.gridTemplateRows = 'repeat(' + bRows + ',1fr)';
+
+    var blocks = [];
+    for (var br = 0; br < bRows; br++) {
+      for (var bc = 0; bc < bCols; bc++) {
+        var block = document.createElement('div');
+        block.style.cssText = 'background:#0a0a0f;';
+        var colNorm = bc / bCols;
+        var startT = colNorm * 0.6 + Math.random() * 0.2; // left-to-right sweep with scatter
+        var fadeLen = 0.1 + Math.random() * 0.2;
+        blocks.push({ el: block, startT: startT, fadeLen: fadeLen });
+        revealGrid.appendChild(block);
+      }
+    }
+    document.body.appendChild(revealGrid);
+
+    var revealStart = performance.now();
+    function animateReveal(now) {
+      var p = (now - revealStart) / REVEAL_DURATION;
+      if (p >= 1) {
+        revealGrid.remove();
+        finish();
+        return;
+      }
+      for (var i = 0; i < blocks.length; i++) {
+        var b = blocks[i];
+        if (p >= b.startT) {
+          b.el.style.opacity = Math.max(0, 1 - (p - b.startT) / b.fadeLen);
+        }
+      }
+      requestAnimationFrame(animateReveal);
+    }
+    requestAnimationFrame(animateReveal);
+  }
+
+  requestAnimationFrame(startReveal);
+
+  // Safety: if the reveal never runs, don't leave the page stuck behind the boot screen
+  setTimeout(function() {
+    if (document.getElementById('bootScreen')) {
+      boot.remove();
+      document.querySelector('.overlay').style.opacity = '1';
+      document.getElementById('matrix-bg').style.opacity = '0.15';
+      finish();
+    }
+  }, 4000);
+})();
+</script>
