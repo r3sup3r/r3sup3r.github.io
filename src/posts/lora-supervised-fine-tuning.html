@@ -1,0 +1,419 @@
+<!--
+{
+  "title": "LoRA-based Supervised Fine-Tuning (SFT) using LLaMA Factory — YANGA",
+  "description": "End-to-end guide to fine-tuning an open-weight LLM with LoRA using LLaMA-Factory, merging adapters, and running the model locally.",
+  "layout": "base",
+  "activeNav": "blog"
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">lora-supervised-fine-tuning</span></div>
+  <h1>LoRA-based Supervised Fine-Tuning (SFT) using LLaMA Factory</h1>
+  <div class="article-meta">
+    <span>AI &middot; FINE-TUNING</span>
+    <span>February 2026</span>
+    <span>12 min read</span>
+  </div>
+</div>
+
+<article class="article-body">
+<p class="figure"><img src="{{root}}images/posts/lora-supervised-fine-tuning/cover.gabHlUjY_2srVcF.webp" alt="" loading="lazy"></p>
+
+<h2 id="objective">Objective</h2>
+
+<p>This guide walks you through the process of fine-tuning an open-weight language model using LLaMA-Factory. We’ll cover supervised fine-tuning with LoRA, merging the resulting adapters into a single model, and finally, running it on your local machine. This post details the entire workflow, from setting up your environment and configuring training to troubleshooting common issues, merging adapters, and executing the final model.</p>
+
+<h2 id="setting-up-your-environment">Setting Up Your Environment</h2>
+
+<h2 id="linux-wsl2-ubuntu">Linux (WSL2 / Ubuntu)</h2>
+
+<p>Using <code>WSL2</code> is recommended to <strong>simplify GPU access</strong> without the complexities of virtual machine bridging if you don’t want to run things directly on Windows.</p>
+
+<h2 id="python-virtual-environment">Python Virtual Environment</h2>
+
+<p>To keep your project dependencies isolated, create and activate a dedicated virtual environment:</p>
+
+<pre><code class="language-bash">noire@Noire:~$ python3 -m venv llamafactory_sft
+noire@Noire:~$ source llamafactory_sft/bin/activate
+(llamafactory_sft) noire@Noire:~$</code></pre>
+
+<h2 id="cuda-installation">CUDA Installation</h2>
+
+<p>Before proceeding, verify that your GPU is CUDA-compatible by visiting <a href="https://developer.nvidia.com/cuda-gpus" target="_blank" rel="noopener">NVIDIA’s CUDA GPU list</a>.</p>
+
+<ol>
+  <li><strong>Download CUDA:</strong>
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~$ wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda_12.2.0_535.54.03_linux.run</code></pre>
+  </li>
+  <li><strong>Run the installer:</strong>
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~$ sudo sh cuda_12.2.0_535.54.03_linux.run</code></pre>
+  <img src="{{root}}images/posts/lora-supervised-fine-tuning/CUDA_Installer.CEGFPXHl_bKszn.webp" alt="cuda_installer" loading="lazy"></li>
+  <li><strong>Confirm CUDA is available</strong>
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~$ nvidia-smi</code></pre>
+  <img src="{{root}}images/posts/lora-supervised-fine-tuning/CUDA_available.CwkvuuBP_4NNKi.webp" alt="CUDA_available.png" loading="lazy">
+You can see that I am using a <code>Quadro T1000</code></li>
+</ol>
+
+<h2 id="installing-llama-factory">Installing LLaMA-Factory</h2>
+
+<ol>
+  <li><strong>Clone the Repository:</strong>
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~$ git clone https://github.com/hiyouga/LLaMA-Factory.git
+(llamafactory_sft) noire@Noire:~$ cd LLaMA-Factory/
+(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ ls
+CITATION.cff  MANIFEST.in  README.md     assets  docker    pyproject.toml  scripts  tests
+LICENSE       Makefile     README_zh.md  data    examples  requirements    src      tests_v1</code></pre>
+  </li>
+  <li><strong>Install Dependencies:</strong>
+Navigate to the <code>requirements</code> directory to see available dependency files.
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ ls requirements/
+adam-mini.txt  aqlm.txt   bitsandbytes.txt  dev.txt   fp8-te.txt  galore.txt  hqq.txt  metrics.txt    npu.txt  sglang.txt   vllm.txt apollo.txt  badam.txt  deepspeed.txt  eetq.txt  fp8.txt  gptq.txt liger-kernel.txt  minicpm-v.txt  openmind.txt  swanlab.txt</code></pre>
+  Then, install the core requirements for LLaMA-Factory:
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ pip install -e .
+(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ pip install -r requirements/metrics.txt</code></pre>
+  First, let’s check the version of <code>llamafactory</code> you’re running. You can do this by typing:
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ llamafactory-cli version</code></pre>
+  Next, it’s a good idea to look at your environment setup. Run this command:
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ llamafactory-cli env</code></pre>
+  This will show you details like:
+<pre><code class="language-plaintext">- `llamafactory` version: 0.9.5.dev0
+- Platform: Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+- Python version: 3.12.3
+- PyTorch version: 2.10.0+cu128 (GPU)
+- Transformers version: 5.0.0
+- Datasets version: 4.0.0
+- Accelerate version: 1.11.0
+- PEFT version: 0.18.1
+- GPU type: Quadro T1000
+- GPU number: 1
+- GPU memory: 4.00GB
+- TRL version: 0.24.0
+- Git commit: 92fa3df4c4e4e338ecc1cbdc6530b118337286e3
+- Default data directory: detected</code></pre>
+  </li>
+</ol>
+
+<h2 id="getting-your-dataset-ready">Getting Your Dataset Ready</h2>
+
+<p>To use your own data, you’ll need to prepare it. Let’s say you have a custom dataset saved as <code>custom_dataset.json</code>. Here are a couple of examples of what that might look like:</p>
+
+<p><code>custom_dataset.json</code></p>
+
+<pre><code class="language-json">{"Instruction": "During initial port scanning, you find TCP 64831 running an unknown service that returns HTTP-like responses. How do you proceed?", "Response": "First, run service detection with nmap -sV. If it returns 'unknown', examine the fingerprint strings. Look for HTTP headers in the response (e.g., 'Location:', 'Set-Cookie:'). This indicates a web service, possibly a Go web framework (gorilla). Add the domain to your hosts file and browse to it. Principle: Unidentified ports that return HTTP-like data are often web applications or APIs; treat them as such and enumerate endpoints and virtual hosts."}
+
+
+&lt;SNIP&gt;
+
+
+{"Instruction": "You discover a GoPhish instance with default credentials. After logging in, where do you look for internal domain names?", "Response": "Check the 'Email Templates' section. Phishing templates contain links to fake domains (e.g., www.twitter.htb, www.paypal.htb). Extract all unique domain names. Also, check 'Landing Pages' and 'Sending Profiles' for more domains. Add them to your hosts file to see if they resolve to the same server. Principle: Phishing simulation platforms host fake versions of real sites; these domains often point to the same server and can reveal separate web applications or admin interfaces."}</code></pre>
+
+<h2 id="registering-your-dataset">Registering Your Dataset</h2>
+
+<p>You’ll need to tell <code>dataset_info.json</code> about your custom dataset. This file keeps track of all your local and online datasets. To include your own, you must define it and its content within <code>dataset_info.json</code>.</p>
+
+<p>Currently, we support datasets formatted in either Alpaca or ShareGPT style.</p>
+
+<p>Here’s what <code>dataset_info.json</code> might look like :</p>
+
+<pre><code class="language-shell">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ more data/dataset_info.json</code></pre>
+
+<pre><code class="language-json">{
+  "identity": {
+    "file_name": "identity.json"
+  },
+  "alpaca_en_demo": {
+    "file_name": "alpaca_en_demo.json"
+  },
+  "alpaca_zh_demo": {
+    "file_name": "alpaca_zh_demo.json"
+  },
+  "glaive_toolcall_en_demo": {
+    "file_name": "glaive_toolcall_en_demo.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations",
+      "tools": "tools"
+    }
+  },</code></pre>
+
+<p>Add your dataset definition, to <code>dataset_info.json</code>. This tells <strong>LLaMA-Factory</strong> how to map your JSON fields into the training pipeline. You should have something like this:</p>
+
+<pre><code class="language-shell">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ more data/dataset_info.json</code></pre>
+
+<pre><code class="language-json">{
+  "custom_dataset": {
+    "file_name": "custom_dataset.json",
+    "columns": {
+      "instruction": "Instruction",
+      "response": "Response"
+    }
+  },
+  "identity": {
+    "file_name": "identity.json"
+  },
+  "alpaca_en_demo": {
+    "file_name": "alpaca_en_demo.json"
+  },
+  "alpaca_zh_demo": {
+    "file_name": "alpaca_zh_demo.json"
+  },
+   "glaive_toolcall_en_demo": {
+    "file_name": "glaive_toolcall_en_demo.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations",
+      "tools": "tools"
+    }
+  },</code></pre>
+
+<h2 id="supervised-fine-tuning">Supervised Fine-tuning</h2>
+
+<p>When you’re looking to fine-tune a model using <strong>Supervised Fine-Tuning (SFT)</strong> with LLaMA-Factory, you’ll find helpful examples in the <code>examples/train_lora/</code> directory. Think of these as guides rather than something to just copy and paste directly. Instead of starting from scratch, it’s best to copy an existing example and adapt it.</p>
+
+<p>Here is an example  in <code>examples/train_lora/qwen3_lora_sft.yaml</code></p>
+
+<pre><code class="language-shell">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ cat examples/train_lora/qwen3_lora_sft.yaml
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507
+trust_remote_code: true
+
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+
+
+### dataset
+dataset: identity,alpaca_en_demo
+template: qwen3_nothink
+cutoff_len: 2048
+max_samples: 1000
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+
+
+### output
+output_dir: saves/qwen3-4b/lora/sft
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none  # choices: [none, wandb, tensorboard, swanlab, mlflow]
+
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+
+### eval
+# eval_dataset: alpaca_en_demo
+# val_size: 0.1
+# per_device_eval_batch_size: 1
+# eval_strategy: steps
+# eval_steps: 500</code></pre>
+
+<p>I opted for the <code>Qwen3-1.7B</code> model instead of the <code>4B</code> versions because I ran into memory issues (Out Of Memory) during the <a href="#lora-merge">export</a> process with the larger models.</p>
+
+<p><strong>Here’s the setup we used for the final training:</strong></p>
+
+<ul>
+  <li><strong>Model:</strong> We’re using <code>Qwen/Qwen3-1.7B</code> and have set <code>trust_remote_code</code> to <code>true</code>.</li>
+  <li><strong>Method:</strong> This is a supervised fine-tuning (<code>sft</code>) job using LoRA (<code>lora</code>). We’ve set the LoRA rank to 8 and are applying it to all target layers.</li>
+  <li><strong>Dataset:</strong> We’re using a custom dataset, with the <code>qwen3_nothink</code> template. The maximum sequence length is 2048 tokens, and we’re limiting the dataset to 1000 samples. We’ve allocated 16 workers for preprocessing and 4 for the data loader.</li>
+  <li><strong>Output:</strong> All results will be saved to <code>saves/qwen3-1.7b/lora/sft</code>. We’ll log progress every 10 steps, save checkpoints every 500 steps, and visualize the training loss. We’re also allowing the output directory to be overwritten and are not saving only the model weights. Reporting is turned off.</li>
+  <li><strong>Training:</strong> We’re using a batch size of 1 per device, accumulating gradients over 8 steps to simulate a larger batch. The learning rate is set to 1e-4, we’re training for 3 epochs, using a cosine learning rate scheduler with a 10% warmup. We’re also using <code>bf16</code> for reduced memory usage while keeping things stable.</li>
+</ul>
+
+<pre><code class="language-shell">### model
+model_name_or_path: Qwen/Qwen3-1.7B
+trust_remote_code: true
+
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+
+
+### dataset
+dataset: custom_dataset
+template: qwen3_nothink
+cutoff_len: 2048
+max_samples: 1000
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+
+
+### output
+output_dir: saves/qwen3-1.7b/lora/sft
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none  # choices: [none, wandb, tensorboard, swanlab, mlflow]
+
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true
+ddp_timeout: 180000000
+resume_from_checkpoint: null
+
+
+### eval
+# eval_dataset: alpaca_en_demo
+# val_size: 0.1
+# per_device_eval_batch_size: 1
+# eval_strategy: steps
+# eval_steps: 500</code></pre>
+
+<p><strong>A quick rundown of some key settings:</strong></p>
+
+<ul>
+  <li><code>model_name_or_path</code>: This is either the identifier for a model on Hugging Face or the local path to your model.</li>
+  <li><code>stage: sft</code>: This tells the system we’re doing supervised fine-tuning, which means training on instruction and response pairs.</li>
+  <li><code>finetuning_type: lora</code>: Instead of changing the entire model’s weights, we’re adding small, low-rank adapter layers.</li>
+  <li><code>lora_rank</code>: This determines how complex the adapter layers can be. A higher rank means more capacity but also uses more VRAM.</li>
+  <li><code>gradient_accumulation_steps</code>: This trick lets us use a larger effective batch size without needing more VRAM, by accumulating gradients over several steps.</li>
+  <li><code>bf16</code>: This mixed-precision format helps cut down on memory usage without sacrificing too much numerical accuracy.
+If you want deeper coverage, the official docs are excellent: <a href="https://llamafactory.readthedocs.io/en/latest/getting_started/sft.html" target="_blank" rel="noopener">here</a></li>
+</ul>
+
+<p><strong>To kick off the training, you’d run:</strong></p>
+
+<pre><code class="language-shell">llamafactory-cli train qwen3_lora_sft.yaml</code></pre>
+
+<p><strong>After training, you’ll find these files in the output directory <code>saves/qwen3-1.7b/lora/sft/</code>:</strong></p>
+
+<pre><code class="language-shell">noire@Noire:~/LLaMA-Factory$ ls saves/qwen3-1.7b/lora/sft/
+README.md            adapter_model.safetensors  chat_template.jinja  tokenizer.json         train_results.json  trainer_state.json  training_loss.png
+adapter_config.json  all_results.json           checkpoint-18        tokenizer_config.json  trainer_log.jsonl   training_args.bin</code></pre>
+
+<ul>
+  <li><code>adapter_model.safetensors</code> and <code>adapter_config.json</code>: These are your trained LoRA adapters.</li>
+  <li><code>training_loss.png</code>: A graph showing how the loss changed during training.</li>
+  <li><code>trainer_state.json</code>: Contains information about the training process.</li>
+  <li><code>checkpoint-18/</code>: A saved state of the model at a specific point in training.</li>
+</ul>
+
+<p><strong>Important Note:</strong> At this point, you only have the LoRA adapters. You don’t have a complete, standalone model yet.</p>
+
+<h2 id="merging-the-lora-adapters">Merging the LoRA Adapters</h2>
+
+<p>The next step is to merge these adapters with the base model. This process combines the base model and the adapters into a single, deployable model file.</p>
+
+<p><strong>Crucial Rule:</strong> Never try to merge adapters if your base model has been quantized.</p>
+
+<p>Always from the example directory we can find a merge configuration example <code>examples/merge_lora/qwen3_lora_sft.yaml</code>.</p>
+
+<pre><code class="language-shell">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ cat examples/merge_lora/qwen3_lora_sft.yaml
+### Note: DO NOT use quantized model or quantization_bit when merging lora adapters
+
+
+### model
+model_name_or_path: Qwen/Qwen3-4B-Instruct-2507
+adapter_name_or_path: saves/qwen3-4b/lora/sft
+template: qwen3_nothink
+trust_remote_code: true
+
+
+### export
+export_dir: saves/qwen3_sft_merged
+export_size: 5
+export_device: cpu  # choices: [cpu, auto]
+export_legacy_format: false</code></pre>
+
+<p><strong>Here’s our configuration for merging:</strong></p>
+
+<ul>
+  <li><strong>Model:</strong> <code>Qwen/Qwen3-1.7B</code></li>
+  <li><strong>Adapter:</strong> <code>saves/qwen3-1.7b/lora/sft</code></li>
+  <li><strong>Template:</strong> <code>qwen3_nothink</code></li>
+  <li><strong>Trust Remote Code:</strong> <code>true</code></li>
+  <li><strong>Export Directory:</strong> <code>merged-qwen3-1.7b</code></li>
+  <li><strong>Export Size:</strong> <code>5</code></li>
+  <li><strong>Export Device:</strong> <code>cpu</code></li>
+  <li><strong>Legacy Format:</strong> <code>false</code></li>
+</ul>
+
+<p>After we copied and edited the configuration from <code>examples/merge_lora/qwen3_lora_sft.yaml</code>.</p>
+
+<p>file we end up with something like this:</p>
+
+<pre><code class="language-shell">model_name_or_path: Qwen/Qwen3-1.7B
+adapter_name_or_path: saves/qwen3-1.7b/lora/sft
+template: qwen3_nothink
+trust_remote_code: true
+
+
+### export
+export_dir: merged-qwen3-1.7b
+export_size: 5
+export_device: cpu  # choices: [cpu, auto]
+export_legacy_format: false</code></pre>
+
+<p><strong>To perform the merge, you’d use:</strong></p>
+
+<pre><code class="language-shell">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ lamafactory-cli export merge_config.yaml`</code></pre>
+
+<p><strong>The result of the merge will be in the <code>merged-qwen3-1.7b/</code> directory:</strong></p>
+
+<pre><code class="language-shell">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ ls merged-qwen3-1.7b/
+Modelfile  chat_template.jinja  config.json  generation_config.json  model.safetensors  tokenizer.json  tokenizer_config.json</code></pre>
+
+<p class="figure"><img src="{{root}}images/posts/lora-supervised-fine-tuning/ollamamodelfile.DtBB3rKI_Z79GpJ.webp" alt="ollamamodelfile" loading="lazy"></p>
+
+<p>Now you have a fully merged, ready-to-use model and you can notice that LLaMA-Factory even generated an <strong>Ollama</strong> <code>Modelfile</code>  which can be run with <code>ollama</code> but this is a topic for another time.</p>
+
+<h2 id="running-the-model-locally">Running the Model Locally</h2>
+
+<p>You can start interacting with your newly merged model by running:</p>
+
+<pre><code class="language-bash">(llamafactory_sft) noire@Noire:~/LLaMA-Factory$ llamafactory-cli chat --model_name_or_path merged-qwen3-1.7b</code></pre>
+
+<p>Once merged, your model will function just like any other standard model you might load.</p>
+
+<ul>
+  <li><strong>Thinking porcess</strong>
+<img src="{{root}}images/posts/lora-supervised-fine-tuning/thoughtProcess.DhlQAk13_1BGQyb.webp" alt="thought" loading="lazy"></li>
+  <li><strong>Answer</strong>
+<img src="{{root}}images/posts/lora-supervised-fine-tuning/answerNmap.BwPoACwu_WQGNj.webp" alt="answer" loading="lazy"></li>
+</ul>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://llamafactory.readthedocs.io/en/latest/index.html" target="_blank" rel="noopener">llamafactory offocial documentation</a></li>
+</ul>
+
+<h2 id="feedback">Feedback</h2>
+
+<p>If you notice any errors or have suggestions for improvement, please reach out. Constructive feedback is always welcome and helps keep this content accurate and useful.</p>
+
+<p><strong>You can also check the project assosiated to this post at <a href="https://github.com/r3sup3r/lazyllama/tree/master" target="_blank" rel="noopener">lazyLLaMA</a> which is a tool to automatize this whole process.</strong></p>
+
+<p>I appreciate you taking the time to read this!</p>
+
+<p>Some information may be outdated</p>
+</article>

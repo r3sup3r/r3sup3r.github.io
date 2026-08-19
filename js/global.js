@@ -171,6 +171,9 @@
     // Posts
     { title: "Why AI Red Teaming Is Different", section: "ai", tagLabel: "POST", desc: "Three incidents, one root cause — instructions and data share a single channel in every LLM application.", tags: ["prompt injection", "ai red team", "owasp", "atlas", "trust boundary", "post"], url: "posts/why-ai-red-teaming-is-different.html" },
 
+    { title: "Huntress CTF 2024", section: "ctf", tagLabel: "WRITEUP", desc: "First CTF, written up end to end \u2014 reversing, forensics, malware and web challenges.", tags: ["ctf", "huntress", "writeup", "reversing", "forensics", "malware", "web"], url: "posts/huntress-ctf-2024.html" },
+    { title: "LoRA Supervised Fine-Tuning (LLaMA-Factory)", section: "ai", tagLabel: "GUIDE", desc: "Fine-tune an open-weight LLM with LoRA, merge the adapters, and run it locally.", tags: ["lora", "sft", "fine-tuning", "llama-factory", "qwen", "ollama", "cuda"], url: "posts/lora-supervised-fine-tuning.html" },
+
     // Section hubs
     { title: "Pentesting", section: "hub", tagLabel: "SECTION", desc: "Offensive security — web apps, privilege escalation, Active Directory, network exploitation.", tags: ["pentesting", "offensive", "network", "web", "privesc", "active directory"], url: "sections/pentesting.html" },
     { title: "AI Red Team", section: "hub", tagLabel: "SECTION", desc: "AI security research — prompt injection, model attacks, LLM vulnerabilities.", tags: ["ai", "red team", "llm", "prompt injection", "adversarial"], url: "sections/ai-red-teaming.html" },
