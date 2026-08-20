@@ -1,7 +1,7 @@
 <!--
 {
   "title": "YANGA — Penetration Testing & Security Research",
-  "description": "Cybersecurity research blog covering penetration testing, AI red teaming, and blockchain security.",
+  "description": "Cybersecurity research blog covering penetration testing, AI security, and offensive security.",
   "layout": "base",
   "activeNav": "home",
   "bootScreen": "<div id=\"bootScreen\" style=\"position:fixed;inset:0;background:#0a0a0f;z-index:99999;overflow:hidden;\"><canvas id=\"bootCanvas\" style=\"display:block;image-rendering:pixelated;\"></canvas><div style=\"position:fixed;inset:0;z-index:100000;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px);\"></div></div>"
@@ -13,34 +13,10 @@
     <div class="home-main">
       <section class="hero">
         <h1><span class="flag-green">Offensive</span> <span class="flag-red">Security</span></h1>
-        <p class="hero-lede">Penetration testing notes and hands-on AI red team labs &mdash; prompt injection, injection through retrieved data, tool abuse, and unsafe output handling. Written while making the move from breaking applications to breaking the models inside them.</p>
-        <div class="hero-tags">
-          <a href="blog.html">All writing</a>
-          <a href="about.html">whoami</a>
-        </div>
-        <div class="quote-typer-wrap">
-          <div class="quote-typer">
-            <div class="quote-text"><span id="quote-output"></span><span class="typer-cursor"></span></div>
-            <div class="quote-attribution" id="quote-attr">
-              <span class="quote-author" id="quote-author"></span>
-              <span class="quote-source" id="quote-source"></span>
-              <span class="quote-year" id="quote-year"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="term-block">
-          <div class="term-block-label">// interactive &mdash; type <span>help</span></div>
-        <div class="mini-terminal">
-          <div class="term-input-line">
-            <span class="term-prompt">guest@yanga:~$&nbsp;</span>
-            <input class="term-input" type="text" autocomplete="off" spellcheck="false" placeholder="type help…">
-          </div>
-          <div class="term-output"></div>
-        </div>
-        <div class="term-hint">This terminal is interactive — try a few commands</div>
-        </div>
+        <p class="hero-sub">Penetration testing and AI agent security.</p>
       </section>
+
+
 
 
     </div>
@@ -742,14 +718,14 @@ function initTerminal() {
   var commands = {
     help: '__HELP__',
     ls: 'pentesting/  ai-red-team/  ctf/  blog/  tools/  about.txt  skills.txt',
-    whoami: 'YANGA — pentester pivoting to AI red teaming. Breaking systems to make them stronger.',
+    whoami: 'YANGA — pentester pivoting to AI security. Breaking systems to make them stronger.',
     'cat about.txt': 'Offensive security researcher building <a href="about.html">YANGA</a> — a hub for pentesting, AI security, and emerging threat research.',
     'cat skills.txt': 'Web App Pentesting ██████████ 100%\nActive Directory   █████████░ 90%\nWiFi Hacking       ████████░░ 80%\nAI Security        ███░░░░░░░ 30%',
     // Easter eggs
     'rm -rf /': acc('Permission denied.') + ' You don\'t have that kind of power. Try with ' + acc('sudo') + ' if you dare.',
     'ping google.com': 'PING google.com (142.250.80.46): 56 data bytes\n' + acc('all packets intercepted by yanga') + '\n--- 0 packets transmitted, 0 received, 100% loss ---',
     'nmap yanga': 'Starting Nmap 7.94 ( https://nmap.org )\nPORT     STATE   SERVICE\n22/tcp   filtered ssh\n80/tcp   open     http\n443/tcp  open     https\n1337/tcp open     ' + acc('ghost-protocol') + '\n8080/tcp filtered http-proxy\nNmap done: ' + acc('1 host up') + ', scanned in 0.42s',
-    'whoami --verbose': 'Name:    YANGA\nAlias:   @yanga\nRole:    Pentester → AI Red Teamer\nMission: Break AI systems before they break us\nETA:     2028\nStatus:  ' + acc('ACTIVE'),
+    'whoami --verbose': 'Name:    YANGA\nAlias:   @yanga\nRole:    Pentester → AI Security\nMission: Break AI systems before they break us\nETA:     2028\nStatus:  ' + acc('ACTIVE'),
     'cat /etc/shadow': acc('Permission denied.') + ' But nice instinct.',
     'matrix': acc('You take the red pill, you stay in Wonderland...'),
     'sl': '      ====        ________\n  _D _|  |_______/        \\__I_\n   |(_)---  |   H\\________/ |  |\n   /     |  |   H  |  |     |  |\n  |      |  |   H  |__|     |  |\n  |_____||__|___H__|__|_____|__|\n    O    O      O  / /     O   O\n   _______________/ /____________\n  |_______________|/____________|',
@@ -857,7 +833,7 @@ function initTerminal() {
     }
 
     // Direct navigation shortcuts
-    if (cmd === 'ai') { output.innerHTML = acc('Navigating to AI Red Teaming...'); setTimeout(function() { window.location.href = 'sections/ai-red-teaming.html'; }, 400); return; }
+    if (cmd === 'ai') { output.innerHTML = acc('Navigating to AI Security...'); setTimeout(function() { window.location.href = 'sections/ai-red-teaming.html'; }, 400); return; }
     if (cmd === 'pentest' || cmd === 'pentesting') { output.innerHTML = acc('Navigating to Pentesting...'); setTimeout(function() { window.location.href = 'sections/pentesting.html'; }, 400); return; }
     if (cmd === 'ctf' || cmd === 'writeups') { output.innerHTML = acc('Navigating to CTF & Writeups...'); setTimeout(function() { window.location.href = 'sections/ctf.html'; }, 400); return; }
     if (cmd === 'blog') { output.innerHTML = acc('Navigating to Blog...'); setTimeout(function() { window.location.href = 'blog.html'; }, 400); return; }
@@ -887,7 +863,7 @@ function initTerminal() {
         + '  ghostsh [command] [options]\n'
         + '\n'
         + acc('Navigation:') + '\n'
-        + '  ai                      Go to AI Red Teaming\n'
+        + '  ai                      Go to AI Security\n'
         + '  pentest                 Go to Pentesting\n'
         + '  ctf                     Go to CTF &amp; Writeups\n'
         + '  blog                    Go to Blog\n'
@@ -1026,7 +1002,7 @@ window.addEventListener('pageshow', function(e) {
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
   document.querySelector('.overlay').style.opacity = '0';
-  document.getElementById('matrix-bg').style.opacity = '0';
+  (document.getElementById('matrix-bg')||{style:{}}).style.opacity = '0';
 
   var REVEAL_DURATION = 1200; // block-dissolve transition into the main menu
 
@@ -1041,7 +1017,7 @@ window.addEventListener('pageshow', function(e) {
   function startReveal() {
     boot.remove();
     document.querySelector('.overlay').style.opacity = '1';
-    document.getElementById('matrix-bg').style.opacity = '0.15';
+    (document.getElementById('matrix-bg')||{style:{}}).style.opacity = '0.15';
 
     var revealGrid = document.createElement('div');
     revealGrid.id = 'revealGrid';
@@ -1091,7 +1067,7 @@ window.addEventListener('pageshow', function(e) {
     if (document.getElementById('bootScreen')) {
       boot.remove();
       document.querySelector('.overlay').style.opacity = '1';
-      document.getElementById('matrix-bg').style.opacity = '0.15';
+      (document.getElementById('matrix-bg')||{style:{}}).style.opacity = '0.15';
       finish();
     }
   }, 4000);

@@ -168,9 +168,8 @@
   // ── SITE-WIDE SEARCH INDEX ──
   // All searchable content — urls are relative to yanga root
   const searchIndex = [
-    { title: "Pentesting", section: "hub", tagLabel: "SECTION", desc: "Offensive security \u2014 network and web exploitation, privilege escalation, Active Directory.", tags: ["pentesting", "offensive", "network", "web"], url: "sections/pentesting.html" },
-    { title: "AI Red Team", section: "hub", tagLabel: "SECTION", desc: "Attacking LLM applications and the agent infrastructure around them.", tags: ["ai", "red team", "llm", "prompt injection"], url: "sections/ai-red-teaming.html" },
-    { title: "CTF & Writeups", section: "hub", tagLabel: "SECTION", desc: "Machine walkthroughs and capture the flag writeups.", tags: ["ctf", "writeup", "walkthrough"], url: "sections/ctf.html" },
+    { title: "Penetration Testing", section: "hub", tagLabel: "SECTION", desc: "Web application (WAPT) and infrastructure penetration testing.", tags: ["pentesting", "wapt", "web", "infrastructure", "network"], url: "sections/pentesting.html" },
+    { title: "AI Agent Security", section: "hub", tagLabel: "SECTION", desc: "Attacking LLM applications and the agent infrastructure around them.", tags: ["ai", "red team", "llm", "prompt injection"], url: "sections/ai-red-teaming.html" },
     { title: "About", section: "site", tagLabel: "PROFILE", desc: "Who I am and how to get in touch.", tags: ["about", "whoami", "contact"], url: "about.html" },
     { title: "Blog", section: "site", tagLabel: "INDEX", desc: "All articles.", tags: ["blog", "articles", "writing"], url: "blog.html" },
   ];
@@ -350,7 +349,7 @@
   // -------------------------------------------
   // 5. MATRIX RAIN VISIBILITY OPTIMIZATION
   // -------------------------------------------
-  const canvas = document.getElementById('matrix-bg');
+  const canvas = (document.getElementById('matrix-bg')||{style:{}});
   let matrixInterval = null;
 
   // The matrix.js sets up its own interval — we'll pause/resume by toggling canvas visibility
