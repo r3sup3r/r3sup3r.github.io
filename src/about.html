@@ -1,6 +1,6 @@
 <!--
 {
-  "title": "whoami — GHOST.SEC",
+  "title": "whoami — YANGA",
   "description": "Cybersecurity professional focused on penetration testing and AI security — offensive security, LLM red teaming, and hands-on labs.",
   "layout": "base",
   "activeNav": "about",
@@ -511,14 +511,236 @@
   @media (max-width: 768px) {
     .stat-row { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* ── SKILL MAP (MCP / agent security) ── */
+  .skillmap-lead { font-family: var(--font-prose); color: var(--text-primary); font-size: 0.9rem; line-height: 1.7; max-width: 720px; margin: 0 0 18px; }
+  .prog-track { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+  .prog-stage { font-family: var(--font-display); font-size: 0.58rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); border: 1px solid var(--border); border-radius: 100px; padding: 6px 13px; display: inline-flex; align-items: center; gap: 8px; }
+  .prog-stage.active { color: var(--accent); border-color: var(--border-hover); background: rgba(var(--accent-rgb),0.06); }
+  .prog-stage .pdot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+  .prog-stage.active .pdot { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 2s ease-in-out infinite; }
+  .prog-arrow { color: var(--text-muted); font-family: var(--font-body); font-size: 0.7rem; }
+  .skill-branches { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .branch { background: rgba(10,10,15,0.72); border: 1px solid var(--border); border-top: 2px solid var(--accent); border-radius: 8px; padding: 18px; transition: all 0.2s; }
+  .branch:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+  .branch-title { font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-bright); margin-bottom: 12px; display: flex; align-items: center; gap: 9px; }
+  .branch-title i { color: var(--accent); font-size: 0.85rem; width: 16px; text-align: center; }
+  .branch-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .branch-tag { font-family: var(--font-body); font-size: 0.67rem; color: var(--text-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 4px 9px; }
+  .skill-proof { font-family: var(--font-prose); font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; margin-top: 16px; padding: 13px 16px; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 4px; }
+  .skill-proof a { color: var(--accent); text-decoration: none; }
+  .skill-proof a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .skill-branches { grid-template-columns: 1fr; }
+  }
+
+  /* ── LAYOUT B: sidebar + main ── */
+  .about-layout { display: grid; grid-template-columns: 250px 1fr; gap: 28px; align-items: start; }
+  .about-side { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 20px; }
+  .side-card { background: rgba(10,10,15,0.72); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+  .side-id { display: flex; flex-direction: column; gap: 11px; align-items: flex-start; }
+  .side-id .op-avatar { width: 60px; height: 60px; font-size: 1.5rem; }
+  .side-id h2 { font-family: var(--font-display); font-size: 1.1rem; color: var(--text-bright); letter-spacing: 2px; margin: 0; }
+  .side-role { font-family: var(--font-body); font-size: 0.64rem; color: var(--accent); letter-spacing: 0.5px; line-height: 1.5; }
+  .side-btns { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 4px; }
+  .side-btns .op-link { justify-content: center; }
+  .side-pgp { font-family: var(--font-body); font-size: 0.62rem; color: var(--text-muted); line-height: 1.4; }
+  .side-title { font-family: var(--font-display); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+  .side-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .side-stat { text-align: center; padding: 11px 6px; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 6px; }
+  .side-stat .n { font-family: var(--font-display); font-size: 1.05rem; color: var(--text-bright); }
+  .side-stat .l { font-family: var(--font-display); font-size: 0.48rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin-top: 3px; }
+  .about-side .lang-grid { grid-template-columns: 1fr; gap: 8px; }
+  .about-side .lang-row { padding: 9px 11px; }
+  .about-main { min-width: 0; }
+  .about-main > .about-section:first-of-type { margin-top: 0; }
+  .main-lead { font-family: var(--font-prose); color: var(--text-primary); font-size: 0.95rem; line-height: 1.75; margin: 0 0 30px; }
+  @media (max-width: 860px) {
+    .about-layout { grid-template-columns: 1fr; }
+    .about-side { position: static; }
+    .about-side .lang-grid { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 
 <section class="project-hero">
   <h1>whoami</h1>
-  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><span class="current">whoami</span></div>
-  <p class="project-tagline">Cybersecurity professional focused on penetration testing and AI security.</p>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">ghostsec</a><span class="sep">/</span><span class="current">whoami</span></div>
   <div class="accent-bar green"></div>
 </section>
 
 <div class="about-wrap">
+  <div class="about-layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="about-side">
+      <div class="side-card side-id">
+        <div class="op-avatar"><i class="fa-solid fa-ghost"></i></div>
+        <h2>YANGA</h2>
+        <div class="side-role">Penetration Tester · AI Red Teamer · Polyglot</div>
+        <span class="avail"><span class="dot"></span>Open to offensive &amp; AI security roles</span>
+        <div class="side-btns">
+          <a href="#" class="op-link op-cta"><i class="fa-solid fa-download"></i> Download CV</a>
+          <a href="#" class="op-link"><i class="fa-brands fa-github"></i> GitHub</a>
+          <a href="#" class="op-link"><i class="fa-brands fa-linkedin-in"></i> LinkedIn</a>
+          <a href="#" class="op-link"><i class="fa-solid fa-envelope"></i> Email</a>
+        </div>
+        <div class="side-pgp">PGP key available on request.</div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Stats</div>
+        <div class="side-stats">
+          <div class="side-stat"><div class="n">7</div><div class="l">Languages</div></div>
+          <div class="side-stat"><div class="n">OSCP</div><div class="l">In progress</div></div>
+          <div class="side-stat"><div class="n">40+</div><div class="l">Boxes</div></div>
+          <div class="side-stat"><div class="n">12</div><div class="l">Writeups</div></div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Languages</div>
+        <div class="lang-grid">
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">French <span class="code">FR</span></span><span class="lang-level">Native</span></div><div class="lang-meter"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></div></div>
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">Italian <span class="code">IT</span></span><span class="lang-level">Native</span></div><div class="lang-meter"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></div></div>
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">English <span class="code">EN</span></span><span class="lang-level">Professional</span></div><div class="lang-meter"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span></div></div>
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">Spanish <span class="code">ES</span></span><span class="lang-level">Conversational</span></div><div class="lang-meter"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">Serbian <span class="code">SR</span></span><span class="lang-level">Conversational</span></div><div class="lang-meter"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">German <span class="code">DE</span></span><span class="lang-level">Learning</span></div><div class="lang-meter"><span class="pip learn"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
+          <div class="lang-row"><div class="lang-info"><span class="lang-name">Russian <span class="code">RU</span></span><span class="lang-level">Learning</span></div><div class="lang-meter"><span class="pip learn"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="about-main">
+      <p class="main-lead">Cybersecurity professional focused on penetration testing and AI security. I bring an offensive-security foundation to the newest attack surface — large language models and the systems built around them — and I document how attacks work, and why, so others can learn from them.</p>
+
+      <!-- WHAT I DO -->
+      <section class="about-section">
+        <div class="about-section-head">01 · WHAT I DO</div>
+        <div class="focus-grid">
+          <div class="focus-item green">
+            <div class="fi-icon"><i class="fa-solid fa-robot"></i></div>
+            <div class="fi-text"><h4>AI Red Teaming</h4><p>Prompt injection, jailbreaks, RAG poisoning and agent abuse — mapped to the OWASP LLM Top 10, with working proof-of-concepts.</p></div>
+          </div>
+          <div class="focus-item blue">
+            <div class="fi-icon"><i class="fa-solid fa-terminal"></i></div>
+            <div class="fi-text"><h4>Offensive Security</h4><p>Web, network and Active Directory testing: enumeration, exploitation, privilege escalation, and clear, reproducible reporting.</p></div>
+          </div>
+          <div class="focus-item pink">
+            <div class="fi-icon"><i class="fa-solid fa-pen-nib"></i></div>
+            <div class="fi-text"><h4>Writing &amp; Teaching</h4><p>Hands-on labs and explainers that turn an attack into something you can actually learn from.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MCP / AGENT SECURITY -->
+      <section class="about-section">
+        <div class="about-section-head">02 · MCP / AGENT SECURITY</div>
+        <p class="skillmap-lead">Deep-specializing in the security of AI-agent infrastructure — MCP servers, tool-calling, and the plumbing between a model and the real world. It's an application-security discipline in an AI costume: the systems knowledge runs deep, the surface is new and barely tested. Foundation solid; the specialization I'm building in the open, one lab at a time.</p>
+        <div class="prog-track">
+          <span class="prog-stage active"><span class="pdot"></span>Foundations</span>
+          <span class="prog-arrow">&rarr;</span>
+          <span class="prog-stage"><span class="pdot"></span>Advanced</span>
+          <span class="prog-arrow">&rarr;</span>
+          <span class="prog-stage"><span class="pdot"></span>Research</span>
+        </div>
+        <div class="skill-branches">
+          <div class="branch">
+            <div class="branch-title"><i class="fa-solid fa-diagram-project"></i>Protocol Fluency</div>
+            <div class="branch-tags"><span class="branch-tag">JSON-RPC 2.0</span><span class="branch-tag">Lifecycle &amp; capabilities</span><span class="branch-tag">Tools · Resources · Prompts</span><span class="branch-tag">stdio · Streamable HTTP</span></div>
+          </div>
+          <div class="branch">
+            <div class="branch-title"><i class="fa-solid fa-shield-halved"></i>Trust-Boundary Reasoning</div>
+            <div class="branch-tags"><span class="branch-tag">Data provenance</span><span class="branch-tag">Privilege mapping</span><span class="branch-tag">Confused deputy</span><span class="branch-tag">Lethal trifecta</span></div>
+          </div>
+          <div class="branch">
+            <div class="branch-title"><i class="fa-solid fa-crosshairs"></i>Offensive Primitives</div>
+            <div class="branch-tags"><span class="branch-tag">Prompt &amp; indirect injection</span><span class="branch-tag">Tool poisoning &amp; shadowing</span><span class="branch-tag">SSRF · RCE · injection · IDOR</span><span class="branch-tag">OAuth · DNS rebinding</span></div>
+          </div>
+          <div class="branch">
+            <div class="branch-title"><i class="fa-solid fa-screwdriver-wrench"></i>Tooling &amp; Automation</div>
+            <div class="branch-tags"><span class="branch-tag">MCP Inspector</span><span class="branch-tag">Scripted clients</span><span class="branch-tag">Interception</span><span class="branch-tag">Fuzzing · differential</span><span class="branch-tag">Lab construction</span></div>
+          </div>
+          <div class="branch">
+            <div class="branch-title"><i class="fa-solid fa-magnifying-glass"></i>Code Audit</div>
+            <div class="branch-tags"><span class="branch-tag">Dangerous sinks</span><span class="branch-tag">Tool-registration paths</span><span class="branch-tag">Authz enforcement</span><span class="branch-tag">Secret handling</span></div>
+          </div>
+          <div class="branch">
+            <div class="branch-title"><i class="fa-solid fa-flask"></i>Research &amp; Communication</div>
+            <div class="branch-tags"><span class="branch-tag">Invariant identification</span><span class="branch-tag">State-machine analysis</span><span class="branch-tag">Impact validation</span><span class="branch-tag">Reporting · CWE · PoC</span></div>
+          </div>
+        </div>
+        <div class="skill-proof">Framework from my self-authored <a href="#">MCP Offensive Security curriculum</a> (6 phases · 30+ labs · 5 CTF tiers) — demonstrated hands-on in the <a href="#">mcp-offsec-labs</a>, with LAB 00–01 shipping.</div>
+      </section>
+
+      <!-- SELECTED WORK -->
+      <section class="about-section">
+        <div class="about-section-head">03 · SELECTED WORK</div>
+        <div class="sel-work">
+          <a href="#" class="work-row">
+            <span class="work-tag">Lab</span>
+            <div class="work-body"><h4>Prompt Injection Lab</h4><p>Hands-on environment demonstrating direct and indirect injection against an LLM app, with bypasses and mitigations.</p></div>
+            <span class="work-arrow">&rarr;</span>
+          </a>
+          <a href="#" class="work-row">
+            <span class="work-tag">Curriculum</span>
+            <div class="work-body"><h4>MCP Offensive Security</h4><p>A self-authored 6-phase program taking a pentester from MCP internals to novel vulnerability research.</p></div>
+            <span class="work-arrow">&rarr;</span>
+          </a>
+          <a href="#" class="work-row">
+            <span class="work-tag">Series</span>
+            <div class="work-body"><h4>Road to AI Red Team</h4><p>A ground-up series taking a pentester from LLM fundamentals to real adversarial testing of AI systems.</p></div>
+            <span class="work-arrow">&rarr;</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- CREDENTIALS & CURRENTLY -->
+      <section class="about-section">
+        <div class="about-section-head">04 · CREDENTIALS &amp; CURRENTLY</div>
+        <div class="cred-split">
+          <div class="cred-panel">
+            <h4>Certifications</h4>
+            <div class="cert-list">
+              <div class="cert-row"><span class="cert-name">OSCP — Offensive Security Certified Professional</span><span class="cert-state wip">In progress</span></div>
+              <div class="cert-row"><span class="cert-name">Hack The Box / TryHackMe</span><span class="cert-state done">Active</span></div>
+            </div>
+          </div>
+          <div class="cred-panel">
+            <h4>Currently</h4>
+            <div class="obj-list">
+              <div class="obj-item"><span class="obj-status active"></span><span class="obj-text">Preparing for the OSCP through the PWK labs</span><span class="obj-tag green">Focus</span></div>
+              <div class="obj-item"><span class="obj-status active"></span><span class="obj-text">Building the MCP Offensive Security labs</span><span class="obj-tag pink">Building</span></div>
+              <div class="obj-item"><span class="obj-status queued"></span><span class="obj-text">Publishing the Road to AI Red Team series</span><span class="obj-tag gold">Writing</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ARSENAL -->
+      <section class="about-section">
+        <div class="about-section-head">05 · ARSENAL</div>
+        <div class="arsenal-group">
+          <div class="arsenal-label">Recon &amp; Exploitation</div>
+          <div class="stack-grid"><span class="stack-tag">nmap</span><span class="stack-tag">Burp Suite</span><span class="stack-tag">ffuf</span><span class="stack-tag">Metasploit</span><span class="stack-tag">sqlmap</span><span class="stack-tag">Nuclei</span></div>
+        </div>
+        <div class="arsenal-group">
+          <div class="arsenal-label">Active Directory</div>
+          <div class="stack-grid"><span class="stack-tag">BloodHound</span><span class="stack-tag">Impacket</span><span class="stack-tag">CrackMapExec</span><span class="stack-tag">Kerberos</span><span class="stack-tag">Responder</span></div>
+        </div>
+        <div class="arsenal-group">
+          <div class="arsenal-label">AI / LLM Security</div>
+          <div class="stack-grid"><span class="stack-tag">MCP Inspector</span><span class="stack-tag">Prompt Injection</span><span class="stack-tag">RAG Attacks</span><span class="stack-tag">OWASP LLM Top 10</span><span class="stack-tag">MITRE ATLAS</span></div>
+        </div>
+        <div class="arsenal-group">
+          <div class="arsenal-label">Tooling &amp; Languages</div>
+          <div class="stack-grid"><span class="stack-tag">Python</span><span class="stack-tag">Bash</span><span class="stack-tag">TypeScript</span><span class="stack-tag">Linux</span><span class="stack-tag">Docker</span><span class="stack-tag">Git</span></div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
 </div>
