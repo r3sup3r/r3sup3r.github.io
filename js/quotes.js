@@ -119,6 +119,7 @@
 
   function typeQuote() {
     var i = 0;
+    try { window.dispatchEvent(new Event('quotestart')); } catch (e) {}
     attrEl.classList.remove('visible');
     function typeChar() {
       if (i <= quote.text.length) {
@@ -128,6 +129,7 @@
       } else {
         // Show attribution container, then decode-compose each part
         attrEl.classList.add('visible');
+        try { window.dispatchEvent(new Event('quoteend')); } catch (e) {}
         var authorText = '\u2014 ' + quote.author;
         var sourceText = quote.source ? ' // ' + quote.source : '';
         var yearText = ' (' + quote.year + ')';

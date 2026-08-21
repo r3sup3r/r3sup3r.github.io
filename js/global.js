@@ -570,115 +570,66 @@
       try { localStorage.setItem('yanga_theme', name); } catch(e) {}
       document.cookie = 'yanga_theme=' + name + ';path=/;max-age=31536000;SameSite=Lax';
     }
-    // Update active state on orbital dots
-    document.querySelectorAll('.theme-dot').forEach(function(d) {
-      d.classList.toggle('active', d.dataset.theme === name);
-    });
+    // Sync the CLI-flag chip
+    var _chip = document.querySelector('.theme-chip');
+    if (_chip) {
+      _chip.setAttribute('data-theme', name);
+      var _v = _chip.querySelector('.theme-chip-val');
+      if (_v) _v.textContent = name;
+    }
   }
 
-  // Build the Corruption theme switcher (in nav bar)
+  // ── Theme selector: CLI-flag chip (cycles the accent colour) ──
   var navUtils = document.querySelector('.nav-utils');
-  var corruptSwitcher = document.createElement('div');
-  corruptSwitcher.className = 'corrupt-switcher';
-  corruptSwitcher.title = 'Theme color';
+  var cycleOrder = ['blue', 'green', 'red'];
+  var chip = document.createElement('button');
+  chip.type = 'button';
+  chip.className = 'theme-chip';
+  chip.title = 'Cycle accent colour';
+  chip.setAttribute('aria-label', 'Cycle accent colour');
+  chip.innerHTML =
+    '<span class="theme-chip-glyph" aria-hidden="true">\u25D0</span>' +
+    '<span class="theme-chip-key">accent</span>' +
+    '<span class="theme-chip-sep">:</span>' +
+    '<span class="theme-chip-val">blue</span>';
+  chip.addEventListener('click', function(e) {
+    e.preventDefault(); e.stopPropagation();
+    var cur = chip.getAttribute('data-theme') || 'blue';
+    var i = cycleOrder.indexOf(cur);
+    applyTheme(cycleOrder[(i + 1) % cycleOrder.length]);
+  });
+  if (navUtils) navUtils.insertBefore(chip, navUtils.firstChild);
 
-  var dotOrder = ['red', 'blue', 'green'];
-  dotOrder.forEach(function(name) {
-    var dot = document.createElement('button');
-    dot.className = 'theme-dot cdot cdot--' + name;
-    dot.dataset.theme = name;
-    dot.title = name.charAt(0).toUpperCase() + name.slice(1) + ' theme';
-    dot.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      applyTheme(name);
-    });
-    corruptSwitcher.appendChild(dot);
+  // keyboard easter egg: press "t" (outside inputs) to cycle the theme
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 't' && e.key !== 'T') return;
+    var el = document.activeElement;
+    if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
+    var cur = (chip.getAttribute('data-theme')) || 'blue';
+    applyTheme(cycleOrder[(cycleOrder.indexOf(cur) + 1) % cycleOrder.length]);
   });
 
-  // Theme switcher hidden — DOM insertion disabled.
-  // (Dots are kept in `corruptSwitcher` so internal logic that references them doesn't error.)
-  // To restore the UI, re-enable the navUtils.insertBefore(...) call below.
-  // if (navUtils) { navUtils.insertBefore(corruptSwitcher, navUtils.firstChild); }
-
-  // Micro-glitch: randomly jitter a non-active dot every few seconds
-  setInterval(function() {
-    var inactive = corruptSwitcher.querySelectorAll('.cdot:not(.active)');
-    if (!inactive.length) return;
-    var pick = inactive[Math.random() * inactive.length | 0];
-    pick.classList.add('cdot--jitter');
-    setTimeout(function() { pick.classList.remove('cdot--jitter'); }, 200);
-  }, 3000);
-
-  // Inject Corruption Switcher CSS
   var cswCSS = document.createElement('style');
   cswCSS.textContent = '\
-.corrupt-switcher {\
-  display: flex; align-items: center; gap: 7px;\
-  padding: 4px 6px; margin-right: 4px;\
-  position: relative;\
-  border: 1px solid rgba(255,255,255,0.06);\
-  background: rgba(255,255,255,0.02);\
+.theme-chip {\
+  display: inline-flex; align-items: center; gap: 5px;\
+  font-family: var(--font-body); font-size: 0.62rem; letter-spacing: 1px;\
+  background: rgba(var(--accent-rgb),0.04);\
+  border: 1px solid rgba(var(--accent-rgb),0.18);\
+  border-radius: 5px; padding: 5px 9px; margin-right: 6px;\
+  color: var(--text-secondary); cursor: pointer; line-height: 1;\
+  transition: border-color .25s, background .25s, box-shadow .25s;\
 }\
-.corrupt-switcher:hover {\
-  border-color: rgba(var(--accent-rgb),0.15);\
-  background: rgba(var(--accent-rgb),0.03);\
+.theme-chip:hover {\
+  border-color: rgba(var(--accent-rgb),0.42);\
+  background: rgba(var(--accent-rgb),0.09);\
+  box-shadow: 0 0 10px rgba(var(--accent-rgb),0.15);\
 }\
-.nav-utils .corrupt-switcher .cdot,\
-.cdot {\
-  width: 10px !important; height: 10px !important;\
-  min-width: 10px; min-height: 10px;\
-  border: none !important; padding: 0 !important;\
-  border-radius: 0 !important;\
-  cursor: pointer; position: relative;\
-  transition: opacity 0.4s, box-shadow 0.4s, transform 0.15s;\
-  opacity: 0.28;\
-  display: block !important;\
-  font-size: 0;\
-}\
-.cdot::before {\
-  content: ""; position: absolute; inset: -2px;\
-  border: 1px solid rgba(255,255,255,0.05);\
-  pointer-events: none;\
-  transition: border-color 0.4s;\
-}\
-.cdot--red   { background: ' + THEMES.red.hex + ' !important; }\
-.cdot--blue  { background: ' + THEMES.blue.hex + ' !important; }\
-.cdot--green { background: ' + THEMES.green.hex + ' !important; }\
-.cdot.active {\
-  opacity: 1 !important;\
-  box-shadow:\
-    0 0 4px currentColor,\
-    0 0 10px currentColor,\
-    inset 0 0 2px rgba(255,255,255,0.25);\
-}\
-.cdot.active::before {\
-  border-color: rgba(255,255,255,0.2);\
-}\
-.cdot.active::after {\
-  content: ""; position: absolute;\
-  inset: -1px;\
-  background: inherit; opacity: 0.45; filter: blur(4px);\
-  z-index: -1;\
-}\
-.cdot:not(.active):hover {\
-  opacity: 0.6 !important;\
-  transform: scaleY(1.6);\
-  box-shadow: 0 0 5px currentColor;\
-}\
-.cdot--jitter {\
-  animation: cdot-jitter 0.2s steps(2) 1 !important;\
-}\
-@keyframes cdot-jitter {\
-  0%   { transform: translate(0, 0); }\
-  25%  { transform: translate(2px, -1px); opacity: 0.55; }\
-  50%  { transform: translate(-1px, 1px); opacity: 0.12; }\
-  75%  { transform: translate(1px, 0); opacity: 0.45; }\
-  100% { transform: translate(0, 0); }\
-}\
-.corrupt-switcher:hover .cdot:not(.active) {\
-  opacity: 0.4 !important;\
-}\
+.theme-chip:active { transform: translateY(1px); }\
+.theme-chip-glyph { color: var(--accent); font-size: 0.74rem; text-shadow: 0 0 6px rgba(var(--accent-rgb),0.6); transition: color .4s ease, text-shadow .4s ease; }\
+.theme-chip-key { color: var(--text-muted); }\
+.theme-chip-sep { color: var(--text-faint); opacity: 0.7; }\
+.theme-chip-val { color: var(--accent); font-weight: 700; transition: color .4s ease; }\
 ';
   document.head.appendChild(cswCSS);
 
@@ -769,12 +720,12 @@
           overlay.appendChild(el);
         });
 
-        // 7. Update nav active states (preserve corruption switcher)
+        // 7. Update nav active states (preserve the theme chip)
         var newNav = newOverlay.querySelector('nav');
         var curNav = overlay.querySelector('nav');
         if (newNav && curNav) {
-          // Save the corruption switcher before replacing nav HTML
-          var savedSwitcher = curNav.querySelector('.corrupt-switcher');
+          // Save the theme chip before replacing nav HTML
+          var savedSwitcher = curNav.querySelector('.theme-chip');
           curNav.innerHTML = newNav.innerHTML;
           // Re-insert the switcher into the new nav-utils
           if (savedSwitcher) {
@@ -958,3 +909,27 @@
   })();
 
 })();
+
+// New-quote button (whoami) — delegated (survives PJAX). Locked while typing.
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('.quote-refresh');
+  if (!b || b.disabled) return;
+  if (typeof window.initQuotes === 'function') { b.disabled = true; window.initQuotes(); }
+});
+window.addEventListener('quotestart', function () {
+  var b = document.querySelector('.quote-refresh'); if (b) b.disabled = true;
+});
+window.addEventListener('quoteend', function () {
+  var b = document.querySelector('.quote-refresh'); if (b) b.disabled = false;
+});
+
+// Home avatar: the closing animation plays once then freezes on the last frame.
+// A fresh load / refresh replays it naturally; on bfcache restore (back/forward)
+// the frozen frame is shown, so kick it to replay from the start.
+window.addEventListener('pageshow', function (e) {
+  if (!e.persisted) return;
+  var img = document.querySelector('.id-avatar img');
+  if (!img) return;
+  var base = (img.getAttribute('src') || '').split('?')[0];
+  if (base) img.setAttribute('src', base + '?r=' + Date.now());
+});

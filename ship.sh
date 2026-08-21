@@ -75,7 +75,10 @@ for dp, _, fs in os.walk('_site'):
             if m.startswith(('http','mailto:','data:','//','javascript:')) or '${' in m or "' +" in m:
                 continue
             total += 1
-            t = os.path.normpath(os.path.join(dp, m.split('#')[0].split('?')[0]))
+            rel = m.split('#')[0].split('?')[0]
+            # a leading "/" is domain-root-relative (used by 404.html) -> resolve from _site
+            base = '_site' if rel.startswith('/') else dp
+            t = os.path.normpath(os.path.join(base, rel.lstrip('/')))
             if not os.path.exists(t):
                 bad.append((fp.replace('_site/', ''), m))
 for f, l in sorted(set(bad)):

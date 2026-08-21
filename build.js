@@ -170,7 +170,9 @@ function buildPage(srcFile, relPath, layouts, partials) {
   const raw = fs.readFileSync(srcFile, 'utf8');
   const { data, body } = parseFrontMatter(raw);
 
-  const root = computeRoot(relPath);
+  // 404 is served for ANY missing URL (incl. deep paths), so its assets must be
+  // absolute from the domain root, not relative to the (nonexistent) request path.
+  const root = relPath === '404.html' ? '/' : computeRoot(relPath);
   const layoutName = data.layout || 'base';
   const layout = layouts[layoutName];
 
