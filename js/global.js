@@ -414,6 +414,17 @@
     blue:  { rgb: '0,168,255', hex: '#00a8ff', dim: '#0088cc', teal: '#64d8ff' },
     red:   { rgb: '255,60,60', hex: '#ff3c3c', dim: '#cc3030', teal: '#ff8a8a' }
   };
+  var THEMES_LIGHT = window.__yangaThemesLight || {
+    green: { rgb: '0,158,102', hex: '#009e66', dim: '#007a4f', teal: '#0c9c8a' },
+    blue:  { rgb: '0,122,204', hex: '#007acc', dim: '#005f99', teal: '#0c86b8' },
+    red:   { rgb: '214,40,40', hex: '#d62828', dim: '#a51d1d', teal: '#c05555' }
+  };
+  function currentMode() {
+    return document.documentElement.getAttribute('data-mode') === 'light' ? 'light' : 'dark';
+  }
+  function paletteFor(name) {
+    return (currentMode() === 'light' && THEMES_LIGHT[name]) ? THEMES_LIGHT[name] : THEMES[name];
+  }
 
   // --- Data Corruption theme transition effect ---
   var _corruptCanvas = null;
@@ -524,7 +535,7 @@
   }
 
   function applyTheme(name, skipEffect) {
-    var t = THEMES[name];
+    var t = paletteFor(name);
     if (!t) return;
     var r = document.documentElement.style;
 
@@ -597,6 +608,42 @@
   });
   if (navUtils) navUtils.insertBefore(chip, navUtils.firstChild);
 
+  // -- Light/dark mode toggle (sun/moon) --
+  function modeIcon(btn) {
+    btn.innerHTML = currentMode() === 'light'
+      ? '<i class="fa-solid fa-sun" aria-hidden="true"></i>'
+      : '<i class="fa-solid fa-moon" aria-hidden="true"></i>';
+  }
+  function applyMode(mode, skipEffect) {
+    document.documentElement.setAttribute('data-mode', mode);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', mode === 'light' ? '#eef1f7' : '#0a0a0f');
+    if (window.__yangaSaveMode) window.__yangaSaveMode(mode);
+    // Re-resolve the accent palette for the new mode (fires transition + glitch)
+    var cur = chip.getAttribute('data-theme') || 'blue';
+    applyTheme(cur, skipEffect);
+    modeIcon(modeBtn);
+  }
+  var modeBtn = document.createElement('button');
+  modeBtn.type = 'button';
+  modeBtn.className = 'mode-chip';
+  modeBtn.title = 'Toggle light / dark';
+  modeBtn.setAttribute('aria-label', 'Toggle light / dark mode');
+  modeIcon(modeBtn);
+  modeBtn.addEventListener('click', function(e) {
+    e.preventDefault(); e.stopPropagation();
+    applyMode(currentMode() === 'light' ? 'dark' : 'light');
+  });
+  if (navUtils) navUtils.insertBefore(modeBtn, chip.nextSibling);
+  window.__yangaApplyMode = function(mode) {
+    document.documentElement.setAttribute('data-mode', mode);
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', mode === 'light' ? '#eef1f7' : '#0a0a0f');
+    var cur = chip.getAttribute('data-theme') || 'blue';
+    applyTheme(cur, true);
+    modeIcon(modeBtn);
+  };
+
   // keyboard easter egg: press "t" (outside inputs) to cycle the theme
   document.addEventListener('keydown', function(e) {
     if (e.key !== 't' && e.key !== 'T') return;
@@ -620,6 +667,13 @@
 }\
 .theme-chip:hover .theme-chip-glyph { transform: scale(1.3); text-shadow: 0 0 10px rgba(var(--accent-rgb),0.95); }\
 .theme-chip:active .theme-chip-glyph { transform: scale(1.05); }\
+.mode-chip {\
+  display: inline-flex; align-items: center; justify-content: center;\
+  background: none; border: none; padding: 6px; margin-right: 6px;\
+  cursor: pointer; line-height: 1; color: var(--text-muted); font-size: 0.78rem;\
+  transition: color .25s ease, transform .15s ease;\
+}\
+.mode-chip:hover { color: var(--accent); transform: scale(1.2); }\
 ';
   document.head.appendChild(cswCSS);
 
@@ -736,7 +790,7 @@
           var href = node.getAttribute && node.getAttribute('href');
           // Skip the base stylesheet and third-party sheets already loaded.
           if (href && document.querySelector('link[href="' + href + '"]')) return;
-          if (node.tagName === 'STYLE' && node.textContent.trim() === 'body{background:#0a0a0f}') return;
+          if (node.tagName === 'STYLE' && (node.hasAttribute('data-antiflash') || node.textContent.trim() === 'body{background:#0a0a0f}')) return;
           var clone = node.cloneNode(true);
           clone.setAttribute('data-pjax-style', '');
           document.head.appendChild(clone);
@@ -995,6 +1049,11 @@ window.addEventListener('pageshow', function (e) {
       place();
       var idx = 0;
       for (var i = 0; i < hs.length; i++) { if (hs[i].getBoundingClientRect().top - 140 <= 0) idx = i; }
+      // At (or near) the bottom of the page the last headings can never cross the
+      // activation line, so pin to the final section and complete the rail.
+      if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 2)) {
+        idx = hs.length - 1;
+      }
       lis.forEach(function (li, i) { li.classList.toggle('on', i === idx); li.classList.toggle('done', i < idx); });
       // rail fill = reading progress through the article rectangle
       var br = body.getBoundingClientRect();

@@ -38,7 +38,7 @@
   }
   .error-code {
     font-family: 'Orbitron', sans-serif; font-size: 7rem; font-weight: 900;
-    color: #e6f1ff; letter-spacing: 10px; line-height: 1;
+    color: var(--text-bright); letter-spacing: 10px; line-height: 1;
     text-shadow: 0 0 60px rgba(var(--accent-rgb),0.2), 0 0 120px rgba(var(--accent-rgb),0.08);
     position: relative;
     animation: glitch-skew 4s infinite linear alternate-reverse;
@@ -50,13 +50,13 @@
     overflow: hidden;
   }
   .error-code::before {
-    color: #e6f1ff;
+    color: var(--text-bright);
     text-shadow: -2px 0 rgba(var(--accent-rgb),0.7);
     animation: glitch-top 3s infinite linear alternate-reverse;
     clip-path: inset(0 0 65% 0);
   }
   .error-code::after {
-    color: #e6f1ff;
+    color: var(--text-bright);
     text-shadow: 2px 0 rgba(255,60,60,0.5), -1px 0 rgba(var(--accent-rgb),0.5);
     animation: glitch-bottom 2.5s infinite linear alternate-reverse;
     clip-path: inset(65% 0 0 0);
@@ -90,7 +90,7 @@
     text-shadow: 0 0 10px rgba(var(--accent-rgb),0.5), 0 0 20px rgba(var(--accent-rgb),0.3);
   }
   .error-message {
-    color: #ccd6f6; font-size: 1rem; line-height: 1.8;
+    color: var(--text-primary); font-size: 1rem; line-height: 1.8;
     max-width: 480px; margin-bottom: 40px;
     letter-spacing: 0.3px;
   }

@@ -38,7 +38,7 @@
   var CSS = '' +
   '#tk-fab{position:fixed;bottom:24px;right:24px;width:66px;height:66px;z-index:120;cursor:pointer;' +
     'border:none;background:none;padding:0;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5));' +
-    'animation:tk-bob 4.5s ease-in-out infinite;transition:transform .2s ease;}' +
+    'animation:tk-bob 4.5s ease-in-out infinite;transition:transform .2s ease,opacity .2s ease;}' +
   '#tk-fab:hover{transform:translateY(-3px) scale(1.05);}' +
   '#tk-fab:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:50%;}' +
   '#tk-fab .tk-ping{position:absolute;top:5px;right:6px;width:11px;height:11px;border-radius:50%;' +
@@ -58,34 +58,31 @@
   '#tk-panel{position:fixed;bottom:24px;right:24px;width:340px;max-width:calc(100vw - 32px);height:460px;' +
     'max-height:calc(100vh - 120px);z-index:121;display:flex;flex-direction:column;overflow:hidden;' +
     'background:rgba(10,12,18,.94);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:16px;' +
-    'box-shadow:0 20px 60px rgba(0,0,0,.55);transform-origin:bottom right;transform:scale(.05) translate(30px,30px);' +
-    'opacity:0;pointer-events:none;transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .22s ease;}' +
-  '#tk-panel.open{transform:scale(1) translate(0,0);opacity:1;pointer-events:auto;}' +
-  'body.tk-open #tk-fab{opacity:0;pointer-events:none;transform:scale(.4);transition:opacity .18s ease,transform .28s ease;}' +
-  // thermoptic-camo cloak: glitch judder -> scan-bar sweep + de-rez
-  '.tk-fx{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;border-radius:16px;overflow:hidden;}' +
-  '.tk-fx::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(var(--accent-rgb),.10) 0 1px,transparent 1px 3px);}' +
-  '.tk-fx::after{content:"";position:absolute;left:-4%;right:-4%;height:12%;top:-14%;' +
-    'background:linear-gradient(to bottom,transparent,rgba(var(--accent-rgb),.85),#eaf6ff,rgba(var(--accent-rgb),.85),transparent);' +
-    'box-shadow:0 0 22px rgba(var(--accent-rgb),.9);mix-blend-mode:screen;}' +
-  '#tk-panel.closing{animation:tk-cloak .52s ease-in forwards;pointer-events:none;}' +
-  '#tk-panel.closing .tk-fx{animation:tk-fx-on .52s linear forwards;}' +
-  '#tk-panel.closing .tk-fx::after{animation:tk-scan .52s cubic-bezier(.4,0,.5,1) forwards;}' +
-  '@keyframes tk-fx-on{0%{opacity:0;}10%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}' +
-  '@keyframes tk-scan{0%{top:-14%;}12%{top:-14%;}82%{top:104%;}100%{top:104%;}}' +
-  '@keyframes tk-cloak{' +
-    '0%{opacity:1;filter:none;transform:translate(0,0);clip-path:inset(0 round 16px);}' +
-    '6%{transform:translate(-6px,1px);filter:contrast(1.6) saturate(1.4) drop-shadow(5px 0 0 rgba(255,0,90,.55)) drop-shadow(-5px 0 0 rgba(0,224,255,.6));}' +
-    '11%{transform:translate(7px,-1px);clip-path:inset(0 0 34% 0 round 16px);}' +
-    '15%{transform:translate(-4px,1px);clip-path:inset(22% 0 0 0 round 16px);}' +
-    '20%{transform:translate(2px,0);filter:none;clip-path:inset(0 round 16px);opacity:1;}' +
-    '26%{opacity:.96;}' +
-    '100%{opacity:0;transform:translate(0,-4px) scaleY(.94);filter:blur(3px) brightness(1.5) saturate(1.3);clip-path:inset(0 round 16px);}' +
-  '}' +
-  'body.tk-closing #tk-fab{opacity:0;pointer-events:none;transform:scale(.4);}' +
-  // head returns with a mechanical power-on flash, not a bounce
-  '#tk-fab.tk-return{animation:tk-boot .5s ease-out;}' +
-  '@keyframes tk-boot{0%{transform:scale(.72);filter:brightness(2.4) saturate(1.4);}45%{transform:scale(1.05);filter:brightness(1.35);}100%{transform:scale(1);filter:none;}}' +
+    'box-shadow:0 20px 60px rgba(0,0,0,.55);transform-origin:center;' +
+    'opacity:0;clip-path:inset(50% 0 50% 0 round 2px);pointer-events:none;}' +
+  // CRT power-on: bright hairline snaps in, blooms to full; reverse on close.
+  '#tk-panel.open{opacity:1;clip-path:inset(0 0 0 0 round 16px);pointer-events:auto;' +
+    'animation:tk-crt-on .44s cubic-bezier(.2,.8,.25,1);}' +
+  '#tk-panel.closing{pointer-events:none;animation:tk-crt-off .3s ease-in forwards;}' +
+  '@keyframes tk-crt-on{' +
+    '0%{opacity:0;clip-path:inset(50% 0 50% 0 round 2px);transform:scaleX(.35);}' +
+    '12%{opacity:1;transform:scaleX(1);}' +
+    '34%{clip-path:inset(49.5% 0 49.5% 0 round 2px);transform:scaleX(1);}' +
+    '70%{clip-path:inset(0 0 0 0 round 16px);transform:scaleY(1.015);}' +
+    '100%{opacity:1;clip-path:inset(0 0 0 0 round 16px);transform:none;}}' +
+  '@keyframes tk-crt-off{' +
+    '0%{opacity:1;clip-path:inset(0 0 0 0 round 16px);transform:none;}' +
+    '55%{opacity:1;clip-path:inset(49% 0 49% 0 round 2px);transform:scaleX(1);}' +
+    '100%{opacity:0;clip-path:inset(50% 0 50% 0 round 2px);transform:scaleX(.3);}}' +
+  // bright bloom bar flashing along the collapsing/expanding hairline
+  '.tk-scan{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);z-index:6;pointer-events:none;opacity:0;' +
+    'background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 18%,#eaf6ff,rgba(var(--accent-rgb),1) 82%,transparent);' +
+    'box-shadow:0 0 18px 2px rgba(var(--accent-rgb),.9);}' +
+  '#tk-panel.open .tk-scan{animation:tk-flash .44s ease-out;}' +
+  '#tk-panel.closing .tk-scan{animation:tk-flash-off .3s ease-in;}' +
+  '@keyframes tk-flash{0%{opacity:0;}10%{opacity:1;}42%{opacity:.85;}100%{opacity:0;}}' +
+  '@keyframes tk-flash-off{0%{opacity:0;}55%{opacity:1;}100%{opacity:0;}}' +
+  'body.tk-open #tk-fab{opacity:0;pointer-events:none;transform:scale(.9) translateY(4px);transition:opacity .2s ease,transform .26s ease;}' +
   '.tk-head-bar{display:flex;align-items:center;gap:11px;padding:13px 14px;border-bottom:1px solid var(--border);' +
     'background:rgba(var(--accent-rgb),.04);}' +
   '#tk-head{width:38px;height:38px;flex:0 0 auto;}' +
@@ -113,6 +110,10 @@
   '.tk-send{flex:0 0 auto;width:38px;border:1px solid rgba(var(--accent-rgb),.4);border-radius:9px;background:rgba(var(--accent-rgb),.1);' +
     'color:var(--accent);cursor:pointer;font-size:.9rem;transition:.2s;}' +
   '.tk-send:hover{background:rgba(var(--accent-rgb),.2);}' +
+  '[data-mode="light"] #tk-panel{background:rgba(248,250,253,.96);box-shadow:0 20px 60px rgba(30,45,80,.25);}' +
+  '[data-mode="light"] .tk-msg.me{background:rgba(20,30,55,.05);}' +
+  '[data-mode="light"] .tk-input input{background:rgba(20,30,55,.05);}' +
+  '[data-mode="light"] .tk-shine{fill:#ffffff;}' +
   '@media(max-width:480px){#tk-panel{height:70vh;}}' +
   '@media(prefers-reduced-motion:reduce){#tk-fab{animation:none;}}';
 
@@ -149,7 +150,7 @@
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-label', 'resuper chat');
     panel.innerHTML =
-      '<div class="tk-fx" aria-hidden="true"></div>' +
+      '<div class="tk-scan" aria-hidden="true"></div>' +
       '<div class="tk-head-bar">' +
         '<div id="tk-head">' + headSVG() + '</div>' +
         '<div class="tk-id"><span class="tk-name">RESUPER</span>' +
@@ -198,29 +199,23 @@
     }
 
     function open() {
+      panel.classList.remove('closing');
       panel.classList.add('open');
       document.body.classList.add('tk-open');
-      if (!seeded) { seeded = true; GREETING.forEach(function (g, i) { addMsg('bot', g, 200 + i * 550); }); }
-      setTimeout(function () { text.focus(); }, 340);
+      if (!seeded) { seeded = true; GREETING.forEach(function (g, i) { addMsg('bot', g, 260 + i * 550); }); }
+      setTimeout(function () { text.focus(); }, 300);
     }
     function close() {
-      if (panel.classList.contains('closing')) return;
-      panel.classList.add('closing');
-      document.body.classList.add('tk-closing');
-      function done(e) {
-        if (e && e.target !== panel) return;
-        panel.removeEventListener('animationend', done);
-        panel.classList.remove('open', 'closing');
-        document.body.classList.remove('tk-open', 'tk-closing');
-        // the head "catches" it: springy bounce + a quick blink
-        fab.classList.add('tk-return', 'tk-blink');
+      if (!panel.classList.contains('open')) return;
+      panel.classList.add('closing');      // faster reverse timing
+      panel.classList.remove('open');      // fade + clip back up
+      document.body.classList.remove('tk-open');  // head eases back in
+      // a small acknowledgment blink as it settles
+      setTimeout(function () {
+        fab.classList.add('tk-blink');
         setTimeout(function () { fab.classList.remove('tk-blink'); }, 150);
-        fab.addEventListener('animationend', function r() {
-          fab.removeEventListener('animationend', r);
-          fab.classList.remove('tk-return');
-        });
-      }
-      panel.addEventListener('animationend', done);
+      }, 160);
+      setTimeout(function () { panel.classList.remove('closing'); }, 320);
     }
 
     fab.addEventListener('click', open);

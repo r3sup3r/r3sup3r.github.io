@@ -24,7 +24,7 @@ if (canvas) {
   const columns = Math.floor(canvas.width / fontSize);
   const drops = Array(columns).fill(1);
   function draw() {
-    ctx.fillStyle = 'rgba(10,10,15,0.05)';
+    ctx.fillStyle = document.documentElement.getAttribute('data-mode') === 'light' ? 'rgba(238,241,247,0.10)' : 'rgba(10,10,15,0.05)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = window.__matrixColor;
     ctx.font = fontSize + 'px monospace';

@@ -7,6 +7,13 @@
     red:   { rgb: '255,60,60', hex: '#ff3c3c', dim: '#cc3030', teal: '#ff8a8a' }
   };
 
+  // Darker accent variants for light mode (neons wash out on paper)
+  var THEMES_LIGHT = {
+    green: { rgb: '0,158,102', hex: '#009e66', dim: '#007a4f', teal: '#0c9c8a' },
+    blue:  { rgb: '0,122,204', hex: '#007acc', dim: '#005f99', teal: '#0c86b8' },
+    red:   { rgb: '214,40,40', hex: '#d62828', dim: '#a51d1d', teal: '#c05555' }
+  };
+
   // --- Read from window.name (JSON blob that survives same-tab navigation on any protocol) ---
   function getFromWindowName() {
     try {
@@ -20,6 +27,23 @@
     try { data = JSON.parse(window.name) || {}; } catch(e) {}
     data.yanga_theme = name;
     window.name = JSON.stringify(data);
+  }
+
+  function getModeFromWindowName() {
+    try {
+      var data = JSON.parse(window.name);
+      return (data && data.yanga_mode) ? data.yanga_mode : null;
+    } catch(e) { return null; }
+  }
+
+  function getMode() {
+    var m = getModeFromWindowName();
+    if (!m) { try { m = localStorage.getItem('yanga_mode'); } catch(e) {} }
+    if (!m) {
+      var match = document.cookie.match(/yanga_mode=(\w+)/);
+      if (match) m = match[1];
+    }
+    return (m === 'light') ? 'light' : 'dark';
   }
 
   function getTheme() {
@@ -36,7 +60,8 @@
   }
 
   function applyThemeEarly(name) {
-    var t = THEMES[name];
+    var mode = document.documentElement.getAttribute('data-mode') || getMode();
+    var t = (mode === 'light' && THEMES_LIGHT[name]) ? THEMES_LIGHT[name] : THEMES[name];
     if (!t) return;
     var s = document.documentElement.style;
     s.setProperty('--accent-rgb', t.rgb);
@@ -51,7 +76,18 @@
 
   // Expose for global.js to reuse
   window.__yangaThemes = THEMES;
+  window.__yangaThemesLight = THEMES_LIGHT;
   window.__yangaGetTheme = getTheme;
+  window.__yangaGetMode = getMode;
+  window.__yangaSaveMode = function(mode) {
+    var data = {};
+    try { data = JSON.parse(window.name) || {}; } catch(e) {}
+    data.yanga_mode = mode;
+    window.name = JSON.stringify(data);
+    try { localStorage.setItem('yanga_mode', mode); } catch(e) {}
+    document.cookie = 'yanga_mode=' + mode + ';path=/;max-age=31536000;SameSite=Lax';
+    if (bc) try { bc.postMessage({ mode: mode }); } catch(e) {}
+  };
   window.__yangaSaveTheme = function(name) {
     // Write to all storage layers
     saveToWindowName(name);
@@ -64,6 +100,11 @@
   // Listen for theme changes from other tabs
   if (bc) {
     bc.onmessage = function(e) {
+      if (e.data && typeof e.data === 'object' && e.data.mode) {
+        document.documentElement.setAttribute('data-mode', e.data.mode);
+        if (window.__yangaApplyMode) window.__yangaApplyMode(e.data.mode);
+        return;
+      }
       if (e.data && THEMES[e.data]) {
         applyThemeEarly(e.data);
         saveToWindowName(e.data);
@@ -74,6 +115,7 @@
     };
   }
 
+  document.documentElement.setAttribute('data-mode', getMode());
   var saved = getTheme();
   if (saved) applyThemeEarly(saved);
 
