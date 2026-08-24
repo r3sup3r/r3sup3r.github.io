@@ -656,18 +656,26 @@ nav {
   margin-bottom: 18px;
 }
 .article-body code {
+  /* inline code chips in prose — keep the accent tint */
   background: rgba(var(--accent-rgb),0.06); padding: 2px 8px;
   border-radius: 3px; font-size: 0.85rem; color: var(--accent);
 }
 .article-body pre {
-  background: rgba(var(--bg-deep-rgb),0.9); border: 1px solid rgba(var(--accent-rgb),0.08);
-  border-radius: 8px; padding: 20px; margin: 20px 0;
-  overflow-x: auto; font-size: 0.8rem; line-height: 1.8; color: var(--text-primary);
+  /* real code block: neutral + theme-independent (does NOT follow the accent) */
+  background: #0d1117; border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px; padding: 18px 20px; margin: 22px 0;
+  overflow-x: auto; font-size: 0.8rem; line-height: 1.7; color: #cdd6e4;
 }
-.article-body pre .comment { color: var(--text-muted); }
-.article-body pre .keyword { color: var(--accent); }
-.article-body pre .string { color: var(--accent); }
-.article-body pre .func { color: var(--teal); }
+.article-body pre code {
+  /* strip the inline-chip styling so block code reads as plain neutral code */
+  background: none; padding: 0; border: 0; border-radius: 0;
+  color: inherit; font-size: inherit;
+}
+/* syntax spans use a fixed code palette, not the site accent */
+.article-body pre .comment { color: #8b949e; font-style: italic; }
+.article-body pre .keyword { color: #79c0ff; }
+.article-body pre .string  { color: #7ee787; }
+.article-body pre .func    { color: #d2a8ff; }
 .article-body blockquote {
   border-left: 3px solid var(--accent); padding: 15px 25px; margin: 20px 0;
   background: rgba(var(--accent-rgb),0.02); color: var(--text-secondary); font-style: italic;
@@ -1922,3 +1930,12 @@ body::before {
   text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
 .post-callout p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
 .post-callout a { color: var(--accent); }
+
+/* ── code highlighter palette (fixed, theme-independent) ── */
+.article-body pre .hl-com  { color: #8b949e; font-style: italic; }
+.article-body pre .hl-str  { color: #a5d6ff; }
+.article-body pre .hl-cmd  { color: #ff7b72; }
+.article-body pre .hl-sub  { color: #d2a8ff; }
+.article-body pre .hl-flag { color: #ffa657; }
+.article-body pre .hl-num  { color: #f2cc60; }
+.article-body pre .hl-key  { color: #79c0ff; }

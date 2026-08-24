@@ -802,6 +802,7 @@
 
         // 16. (Re)build the lateral table of contents for article pages
         if (window.buildPostTOC) window.buildPostTOC();
+        if (window.hlCode) window.hlCode();
 
         navigating = false;
 
