@@ -265,7 +265,7 @@
 
     searchResults.innerHTML = tagBar + scored.slice(0, 12).map(({ item }) => {
       const color = sectionColors[item.section] || 'green';
-      const href = prefix + item.url;
+      const href = '/' + item.url;   // absolute from site root — resolves from any page
 
       // Highlight matching tags
       const matchingTags = item.tags.filter(t =>
@@ -304,16 +304,17 @@
     });
   }
 
-  // Open search
-  document.querySelectorAll('.search-trigger').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (searchOverlay) {
-        searchOverlay.classList.add('open');
-        if (searchInput) { searchInput.value = ''; searchInput.focus(); }
-        renderResults('');
-      }
-    });
+  // Open search — DELEGATED on document so it survives PJAX nav swaps
+  // (the nav, and thus the .search-trigger button, is rebuilt on every nav)
+  function openSearch() {
+    if (!searchOverlay) return;
+    searchOverlay.classList.add('open');
+    if (searchInput) { searchInput.value = ''; searchInput.focus(); }
+    renderResults('');
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('.search-trigger');
+    if (t) { e.preventDefault(); openSearch(); }
   });
 
   // Close search
@@ -587,11 +588,7 @@
   chip.className = 'theme-chip';
   chip.title = 'Cycle accent colour';
   chip.setAttribute('aria-label', 'Cycle accent colour');
-  chip.innerHTML =
-    '<span class="theme-chip-glyph" aria-hidden="true">\u25D0</span>' +
-    '<span class="theme-chip-key">accent</span>' +
-    '<span class="theme-chip-sep">:</span>' +
-    '<span class="theme-chip-val">blue</span>';
+  chip.innerHTML = '<span class="theme-chip-glyph" aria-hidden="true">\u25CF</span>';
   chip.addEventListener('click', function(e) {
     e.preventDefault(); e.stopPropagation();
     var cur = chip.getAttribute('data-theme') || 'blue';
@@ -612,24 +609,17 @@
   var cswCSS = document.createElement('style');
   cswCSS.textContent = '\
 .theme-chip {\
-  display: inline-flex; align-items: center; gap: 5px;\
-  font-family: var(--font-body); font-size: 0.62rem; letter-spacing: 1px;\
-  background: rgba(var(--accent-rgb),0.04);\
-  border: 1px solid rgba(var(--accent-rgb),0.18);\
-  border-radius: 5px; padding: 5px 9px; margin-right: 6px;\
-  color: var(--text-secondary); cursor: pointer; line-height: 1;\
-  transition: border-color .25s, background .25s, box-shadow .25s;\
+  display: inline-flex; align-items: center; justify-content: center;\
+  background: none; border: none; padding: 6px; margin-right: 2px;\
+  cursor: pointer; line-height: 1;\
 }\
-.theme-chip:hover {\
-  border-color: rgba(var(--accent-rgb),0.42);\
-  background: rgba(var(--accent-rgb),0.09);\
-  box-shadow: 0 0 10px rgba(var(--accent-rgb),0.15);\
+.theme-chip-glyph {\
+  color: var(--accent); font-size: 0.7rem;\
+  text-shadow: 0 0 6px rgba(var(--accent-rgb),0.6);\
+  transition: color .4s ease, text-shadow .4s ease, transform .15s ease;\
 }\
-.theme-chip:active { transform: translateY(1px); }\
-.theme-chip-glyph { color: var(--accent); font-size: 0.74rem; text-shadow: 0 0 6px rgba(var(--accent-rgb),0.6); transition: color .4s ease, text-shadow .4s ease; }\
-.theme-chip-key { color: var(--text-muted); }\
-.theme-chip-sep { color: var(--text-faint); opacity: 0.7; }\
-.theme-chip-val { color: var(--accent); font-weight: 700; transition: color .4s ease; }\
+.theme-chip:hover .theme-chip-glyph { transform: scale(1.3); text-shadow: 0 0 10px rgba(var(--accent-rgb),0.95); }\
+.theme-chip:active .theme-chip-glyph { transform: scale(1.05); }\
 ';
   document.head.appendChild(cswCSS);
 
@@ -810,6 +800,9 @@
           window.initTerminal();
         }
 
+        // 16. (Re)build the lateral table of contents for article pages
+        if (window.buildPostTOC) window.buildPostTOC();
+
         navigating = false;
 
       }).catch(function(err) {
@@ -933,3 +926,89 @@ window.addEventListener('pageshow', function (e) {
   var base = (img.getAttribute('src') || '').split('?')[0];
   if (base) img.setAttribute('src', base + '?r=' + Date.now());
 });
+
+// ── Lateral table of contents for article pages (auto-built + scroll-spy) ──
+(function () {
+  var css = document.createElement('style');
+  css.textContent = `
+.post-toc { position: fixed; top: 196px; left: calc(50% + 560px); width: 232px; max-height: 62vh; overflow-y: auto; z-index: 5; scrollbar-width: none; -ms-overflow-style: none; }
+.post-toc::-webkit-scrollbar { width: 0; height: 0; }
+.post-toc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 0 0 14px 20px; }
+.post-toc-label { font-family: var(--font-body); font-size: 0.6rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); }
+.post-toc-count { font-family: var(--font-body); font-size: 0.6rem; letter-spacing: 1px; color: var(--accent); text-shadow: 0 0 6px rgba(var(--accent-rgb),0.5); }
+.post-toc ul { list-style: none; margin: 0; padding: 0; position: relative; }
+.post-toc ul::before { content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px; width: 2px; background: var(--border); border-radius: 2px; }
+.post-toc ul::after { content: ''; position: absolute; left: 6px; top: 10px; width: 2px; height: var(--toc-fill, 0%); max-height: calc(100% - 20px); border-radius: 2px; background: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb),0.8); transition: height .15s ease; }
+.post-toc li { position: relative; }
+.post-toc li::before { content: ''; position: absolute; left: 2px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg-deep); border: 2px solid var(--border); box-sizing: border-box; z-index: 1; transition: background .25s ease, border-color .25s ease, box-shadow .25s ease; }
+.post-toc a { display: block; padding: 7px 0 7px 28px; color: var(--text-muted); font-family: var(--font-body); font-size: 0.82rem; line-height: 1.35; text-decoration: none; transition: color .2s ease; }
+.post-toc a:hover { color: var(--text-bright); }
+.post-toc li.done a { color: var(--text-secondary); }
+.post-toc li.done::before { border-color: rgba(var(--accent-rgb),0.5); background: rgba(var(--accent-rgb),0.5); }
+.post-toc li.on a { color: var(--accent); }
+.post-toc li.on::before { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 10px rgba(var(--accent-rgb),0.9); }
+@media (max-width: 1600px) { .post-toc { display: none; } }`;
+  document.head.appendChild(css);
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  window.buildPostTOC = function () {
+    var old = document.getElementById('post-toc'); if (old) old.remove();
+    if (window.__tocSpy) { window.removeEventListener('scroll', window.__tocSpy); window.__tocSpy = null; }
+    var body = document.querySelector('.article-body'); if (!body) return;
+    body.querySelectorAll('h2').forEach(function (h) {
+      if (!h.id) h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    });
+    var hs = Array.prototype.slice.call(body.querySelectorAll('h2[id]'));
+    if (hs.length < 2) return;
+
+    var toc = document.createElement('aside'); toc.id = 'post-toc'; toc.className = 'post-toc';
+    var html = '<div class="post-toc-head"><span class="post-toc-label">On this page</span><span class="post-toc-count"></span></div><ul>';
+    hs.forEach(function (h) { html += '<li><a href="#' + h.id + '" data-target="' + h.id + '">' + h.textContent + '</a></li>'; });
+    toc.innerHTML = html + '</ul>';
+    document.body.appendChild(toc);
+
+    toc.addEventListener('click', function (e) {
+      var a = e.target.closest('a[data-target]'); if (!a) return;
+      e.preventDefault();
+      var el = document.getElementById(a.getAttribute('data-target'));
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); try { history.replaceState(null, '', '#' + a.getAttribute('data-target')); } catch (x) {} }
+    });
+
+    var links = toc.querySelectorAll('a[data-target]');
+    var lis = toc.querySelectorAll('li');
+    var ul = toc.querySelector('ul');
+    var countEl = toc.querySelector('.post-toc-count');
+    var PIN = 196; // sticky top once the rectangle scrolls under it
+    function place() {
+      // Keep the TOC vertically inside the post rectangle: never let its top
+      // rise above the rectangle's top edge (matters when scrolled to the top),
+      // and never let its bottom fall past the rectangle's bottom edge.
+      var r = body.getBoundingClientRect();
+      var top = Math.max(PIN, r.top);
+      var h = toc.offsetHeight;
+      if (top + h > r.bottom) top = Math.max(PIN, r.bottom - h);
+      toc.style.top = top + 'px';
+    }
+    function spy() {
+      place();
+      var idx = 0;
+      for (var i = 0; i < hs.length; i++) { if (hs[i].getBoundingClientRect().top - 140 <= 0) idx = i; }
+      lis.forEach(function (li, i) { li.classList.toggle('on', i === idx); li.classList.toggle('done', i < idx); });
+      // rail fill = reading progress through the article rectangle
+      var br = body.getBoundingClientRect();
+      var total = br.height - window.innerHeight;
+      var pct = total > 0 ? Math.min(100, Math.max(0, (-br.top) / total * 100)) : (br.top <= 0 ? 100 : 0);
+      if (ul) ul.style.setProperty('--toc-fill', pct + '%');
+      if (countEl) countEl.textContent = pad(idx + 1) + ' / ' + pad(hs.length);
+    }
+    window.__tocSpy = spy;
+    window.addEventListener('scroll', spy, { passive: true });
+    window.addEventListener('resize', place, { passive: true });
+    place();
+    spy();
+  };
+
+  if (document.readyState !== 'loading') window.buildPostTOC();
+  else document.addEventListener('DOMContentLoaded', window.buildPostTOC);
+})();
