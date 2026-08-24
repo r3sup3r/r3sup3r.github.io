@@ -1,0 +1,223 @@
+<!--
+{
+  "title": "Fine-Tuning an Offensive-Security Assistant with LoRA + LLaMA-Factory — YANGA",
+  "description": "Supervised fine-tuning (LoRA/SFT) of a small open-weight model on offensive-security Q&A, end to end — environment, dataset, training, merge, and running it locally. Plus lazyLLaMA, the tool that automates the whole pipeline.",
+  "layout": "base",
+  "activeNav": "blog",
+  "date": "2026-02-05",
+  "excerpt": "Turning a 1.7B open-weight model into a pentest assistant with LoRA/SFT on LLaMA-Factory — and the tool I built to automate the pipeline."
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">lora-supervised-fine-tuning</span></div>
+  <h1>Fine-Tuning an Offensive-Security Assistant with LoRA</h1>
+  <div class="article-meta">
+    <span>AI AGENT SECURITY</span>
+    <span>February 2026</span>
+    <span>9 min read</span>
+  </div>
+</div>
+
+<article class="article-body">
+  <p class="lede">Teach a small model your tradecraft, run it offline.</p>
+
+  <p>If you spend time attacking AI agents, it pays to build them too — you reason about a system differently once you've trained one. So I took an open-weight model and fine-tuned it into a small <strong>offensive-security assistant</strong>: feed it instruction/response pairs drawn from real recon and exploitation situations, and it learns to answer in that register. No API, no data leaving the box — a local model that speaks pentest.</p>
+
+  <p>This post is the full workflow with <a href="https://github.com/hiyouga/LLaMA-Factory" target="_blank" rel="noopener">LLaMA-Factory</a>: supervised fine-tuning (SFT) with <strong>LoRA</strong>, merging the adapters into a standalone model, and running it locally. It's a practical companion to the offensive-AI writing here — the same pipeline that ingests untrusted data is the one you retrain, and understanding fine-tuning is half of understanding data-poisoning and alignment-removal attacks against it.</p>
+
+  <div class="post-callout">
+    <div class="post-callout-label">// tooling</div>
+    <p>I got tired of running these steps by hand, so I built <a href="https://github.com/r3sup3r/lazyllama/tree/master" target="_blank" rel="noopener"><strong>lazyLLaMA</strong></a> — a wrapper that automates this entire pipeline (env, dataset registration, training, merge, export). Everything below is what it does under the hood; if you just want the result, point it at your dataset and go.</p>
+  </div>
+
+  <h2 id="objective">Objective</h2>
+
+  <p>Fine-tune an open-weight language model with LLaMA-Factory: supervised fine-tuning with LoRA, merge the resulting adapters into a single model, and run it on your own machine. We'll cover setting up the environment, configuring training, the common failure modes, merging, and executing the final model.</p>
+
+  <h2 id="environment">Setting up the environment</h2>
+
+  <p>On Windows, WSL2 (Ubuntu) is the path of least resistance — you get GPU access without the pain of VM bridging. Keep dependencies isolated in a virtual environment:</p>
+
+  <pre><code>python3 -m venv llamafactory_sft
+source llamafactory_sft/bin/activate</code></pre>
+
+  <p>Confirm your GPU is CUDA-capable (NVIDIA's <a href="https://developer.nvidia.com/cuda-gpus" target="_blank" rel="noopener">CUDA GPU list</a>), then install the toolkit and verify:</p>
+
+  <pre><code>wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda_12.2.0_535.54.03_linux.run
+sudo sh cuda_12.2.0_535.54.03_linux.run
+nvidia-smi</code></pre>
+
+  <figure>
+    <img src="{{root}}images/posts/lora-supervised-fine-tuning/nvidia-smi.webp" alt="nvidia-smi output showing a Quadro T1000 with 4GB VRAM" loading="lazy">
+    <figcaption>nvidia-smi — this whole thing runs on a Quadro T1000 with 4&nbsp;GB of VRAM. Small hardware forces small, honest choices.</figcaption>
+  </figure>
+
+  <h2 id="install">Installing LLaMA-Factory</h2>
+
+  <p>Clone the repo and install the core package plus the metrics extras:</p>
+
+  <pre><code>git clone https://github.com/hiyouga/LLaMA-Factory.git
+cd LLaMA-Factory/
+pip install -e .
+pip install -r requirements/metrics.txt</code></pre>
+
+  <p>Sanity-check the install and dump your environment — this is the first thing to paste when something breaks:</p>
+
+  <pre><code>llamafactory-cli version
+llamafactory-cli env</code></pre>
+
+  <pre><code>- llamafactory version: 0.9.5.dev0
+- Platform: Linux-...-microsoft-standard-WSL2-x86_64
+- Python version: 3.12.3
+- PyTorch version: 2.10.0+cu128 (GPU)
+- Transformers version: 5.0.0
+- PEFT version: 0.18.1
+- GPU type: Quadro T1000
+- GPU memory: 4.00GB</code></pre>
+
+  <h2 id="dataset">Getting your dataset ready</h2>
+
+  <p>This is where the "offensive-security" part lives. The model only becomes a pentest assistant if you feed it pentest thinking. Each record is an instruction/response pair — a situation and how a practitioner reasons through it. Save it as <code>custom_dataset.json</code>:</p>
+
+  <pre><code>[
+  {
+    "Instruction": "During initial port scanning, you find TCP 64831 running an unknown service that returns HTTP-like responses. How do you proceed?",
+    "Response": "Run service detection with nmap -sV. If it returns 'unknown', examine the fingerprint strings for HTTP headers (e.g. 'Location:', 'Set-Cookie:') — that indicates a web service, possibly a Go framework. Add the domain to your hosts file, browse to it, and enumerate endpoints and virtual hosts. Principle: unidentified ports returning HTTP-like data are usually web apps or APIs; treat them as such."
+  },
+  {
+    "Instruction": "You discover a GoPhish instance with default credentials. After logging in, where do you look for internal domain names?",
+    "Response": "Check 'Email Templates' — phishing templates link to fake domains (e.g. www.twitter.htb, www.paypal.htb). Extract every unique domain. Also check 'Landing Pages' and 'Sending Profiles'. Add them to your hosts file: these often resolve to the same server and reveal separate web apps or admin interfaces."
+  }
+]</code></pre>
+
+  <p>Quality beats volume here — a few hundred sharp, opinionated pairs teach a small model far more than a heap of generic ones.</p>
+
+  <h2 id="register">Registering your dataset</h2>
+
+  <p>LLaMA-Factory discovers datasets through <code>data/dataset_info.json</code>. It supports Alpaca and ShareGPT formats; ours is Alpaca-style (instruction/response), so map the JSON fields explicitly:</p>
+
+  <pre><code>{
+  "custom_dataset": {
+    "file_name": "custom_dataset.json",
+    "columns": {
+      "instruction": "Instruction",
+      "response": "Response"
+    }
+  }
+}</code></pre>
+
+  <h2 id="sft">Supervised fine-tuning</h2>
+
+  <p>The <code>examples/train_lora/</code> directory has templates — copy one and adapt it rather than writing from scratch. I settled on <strong>Qwen3-1.7B</strong> (the 4B variants hit Out-Of-Memory on 4&nbsp;GB during export). The training config:</p>
+
+  <pre><code>### model
+model_name_or_path: Qwen/Qwen3-1.7B
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+
+### dataset
+dataset: custom_dataset
+template: qwen3_nothink
+cutoff_len: 2048
+max_samples: 1000
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+
+### output
+output_dir: saves/qwen3-1.7b/lora/sft
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: true
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 8
+learning_rate: 1.0e-4
+num_train_epochs: 3.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+bf16: true</code></pre>
+
+  <p>The settings that matter on small hardware:</p>
+
+  <ul>
+    <li><strong>finetuning_type: lora</strong> — train small low-rank adapter layers instead of the full weights. This is what makes 4&nbsp;GB viable.</li>
+    <li><strong>lora_rank: 8</strong> — adapter capacity. Higher rank = more capacity and more VRAM.</li>
+    <li><strong>gradient_accumulation_steps: 8</strong> — simulate a larger batch by accumulating gradients, without the memory cost of one.</li>
+    <li><strong>bf16: true</strong> — mixed precision; cuts memory with little numerical cost.</li>
+  </ul>
+
+  <p>Kick off training with:</p>
+
+  <pre><code>llamafactory-cli train examples/train_lora/qwen3_lora_sft.yaml</code></pre>
+
+  <p>When it finishes, <code>saves/qwen3-1.7b/lora/sft/</code> holds the LoRA adapters (<code>adapter_model.safetensors</code>, <code>adapter_config.json</code>), a <code>training_loss.png</code> curve, and checkpoints. Important: at this point you have <em>adapters</em>, not a standalone model.</p>
+
+  <h2 id="merge">Merging the LoRA adapters</h2>
+
+  <p>Merging fuses the adapters back into the base model to produce a single deployable model. One hard rule: <strong>never merge into a quantized base model.</strong> Start from <code>examples/merge_lora/</code> and adapt:</p>
+
+  <pre><code>### model
+model_name_or_path: Qwen/Qwen3-1.7B
+adapter_name_or_path: saves/qwen3-1.7b/lora/sft
+template: qwen3_nothink
+trust_remote_code: true
+
+### export
+export_dir: merged-qwen3-1.7b
+export_size: 5
+export_device: cpu
+export_legacy_format: false</code></pre>
+
+  <p>Then run the export:</p>
+
+  <pre><code>llamafactory-cli export merge_config.yaml</code></pre>
+
+  <p>The result lands in <code>merged-qwen3-1.7b/</code> as a full model — LLaMA-Factory even drops an Ollama <code>Modelfile</code> alongside it, so you can hand it straight to <code>ollama</code> if you want (a topic for another post).</p>
+
+  <figure>
+    <img src="{{root}}images/posts/lora-supervised-fine-tuning/ollama-modelfile.webp" alt="Generated Ollama Modelfile in the merged model directory" loading="lazy">
+    <figcaption>The merge output includes a ready-to-run Ollama Modelfile.</figcaption>
+  </figure>
+
+  <h2 id="run">Running the model locally</h2>
+
+  <p>Chat with the merged model directly:</p>
+
+  <pre><code>llamafactory-cli chat --model_name_or_path merged-qwen3-1.7b</code></pre>
+
+  <p>And here's the payoff — the fine-tuned 1.7B model reasoning through an unknown-port scenario in the voice it was trained on:</p>
+
+  <figure>
+    <img src="{{root}}images/posts/lora-supervised-fine-tuning/model-thinking.webp" alt="Fine-tuned model's chain of thought on a port-scanning question" loading="lazy">
+    <figcaption>The model working through the problem…</figcaption>
+  </figure>
+
+  <figure>
+    <img src="{{root}}images/posts/lora-supervised-fine-tuning/model-answer.webp" alt="Fine-tuned model's answer recommending nmap -sV and endpoint enumeration" loading="lazy">
+    <figcaption>…and landing on the practitioner answer. Small model, specific tradecraft.</figcaption>
+  </figure>
+
+  <p>Once merged, it behaves like any other local model — load it, script it, or serve it.</p>
+
+  <h2 id="closing">Why this matters for security</h2>
+
+  <p>Two reasons this isn't just an ML exercise. First, it's <strong>capability</strong>: an offline assistant that speaks your methodology, with nothing leaving your machine. Second, it's <strong>understanding the attack</strong> — once you've watched a few hundred instruction/response pairs bend a model's behaviour, data-poisoning and fine-tuning-based alignment removal stop being abstractions. The same LoRA that teaches good tradecraft can teach the opposite; knowing the pipeline is how you reason about attacking it.</p>
+
+  <p>The whole thing is automated in <a href="https://github.com/r3sup3r/lazyllama/tree/master" target="_blank" rel="noopener">lazyLLaMA</a>. Point it at a dataset and it runs the pipeline end to end.</p>
+
+  <h2 id="reference">Reference</h2>
+
+  <ul>
+    <li><a href="https://llamafactory.readthedocs.io/" target="_blank" rel="noopener">LLaMA-Factory documentation</a></li>
+    <li><a href="https://github.com/r3sup3r/lazyllama/tree/master" target="_blank" rel="noopener">lazyLLaMA</a> — automation for this pipeline</li>
+  </ul>
+</article>

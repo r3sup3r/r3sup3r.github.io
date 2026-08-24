@@ -62,6 +62,30 @@
     'opacity:0;pointer-events:none;transition:transform .32s cubic-bezier(.16,1,.3,1),opacity .22s ease;}' +
   '#tk-panel.open{transform:scale(1) translate(0,0);opacity:1;pointer-events:auto;}' +
   'body.tk-open #tk-fab{opacity:0;pointer-events:none;transform:scale(.4);transition:opacity .18s ease,transform .28s ease;}' +
+  // thermoptic-camo cloak: glitch judder -> scan-bar sweep + de-rez
+  '.tk-fx{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;border-radius:16px;overflow:hidden;}' +
+  '.tk-fx::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(var(--accent-rgb),.10) 0 1px,transparent 1px 3px);}' +
+  '.tk-fx::after{content:"";position:absolute;left:-4%;right:-4%;height:12%;top:-14%;' +
+    'background:linear-gradient(to bottom,transparent,rgba(var(--accent-rgb),.85),#eaf6ff,rgba(var(--accent-rgb),.85),transparent);' +
+    'box-shadow:0 0 22px rgba(var(--accent-rgb),.9);mix-blend-mode:screen;}' +
+  '#tk-panel.closing{animation:tk-cloak .52s ease-in forwards;pointer-events:none;}' +
+  '#tk-panel.closing .tk-fx{animation:tk-fx-on .52s linear forwards;}' +
+  '#tk-panel.closing .tk-fx::after{animation:tk-scan .52s cubic-bezier(.4,0,.5,1) forwards;}' +
+  '@keyframes tk-fx-on{0%{opacity:0;}10%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}' +
+  '@keyframes tk-scan{0%{top:-14%;}12%{top:-14%;}82%{top:104%;}100%{top:104%;}}' +
+  '@keyframes tk-cloak{' +
+    '0%{opacity:1;filter:none;transform:translate(0,0);clip-path:inset(0 round 16px);}' +
+    '6%{transform:translate(-6px,1px);filter:contrast(1.6) saturate(1.4) drop-shadow(5px 0 0 rgba(255,0,90,.55)) drop-shadow(-5px 0 0 rgba(0,224,255,.6));}' +
+    '11%{transform:translate(7px,-1px);clip-path:inset(0 0 34% 0 round 16px);}' +
+    '15%{transform:translate(-4px,1px);clip-path:inset(22% 0 0 0 round 16px);}' +
+    '20%{transform:translate(2px,0);filter:none;clip-path:inset(0 round 16px);opacity:1;}' +
+    '26%{opacity:.96;}' +
+    '100%{opacity:0;transform:translate(0,-4px) scaleY(.94);filter:blur(3px) brightness(1.5) saturate(1.3);clip-path:inset(0 round 16px);}' +
+  '}' +
+  'body.tk-closing #tk-fab{opacity:0;pointer-events:none;transform:scale(.4);}' +
+  // head returns with a mechanical power-on flash, not a bounce
+  '#tk-fab.tk-return{animation:tk-boot .5s ease-out;}' +
+  '@keyframes tk-boot{0%{transform:scale(.72);filter:brightness(2.4) saturate(1.4);}45%{transform:scale(1.05);filter:brightness(1.35);}100%{transform:scale(1);filter:none;}}' +
   '.tk-head-bar{display:flex;align-items:center;gap:11px;padding:13px 14px;border-bottom:1px solid var(--border);' +
     'background:rgba(var(--accent-rgb),.04);}' +
   '#tk-head{width:38px;height:38px;flex:0 0 auto;}' +
@@ -93,7 +117,7 @@
   '@media(prefers-reduced-motion:reduce){#tk-fab{animation:none;}}';
 
   var GREETING = [
-    "こんにちは！ I'm Tachikoma — YANGA's little recon unit. 🕷️",
+    "こんにちは！ I'm resuper — YANGA's little recon unit. 🕷️",
     "Chat isn't wired to a real brain yet, but ask me anything and I'll pretend I'm listening."
   ];
   var REPLIES = [
@@ -116,24 +140,25 @@
     var fab = document.createElement('button');
     fab.id = 'tk-fab';
     fab.type = 'button';
-    fab.setAttribute('aria-label', 'Open chat with Tachikoma');
+    fab.setAttribute('aria-label', 'Open chat with resuper');
     fab.innerHTML = headSVG() + '<span class="tk-ping"></span>';
     document.body.appendChild(fab);
 
     var panel = document.createElement('div');
     panel.id = 'tk-panel';
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', 'Tachikoma chat');
+    panel.setAttribute('aria-label', 'resuper chat');
     panel.innerHTML =
+      '<div class="tk-fx" aria-hidden="true"></div>' +
       '<div class="tk-head-bar">' +
         '<div id="tk-head">' + headSVG() + '</div>' +
-        '<div class="tk-id"><span class="tk-name">TACHIKOMA</span>' +
+        '<div class="tk-id"><span class="tk-name">RESUPER</span>' +
         '<span class="tk-status">placeholder · offline</span></div>' +
         '<button class="tk-close" type="button" aria-label="Close chat">✕</button>' +
       '</div>' +
       '<div class="tk-body" id="tk-body"></div>' +
       '<form class="tk-input" id="tk-form">' +
-        '<input id="tk-text" type="text" autocomplete="off" placeholder="Ask Tachikoma…">' +
+        '<input id="tk-text" type="text" autocomplete="off" placeholder="Ask resuper…">' +
         '<button class="tk-send" type="submit" aria-label="Send">➔</button>' +
       '</form>';
     document.body.appendChild(panel);
@@ -179,8 +204,23 @@
       setTimeout(function () { text.focus(); }, 340);
     }
     function close() {
-      panel.classList.remove('open');
-      document.body.classList.remove('tk-open');
+      if (panel.classList.contains('closing')) return;
+      panel.classList.add('closing');
+      document.body.classList.add('tk-closing');
+      function done(e) {
+        if (e && e.target !== panel) return;
+        panel.removeEventListener('animationend', done);
+        panel.classList.remove('open', 'closing');
+        document.body.classList.remove('tk-open', 'tk-closing');
+        // the head "catches" it: springy bounce + a quick blink
+        fab.classList.add('tk-return', 'tk-blink');
+        setTimeout(function () { fab.classList.remove('tk-blink'); }, 150);
+        fab.addEventListener('animationend', function r() {
+          fab.removeEventListener('animationend', r);
+          fab.classList.remove('tk-return');
+        });
+      }
+      panel.addEventListener('animationend', done);
     }
 
     fab.addEventListener('click', open);

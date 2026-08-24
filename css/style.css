@@ -1907,3 +1907,18 @@ body::before {
   max-width: 680px; margin: 0 auto; flex: 1;
   min-height: 0; justify-content: center;
 }
+
+/* ── Article figures + callout (blog posts) ── */
+.article-body figure { margin: 26px 0; }
+.article-body figure img,
+.article-body img { display: block; max-width: 100%; height: auto; margin: 0 auto;
+  border: 1px solid var(--border); border-radius: 10px; background: rgba(var(--bg-deep-rgb),0.5); }
+.article-body figcaption { margin-top: 10px; font-family: var(--font-body); font-size: 0.72rem;
+  color: var(--text-muted); text-align: center; line-height: 1.5; }
+.post-callout { position: relative; margin: 26px 0; padding: 18px 20px 18px 22px;
+  border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 10px;
+  background: rgba(var(--accent-rgb),0.05); }
+.post-callout-label { font-family: var(--font-body); font-size: 0.6rem; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.post-callout p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+.post-callout a { color: var(--accent); }
