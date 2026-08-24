@@ -1,0 +1,85 @@
+<!--
+{
+  "title": "My Penetration Testing Methodology — YANGA",
+  "description": "How I approach an engagement, phase by phase — from pre-engagement scoping to reporting. A living methodology built from years of hands-on testing.",
+  "layout": "base",
+  "activeNav": "blog",
+  "date": "2026-08-24",
+  "excerpt": "The repeatable process I run on every engagement — pre-engagement to reporting, plus the AD, web, and privilege-escalation playbooks underneath it."
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">penetration-testing-methodology</span></div>
+  <h1>My Penetration Testing Methodology</h1>
+  <div class="article-meta">
+    <span>PENTESTING</span>
+    <span>August 2026</span>
+    <span>Outline</span>
+  </div>
+</div>
+
+<article class="article-body">
+  <p class="lede">A repeatable process, not a bag of tricks. This is the spine I run on every engagement — the write-up for each phase lands here as I fill it in.</p>
+
+  <p class="post-callout" style="display:block;">
+    <span class="post-callout-label">Work in progress</span>
+    This page is the table of contents for now. Each section below is a placeholder I'll expand into method, tooling, and worked examples.
+  </p>
+
+  <h2 id="pre-engagement">1 · Pre-Engagement</h2>
+  <p>Scope, rules of engagement, authorization, exclusions, and what "success" means before a single packet goes out.</p>
+
+  <h2 id="reconnaissance">2 · Reconnaissance</h2>
+  <p>Building the target picture, quietest sources first.</p>
+  <ul>
+    <li><strong>Passive</strong> — WHOIS, DNS, search-engine queries, web archive, social media, public code repositories, breach data.</li>
+    <li><strong>Active</strong> — port scanning, service enumeration, banner grabbing, OS fingerprinting, network mapping, web spidering.</li>
+  </ul>
+
+  <h2 id="enumeration">3 · Enumeration &amp; Service Attacks</h2>
+  <p>Turning open ports into a concrete attack surface, service by service: HTTP, FTP, SMB, SMTP, SSH.</p>
+
+  <h2 id="vulnerability-assessment">4 · Vulnerability Assessment</h2>
+  <p>CVE research, automated scanning versus manual validation, and prioritizing what's actually reachable and exploitable.</p>
+
+  <h2 id="exploitation">5 · Exploitation</h2>
+  <p>Gaining the initial foothold — payload selection, getting a shell, and stabilizing it.</p>
+
+  <h2 id="web-application-testing">6 · Web Application Testing</h2>
+  <p>Depth-first manual testing where scanners fall short.</p>
+  <ul>
+    <li>Authentication &amp; session management</li>
+    <li>Input validation — SQLi, XSS, SSTI, command injection, LFI</li>
+    <li>Access control — IDOR, forced browsing, privilege escalation</li>
+    <li>Business logic, API abuse, and file upload</li>
+  </ul>
+
+  <h2 id="post-exploitation">7 · Post-Exploitation</h2>
+  <p>Local enumeration, credential harvesting, and reaching the data that matters.</p>
+
+  <h2 id="privilege-escalation">8 · Privilege Escalation</h2>
+  <p>From foothold to full control on the host — Linux and Windows paths.</p>
+
+  <h2 id="active-directory">9 · Active Directory</h2>
+  <p>The core of most internal engagements.</p>
+  <ul>
+    <li>Enumeration — BloodHound, PowerView, LDAP</li>
+    <li>Kerberos attacks — Kerberoasting, AS-REP roasting</li>
+    <li>ACL &amp; delegation abuse</li>
+    <li>Lateral movement — Pass-the-Hash, Pass-the-Ticket</li>
+    <li>Domain dominance — DCSync, Golden/Silver tickets</li>
+  </ul>
+
+  <h2 id="lateral-movement">10 · Lateral Movement &amp; Pivoting</h2>
+  <p>Moving through the network — tunneling, pivoting, and reusing what's already been captured.</p>
+
+  <h2 id="impact">11 · Proof of Concept &amp; Impact</h2>
+  <p>Translating access into demonstrated business risk that engineers and executives can both act on.</p>
+
+  <h2 id="reporting">12 · Reporting &amp; Remediation</h2>
+  <p>The deliverable — technical and executive, evidence-backed, mapped to OWASP / MITRE ATT&amp;CK, prioritized by impact.</p>
+
+  <h2 id="playbooks">Appendix · Playbooks &amp; References</h2>
+  <p>Engagement-specific workflows underneath the process: external, internal, web-app, and cloud playbooks; a MITRE ATT&amp;CK quick reference; and "things to keep in mind when you're stuck."</p>
+</article>

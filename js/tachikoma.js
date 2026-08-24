@@ -14,6 +14,9 @@
     '<svg class="tk-svg" viewBox="0 0 100 100" aria-hidden="true">' +
       '<defs><radialGradient id="tkDome" cx="50%" cy="38%" r="70%">' +
         '<stop offset="0%" stop-color="#1b2740"/><stop offset="100%" stop-color="#0b111d"/>' +
+      '</radialGradient>' +
+      '<radialGradient id="tkDomeLight" cx="50%" cy="38%" r="70%">' +
+        '<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d9e2f2"/>' +
       '</radialGradient></defs>' +
       '<path class="tk-dome" d="M50 12 C75 12 89 29 89 54 C89 77 74 91 50 91 C26 91 11 77 11 54 C11 29 25 12 50 12 Z"/>' +
       // top periscope sensors
@@ -114,6 +117,11 @@
   '[data-mode="light"] .tk-msg.me{background:rgba(20,30,55,.05);}' +
   '[data-mode="light"] .tk-input input{background:rgba(20,30,55,.05);}' +
   '[data-mode="light"] .tk-shine{fill:#ffffff;}' +
+  '[data-mode="light"] .tk-dome{fill:url(#tkDomeLight);stroke:rgba(var(--accent-rgb),.65);}' +
+  '[data-mode="light"] .tk-lens{fill:#1a2338;stroke:rgba(var(--accent-rgb),.55);}' +
+  '[data-mode="light"] .tk-sensor{fill:#e6ecf7;stroke:rgba(var(--accent-rgb),.55);}' +
+  '[data-mode="light"] #tk-fab{filter:drop-shadow(0 6px 16px rgba(30,45,80,.30));}' +
+  '[data-mode="light"] #tk-fab .tk-ping{border-color:#eef1f7;}' +
   '@media(max-width:480px){#tk-panel{height:70vh;}}' +
   '@media(prefers-reduced-motion:reduce){#tk-fab{animation:none;}}';
 
