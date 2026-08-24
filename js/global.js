@@ -768,13 +768,15 @@
         var newNav = newOverlay.querySelector('nav');
         var curNav = overlay.querySelector('nav');
         if (newNav && curNav) {
-          // Save the theme chip before replacing nav HTML
+          // Save the theme chip + mode toggle before replacing nav HTML
           var savedSwitcher = curNav.querySelector('.theme-chip');
+          var savedMode = curNav.querySelector('.mode-chip');
           curNav.innerHTML = newNav.innerHTML;
-          // Re-insert the switcher into the new nav-utils
-          if (savedSwitcher) {
-            var newUtils = curNav.querySelector('.nav-utils');
-            if (newUtils) newUtils.insertBefore(savedSwitcher, newUtils.firstChild);
+          // Re-insert both into the new nav-utils (chip first, then mode toggle)
+          var newUtils = curNav.querySelector('.nav-utils');
+          if (newUtils) {
+            if (savedSwitcher) newUtils.insertBefore(savedSwitcher, newUtils.firstChild);
+            if (savedMode) newUtils.insertBefore(savedMode, savedSwitcher ? savedSwitcher.nextSibling : newUtils.firstChild);
           }
         }
 

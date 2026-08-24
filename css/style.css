@@ -80,7 +80,7 @@ html[data-mode="light"] {
   --glow-med: rgba(var(--accent-rgb),0.12);
   --glow-strong: rgba(var(--accent-rgb),0.22);
 }
-html[data-mode="light"] #matrix-bg { opacity: 0.18; }
+html[data-mode="light"] #matrix-bg { opacity: 0.24; }
 html[data-mode="light"] .hero h1 .flag-white,
 html[data-mode="light"] .hero h1 .flag-red { text-shadow: none; }
 html[data-mode="light"] .latest-post,
@@ -2012,12 +2012,15 @@ body::before {
 .bub-step:nth-child(3) .bub-word { color: var(--accent); text-shadow: 0 0 22px rgba(var(--accent-rgb),0.45); }
 .bub-desc { display: block; margin-top: 10px; font-family: var(--font-prose);
   font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary); }
-.bub-creed { margin: 0; max-width: 70ch; }
+.bub-creed { margin: 0; }
 .bub-creed p { font-family: var(--font-prose); font-size: 1.0rem;
   line-height: 1.75; color: var(--text-primary); margin: 0 0 12px; }
 .bub-creed p:first-child { color: var(--text-bright); font-size: 1.08rem; }
 .bub-creed p:last-child { margin-bottom: 0; }
 .bub-creed em { color: var(--text-bright); font-style: italic; }
+.bub-creed .bub-sig { margin-top: 18px; font-family: var(--font-body); font-weight: 700;
+  font-size: 1.05rem; letter-spacing: 1px; color: var(--accent);
+  text-shadow: 0 0 18px rgba(var(--accent-rgb),0.35); }
 @media (max-width: 760px) {
   .bub-steps { grid-template-columns: 1fr; gap: 20px; }
   .bub-step { border-left: 0; border-top: 1px solid var(--border); padding: 16px 0 0; }
