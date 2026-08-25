@@ -1,0 +1,95 @@
+<!--
+{
+  "title": "The RAG → MCP → A2A Attack Surface — YANGA",
+  "description": "RAG, MCP, and A2A aren't three technologies — they're one continuous path of untrusted data. A map of where it becomes instructions, then actions, then someone else's problem.",
+  "layout": "base",
+  "activeNav": "blog",
+  "date": "2026-08-21",
+  "excerpt": "RAG, MCP, and A2A aren't three technologies to secure separately — they're one pipe that untrusted data walks end to end. Here's the map."
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">rag-mcp-a2a-attack-surface</span></div>
+  <h1>The RAG → MCP → A2A Attack Surface</h1>
+  <div class="article-meta">
+    <span>AI AGENT SECURITY</span>
+    <span>August 2026</span>
+    <span>11 min read</span>
+  </div>
+</div>
+
+<article class="article-body">
+  <p class="lede">One pipe, not three products.</p>
+
+  <p>RAG, MCP, and A2A look like three separate technologies. From a security seat they are one thing: a single, continuous path that untrusted data walks from the open internet to the inside of your systems — and then to someone else's.</p>
+
+  <p>Those three acronyms describe how nearly every serious AI agent in production is built today. <strong>Retrieval-Augmented Generation (RAG)</strong> feeds a model external documents so it can answer with current or private knowledge. The <strong>Model Context Protocol (MCP)</strong> lets that model call tools — read files, query databases, fetch URLs. <strong>Agent-to-Agent (A2A)</strong> lets one agent hand work off to another. Stack them and you have the reference architecture for the modern agent.</p>
+
+  <p>The security problem sits at the center. The model has <em>no privilege separation</em>. Everything that reaches its context window — your instructions, a retrieved document, a tool's output, another agent's message — arrives as the same undifferentiated text, and the model acts on all of it with equal authority. So these are not three isolated surfaces to harden separately. They are one pipe, and untrusted data flows through it end to end.</p>
+
+  <h2 id="the-pipe">The pipe</h2>
+
+  <pre><code>  untrusted sources         the model               real world            other agents
+  ─────────────────        ───────────             ──────────           ─────────────
+   web page / doc   ──▶  [ RAG retrieval ] ──▶   context window  ──▶  [ MCP tools ] ──▶  OS · net · secrets
+   stored record          indirect injection      no privilege         injection
+   attacker upload                                 separation           becomes action
+                                                        │
+                                                        └──▶  [ A2A hand-off ] ──▶  downstream agent
+                                                                                    (trusts the output)
+
+   ▲ "retrieved text        ▲ "server text          ▲ "a tool arg is      ▲ "a peer agent's
+      is just data"            is inert docs"           just an arg"          message is trusted"</code></pre>
+
+  <p>Every arrow is a place where untrusted data becomes trusted. Those arrows are the bugs. Walk the pipe one stage at a time.</p>
+
+  <h2 id="rag-the-intake">Stage 1 — RAG: the intake</h2>
+
+  <p>RAG's job is to pull relevant external content into the prompt so the model can use it. That content is, by definition, not written by you — it's a web page, a wiki article, a support ticket, a PDF a user uploaded. The instant it lands in the context window it is read with the same authority as your system prompt.</p>
+
+  <p>This is <strong>indirect prompt injection</strong>, and RAG is its delivery mechanism at scale. An attacker who can influence a single document that <em>might</em> get retrieved can plant instructions the model will later obey — no access to your servers required, just access to something your retriever ingests. The assumption that breaks is the oldest one in this field: that retrieved text is data, not instructions. In an LLM, that distinction does not exist.</p>
+
+  <h2 id="mcp-becomes-action">Stage 2 — MCP: injection becomes action</h2>
+
+  <p>On its own, an injected instruction is a curiosity — it can make the model <em>say</em> something. MCP is what turns it into an <em>action</em>. MCP is a JSON-RPC 2.0 protocol that exposes tools to the model: a filesystem reader, a shell, an HTTP fetcher, a database client.</p>
+
+  <p>Once the model can call tools, the instruction planted in Stage 1 can trigger one — and the classic bug classes are back, reached through the model instead of through a request. A fetch tool becomes <strong>SSRF</strong> (point it at cloud metadata). A shell tool becomes <strong>command injection</strong>. A file tool becomes <strong>path traversal</strong>. MCP also adds its own surface: the tool <em>descriptions</em> the model reads on every call are themselves attacker-controllable text — tool-description poisoning, or "line jumping." The assumptions that break here: that a tool argument is just an argument, and that the model only calls tools the user intended.</p>
+
+  <h2 id="a2a-blast-radius">Stage 3 — A2A: the blast radius</h2>
+
+  <p>A2A lets an agent delegate to another agent. The output of a compromised agent — or the compromised agent itself — now becomes input to a peer that trusts it. A poisoned document from Stage 1, escalated to a tool call in Stage 2, becomes a foothold that spreads across an agent mesh in Stage 3.</p>
+
+  <p>This is the <strong>confused deputy</strong> problem at the network level: agent B acts on agent A's behalf, with A's privileges, on the strength of a message A had no reason to trust. The assumption that breaks: that a peer agent's messages are trustworthy because they came from "inside."</p>
+
+  <h2 id="lethal-trifecta">The lethal trifecta, by construction</h2>
+
+  <p>Simon Willison's framing says an agent is dangerous when it holds all three of: access to <strong>private data</strong>, exposure to <strong>untrusted content</strong>, and the ability to <strong>communicate externally</strong>. The uncomfortable thing about this architecture is that it has all three <em>by default</em>. RAG supplies private data and untrusted content. MCP and A2A supply the ability to act and to reach outward. You don't assemble the trifecta by accident in this stack — it's the baseline. That is why the pipeline is inherently dangerous, not because any single component is buggy.</p>
+
+  <h2 id="where-the-bugs-are">Where the bugs will be</h2>
+
+  <p>This is a map, not a disclosure — there are no CVEs in this post. But a map should make predictions. Before I open any repository built on this stack, these are the three things I check first, in this order:</p>
+
+  <table>
+    <thead><tr><th>Stage</th><th>Attacker input</th><th>Bug class</th><th>CWE</th></tr></thead>
+    <tbody>
+      <tr><td>RAG</td><td>Poisoned retrieved document</td><td>Indirect prompt injection</td><td>CWE-1427</td></tr>
+      <tr><td>MCP</td><td>Model-controlled tool arguments</td><td>SSRF · command injection · path traversal</td><td>CWE-918 · CWE-78 · CWE-22</td></tr>
+      <tr><td>A2A</td><td>Trusted peer message</td><td>Confused deputy · broken authz</td><td>CWE-441 · CWE-862</td></tr>
+    </tbody>
+  </table>
+
+  <ul>
+    <li><strong>RAG stores that don't isolate tenant data</strong> — one user's uploaded document retrieved into another user's context.</li>
+    <li><strong>MCP servers that shell out or fetch with model-controlled arguments and no allowlist</strong> — the <code>mcp-remote</code>-class bug family.</li>
+    <li><strong>A2A links with weak or no authentication</strong> — trust granted by network position instead of identity.</li>
+  </ul>
+
+  <p>Every one of those is a trust boundary drawn in the wrong place, and none of them requires understanding a transformer. That's the whole point: this is an application-security problem wearing an AI costume, and the systems knowledge a pentester already has is most of what it takes to find these.</p>
+
+  <h2 id="next">Next</h2>
+
+  <p>This post is the map. The next step is to build a deliberately vulnerable instance of the pipeline — a RAG store, an MCP server, an A2A hand-off, each wired to fail on purpose — and walk a single exploit through all three stages. That's where the map gets tested against reality, and it's what the next posts in this series will do.</p>
+
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-top:28px;"><em>All exploitation described here is confined to intentionally vulnerable local labs or explicitly authorized targets. Real-world systems get methodology and defensive boundaries only.</em></p>
+</article>

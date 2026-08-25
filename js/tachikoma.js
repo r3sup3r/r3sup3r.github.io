@@ -12,29 +12,21 @@
   function headSVG() {
     return '' +
     '<svg class="tk-svg" viewBox="0 0 100 100" aria-hidden="true">' +
-      '<defs><radialGradient id="tkDome" cx="50%" cy="38%" r="70%">' +
-        '<stop offset="0%" stop-color="#1b2740"/><stop offset="100%" stop-color="#0b111d"/>' +
-      '</radialGradient>' +
-      '<radialGradient id="tkDomeLight" cx="50%" cy="38%" r="70%">' +
-        '<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d9e2f2"/>' +
-      '</radialGradient></defs>' +
-      '<path class="tk-dome" d="M50 12 C75 12 89 29 89 54 C89 77 74 91 50 91 C26 91 11 77 11 54 C11 29 25 12 50 12 Z"/>' +
-      // top periscope sensors
-      '<circle class="tk-sensor" cx="31" cy="25" r="6"/><circle class="tk-glow" cx="31" cy="25" r="2.4"/>' +
-      '<circle class="tk-sensor" cx="69" cy="25" r="6"/><circle class="tk-glow" cx="69" cy="25" r="2.4"/>' +
-      // big front eyes (the cute part)
+      // wireframe dome
+      '<path class="tk-dome" d="M50 14 C73 14 87 30 87 53 C87 75 73 88 50 88 C27 88 13 75 13 53 C13 30 27 14 50 14 Z"/>' +
+      // antenna
+      '<line class="tk-ant" x1="31" y1="14.5" x2="31" y2="6"/><circle class="tk-glow" cx="31" cy="5" r="2.4"/>' +
+      // eyes: thin rings + tracking pupils
       '<g class="tk-eyes">' +
-        '<circle class="tk-lens" cx="35" cy="55" r="15"/>' +
-        '<circle class="tk-lens" cx="65" cy="55" r="15"/>' +
+        '<circle class="tk-lens" cx="37" cy="52" r="11"/>' +
+        '<circle class="tk-lens" cx="63" cy="52" r="11"/>' +
         '<g class="tk-pupils">' +
-          '<circle class="tk-iris" cx="35" cy="55" r="8"/>' +
-          '<circle class="tk-shine" cx="31.5" cy="51.5" r="3"/>' +
-          '<circle class="tk-iris" cx="65" cy="55" r="8"/>' +
-          '<circle class="tk-shine" cx="61.5" cy="51.5" r="3"/>' +
+          '<circle class="tk-iris" cx="37" cy="52" r="3.4"/>' +
+          '<circle class="tk-iris" cx="63" cy="52" r="3.4"/>' +
         '</g>' +
       '</g>' +
-      // little chin sensor
-      '<circle class="tk-sensor" cx="50" cy="78" r="5.5"/><circle class="tk-glow" cx="50" cy="78" r="2.2"/>' +
+      // mouth
+      '<line class="tk-mouth" x1="42" y1="74" x2="58" y2="74"/>' +
     '</svg>';
   }
 
@@ -47,12 +39,11 @@
   '#tk-fab .tk-ping{position:absolute;top:5px;right:6px;width:11px;height:11px;border-radius:50%;' +
     'background:var(--accent);box-shadow:0 0 8px rgba(var(--accent-rgb),.9);border:2px solid var(--bg-deep);}' +
   '.tk-svg{width:100%;height:100%;display:block;overflow:visible;}' +
-  '.tk-dome{fill:url(#tkDome);stroke:rgba(var(--accent-rgb),.55);stroke-width:2.5;}' +
-  '.tk-lens{fill:#0a0f1a;stroke:rgba(var(--accent-rgb),.5);stroke-width:2;}' +
-  '.tk-iris{fill:var(--accent);filter:drop-shadow(0 0 4px rgba(var(--accent-rgb),.9));}' +
-  '.tk-shine{fill:#eaf6ff;}' +
-  '.tk-sensor{fill:#0a0f1a;stroke:rgba(var(--accent-rgb),.4);stroke-width:1.5;}' +
-  '.tk-glow{fill:var(--accent);}' +
+  '.tk-dome{fill:none;stroke:rgba(var(--accent-rgb),.7);stroke-width:2.2;}' +
+  '.tk-lens{fill:none;stroke:rgba(var(--accent-rgb),.6);stroke-width:2;}' +
+  '.tk-iris{fill:var(--accent);filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),.95));}' +
+  '.tk-ant,.tk-mouth{stroke:rgba(var(--accent-rgb),.6);stroke-width:1.6;stroke-linecap:round;}' +
+  '.tk-glow{fill:var(--accent);filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),.9));}' +
   '.tk-eyes{transform-box:fill-box;transform-origin:center;transition:transform .09s ease;}' +
   '.tk-head-bar,.tk-body,.tk-input{position:relative;z-index:1;}' +
   '#tk-fab.tk-blink .tk-eyes,#tk-head.tk-blink .tk-eyes{transform:scaleY(.12);}' +
@@ -116,10 +107,9 @@
   '[data-mode="light"] #tk-panel{background:rgba(248,250,253,.96);box-shadow:0 20px 60px rgba(30,45,80,.25);}' +
   '[data-mode="light"] .tk-msg.me{background:rgba(20,30,55,.05);}' +
   '[data-mode="light"] .tk-input input{background:rgba(20,30,55,.05);}' +
-  '[data-mode="light"] .tk-shine{fill:#ffffff;}' +
-  '[data-mode="light"] .tk-dome{fill:url(#tkDomeLight);stroke:rgba(var(--accent-rgb),.65);}' +
-  '[data-mode="light"] .tk-lens{fill:#1a2338;stroke:rgba(var(--accent-rgb),.55);}' +
-  '[data-mode="light"] .tk-sensor{fill:#e6ecf7;stroke:rgba(var(--accent-rgb),.55);}' +
+  '[data-mode="light"] .tk-dome{stroke:rgba(var(--accent-rgb),.8);}' +
+  '[data-mode="light"] .tk-lens{stroke:rgba(var(--accent-rgb),.7);}' +
+  '[data-mode="light"] .tk-ant,[data-mode="light"] .tk-mouth{stroke:rgba(var(--accent-rgb),.7);}' +
   '[data-mode="light"] #tk-fab{filter:drop-shadow(0 6px 16px rgba(30,45,80,.30));}' +
   '[data-mode="light"] #tk-fab .tk-ping{border-color:#eef1f7;}' +
   '@media(max-width:480px){#tk-panel{height:70vh;}}' +
