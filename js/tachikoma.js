@@ -9,25 +9,19 @@
   window.__tachikomaInit = true;
 
   // ---- cute Tachikoma head (shared by FAB + panel header) ----
-  function headSVG() {
+  function faceHTML() {
     return '' +
-    '<svg class="tk-svg" viewBox="0 0 100 100" aria-hidden="true">' +
-      // wireframe dome
-      '<path class="tk-dome" d="M50 14 C73 14 87 30 87 53 C87 75 73 88 50 88 C27 88 13 75 13 53 C13 30 27 14 50 14 Z"/>' +
-      // antenna
-      '<line class="tk-ant" x1="31" y1="14.5" x2="31" y2="6"/><circle class="tk-glow" cx="31" cy="5" r="2.4"/>' +
-      // eyes: thin rings + tracking pupils
-      '<g class="tk-eyes">' +
-        '<circle class="tk-lens" cx="37" cy="52" r="11"/>' +
-        '<circle class="tk-lens" cx="63" cy="52" r="11"/>' +
-        '<g class="tk-pupils">' +
-          '<circle class="tk-iris" cx="37" cy="52" r="3.4"/>' +
-          '<circle class="tk-iris" cx="63" cy="52" r="3.4"/>' +
-        '</g>' +
-      '</g>' +
-      // mouth
-      '<line class="tk-mouth" x1="42" y1="74" x2="58" y2="74"/>' +
-    '</svg>';
+    '<span class="rs-face" aria-hidden="true">' +
+      '<span class="rs-ring"></span>' +
+      '<span class="rs-eyes"><span class="rs-eye"></span><span class="rs-eye"></span></span>' +
+      '<span class="rs-mouth"></span>' +
+      '<span class="rs-dots"><i></i><i></i><i></i></span>' +
+      '<span class="rs-wave"><i></i><i></i><i></i><i></i></span>' +
+      '<span class="rs-load"></span>' +
+      '<span class="rs-check"></span>' +
+      '<span class="rs-x"></span>' +
+      '<span class="rs-mark">?</span>' +
+    '</span>';
   }
 
   var CSS = '' +
@@ -36,18 +30,63 @@
     'animation:tk-bob 4.5s ease-in-out infinite;transition:transform .2s ease,opacity .2s ease;}' +
   '#tk-fab:hover{transform:translateY(-3px) scale(1.05);}' +
   '#tk-fab:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:50%;}' +
+  '#tk-fab::before{content:"";position:absolute;inset:-48%;border-radius:50%;background:radial-gradient(circle,rgba(var(--accent-rgb),.24),rgba(var(--accent-rgb),0) 66%);z-index:-1;pointer-events:none;animation:rs-halo-pulse 3.2s ease-in-out infinite;}' +
+  '@keyframes rs-halo-pulse{0%,100%{opacity:.5;transform:scale(.95);}50%{opacity:1;transform:scale(1.07);}}' +
+  '#tk-fab:hover::before{opacity:1;transform:scale(1.14);}' +
   '#tk-fab .tk-ping{position:absolute;top:5px;right:6px;width:11px;height:11px;border-radius:50%;' +
     'background:var(--accent);box-shadow:0 0 8px rgba(var(--accent-rgb),.9);border:2px solid var(--bg-deep);}' +
   '.tk-svg{width:100%;height:100%;display:block;overflow:visible;}' +
-  '.tk-dome{fill:none;stroke:rgba(var(--accent-rgb),.7);stroke-width:2.2;}' +
-  '.tk-lens{fill:none;stroke:rgba(var(--accent-rgb),.6);stroke-width:2;}' +
-  '.tk-iris{fill:var(--accent);filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),.95));}' +
-  '.tk-ant,.tk-mouth{stroke:rgba(var(--accent-rgb),.6);stroke-width:1.6;stroke-linecap:round;}' +
-  '.tk-glow{fill:var(--accent);filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),.9));}' +
-  '.tk-eyes{transform-box:fill-box;transform-origin:center;transition:transform .09s ease;}' +
+  '.rs-face{display:block;position:relative;width:100%;height:100%;border-radius:50%;container-type:size;}' +
+  '.rs-ring{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 40%,#13223c,#070c15 78%);border:1.5px solid rgba(var(--accent-rgb),.8);box-shadow:0 0 8px rgba(var(--accent-rgb),.38),inset 0 0 8px rgba(var(--accent-rgb),.18);animation:rs-breathe 4s ease-in-out infinite;}' +
+  '.rs-ring:after{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,rgba(0,0,0,0) 1px 3px);opacity:.5;pointer-events:none;}' +
+  '@keyframes rs-breathe{0%,100%{box-shadow:0 0 6px rgba(var(--accent-rgb),.34),inset 0 0 6px rgba(var(--accent-rgb),.15);}50%{box-shadow:0 0 12px rgba(var(--accent-rgb),.55),inset 0 0 10px rgba(var(--accent-rgb),.26);}}' +
+  '.rs-eyes{position:absolute;top:37%;left:0;right:0;display:flex;justify-content:center;gap:20%;transform:translate(var(--ex,0px),var(--ey,0px));transition:transform .05s linear;}' +
+  '.rs-eye{width:15%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 42%,#e2f4ff,var(--accent) 62%);box-shadow:0 0 5px rgba(var(--accent-rgb),.9),0 0 0 1.5px rgba(var(--accent-rgb),.18);}' +
+  '.rs-mouth{position:absolute;top:63%;left:50%;transform:translateX(-50%);width:26%;height:6%;border-radius:3px;background:rgba(var(--accent-rgb),.9);box-shadow:0 0 5px rgba(var(--accent-rgb),.7);display:none;}' +
+  '.rs-dots{position:absolute;top:60%;left:0;right:0;display:none;justify-content:center;gap:9%;}' +
+  '.rs-dots i{width:8%;aspect-ratio:1;border-radius:50%;background:var(--accent);box-shadow:0 0 5px rgba(var(--accent-rgb),.9);animation:rs-dot 1s infinite;}' +
+  '.rs-dots i:nth-child(2){animation-delay:.15s;}.rs-dots i:nth-child(3){animation-delay:.3s;}' +
+  '@keyframes rs-dot{0%,60%,100%{opacity:.25;transform:translateY(0);}30%{opacity:1;transform:translateY(-20%);}}' +
+  '.rs-wave{position:absolute;top:56%;left:0;right:0;height:18%;display:none;justify-content:center;align-items:center;gap:7%;}' +
+  '.rs-wave i{width:6%;height:30%;border-radius:2px;background:var(--accent);box-shadow:0 0 5px rgba(var(--accent-rgb),.9);animation:rs-bar .7s infinite ease-in-out;}' +
+  '.rs-wave i:nth-child(2){animation-delay:.1s;}.rs-wave i:nth-child(3){animation-delay:.2s;}.rs-wave i:nth-child(4){animation-delay:.3s;}' +
+  '@keyframes rs-bar{0%,100%{height:22%;}50%{height:92%;}}' +
+  '.rs-check{position:absolute;top:46%;left:38%;width:24%;height:12%;display:none;border-left:3px solid #35e08e;border-bottom:3px solid #35e08e;transform:rotate(-45deg);}' +
+  '.rs-face.is-thinking .rs-mouth{display:none;}.rs-face.is-thinking .rs-dots{display:flex;}' +
+  '.rs-face.is-speaking .rs-mouth{display:none;}.rs-face.is-speaking .rs-wave{display:flex;}' +
+  '.rs-face.is-success .rs-mouth,.rs-face.is-success .rs-eyes{opacity:0;}.rs-face.is-success .rs-check{display:block;}.rs-face.is-success .rs-ring{animation:none;border-color:#35e08e;box-shadow:0 0 13px rgba(53,224,142,.6),inset 0 0 9px rgba(53,224,142,.25);}' +
+  '.rs-face.is-happy .rs-mouth{width:36%;height:16%;background:none;box-shadow:none;border-bottom:3px solid rgba(var(--accent-rgb),.95);border-radius:0 0 60px 60px/0 0 34px 34px;top:54%;}' +
+  '.rs-face.is-excited .rs-eye{width:17%;}' +
+  '.rs-face.is-excited .rs-mouth{width:17%;height:17%;border-radius:50%;top:57%;}' +
+  '.rs-face.is-excited .rs-ring{animation-duration:1.5s;}' +
+  '.rs-face.is-confused .rs-eye:last-child{transform:scale(.65);align-self:flex-start;}' +
+  '.rs-face.is-confused .rs-mouth{width:15%;transform:translateX(-50%) rotate(14deg);top:64%;}' +
+  '.rs-face.is-confused .rs-mark{display:block;}' +
+  '.rs-face.is-loading .rs-eyes,.rs-face.is-loading .rs-mouth{opacity:.2;}' +
+  '.rs-face.is-loading .rs-load{display:block;}' +
+  '.rs-face.is-error .rs-eyes,.rs-face.is-error .rs-mouth{opacity:0;}' +
+  '.rs-face.is-error .rs-x{display:block;}' +
+  '.rs-face.is-error .rs-ring{animation:none;border-color:#ff5a5a;box-shadow:0 0 13px rgba(255,90,90,.6),inset 0 0 9px rgba(255,90,90,.25);}' +
+  '.rs-load{position:absolute;inset:15%;border-radius:50%;border:3px solid transparent;border-top-color:var(--accent);display:none;animation:rs-spin .8s linear infinite;}' +
+  '@keyframes rs-spin{to{transform:rotate(360deg);}}' +
+  '.rs-x{position:absolute;inset:35%;display:none;}' +
+  '.rs-x:before,.rs-x:after{content:"";position:absolute;top:calc(50% - 1.5px);left:0;width:100%;height:3px;background:#ff5a5a;border-radius:2px;box-shadow:0 0 5px rgba(255,90,90,.7);}' +
+  '.rs-x:before{transform:rotate(45deg);}.rs-x:after{transform:rotate(-45deg);}' +
+  '.rs-mark{position:absolute;top:-2%;right:8%;display:none;color:var(--accent);font-weight:700;font-size:40cqmin;line-height:1;text-shadow:0 0 5px rgba(var(--accent-rgb),.8);}' +
+  '.rs-boot .rs-face{animation:rs-poweron .6s ease-out;}' +
+  '@keyframes rs-poweron{0%{opacity:0;transform:scaleY(.05) scaleX(.7);}18%{opacity:1;transform:scaleY(.08) scaleX(1);}32%{opacity:.6;transform:scaleY(1.06) scaleX(1);}46%{opacity:1;}62%{opacity:.55;}80%{opacity:1;}100%{opacity:1;transform:scale(1);}}' +
   '.tk-head-bar,.tk-body,.tk-input{position:relative;z-index:1;}' +
-  '#tk-fab.tk-blink .tk-eyes,#tk-head.tk-blink .tk-eyes{transform:scaleY(.12);}' +
+  '#tk-fab.tk-blink .rs-eyes,#tk-head.tk-blink .rs-eyes{transform:translate(var(--ex,0px),var(--ey,0px)) scaleY(.12);}' +
   '@keyframes tk-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}' +
+  '#tk-bubble{position:fixed;right:22px;bottom:100px;max-width:236px;z-index:119;cursor:pointer;background:rgba(10,14,20,.96);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:12px;padding:10px 13px 11px;color:var(--text-primary);font-family:var(--font-prose,sans-serif);font-size:.82rem;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 14px rgba(var(--accent-rgb),.12);opacity:0;transform:translateY(8px) scale(.96);transform-origin:bottom right;transition:opacity .3s ease,transform .3s ease;pointer-events:none;}' +
+  '#tk-bubble .tk-b-hint{display:block;font-family:var(--font-body,monospace);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);opacity:.85;margin-bottom:5px;}' +
+  '#tk-bubble.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;animation:tk-bub-in .34s ease;}' +
+  '#tk-bubble:hover{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 18px rgba(var(--accent-rgb),.24);}' +
+  '#tk-bubble::after{content:"";position:absolute;bottom:-6px;right:24px;width:11px;height:11px;background:rgba(10,14,20,.96);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}' +
+  '@keyframes tk-bub-in{0%{opacity:0;transform:translateY(12px) scale(.9);}60%{transform:translateY(-2px) scale(1.02);}100%{opacity:1;transform:translateY(0) scale(1);}}' +
+  'body.tk-open #tk-bubble{opacity:0!important;pointer-events:none!important;}' +
+  '[data-mode="light"] #tk-bubble{background:rgba(248,250,253,.98);color:#28344c;}' +
+  '[data-mode="light"] #tk-bubble::after{background:rgba(248,250,253,.98);}' +
   // panel
   '#tk-panel{position:fixed;bottom:24px;right:24px;width:340px;max-width:calc(100vw - 32px);height:460px;' +
     'max-height:calc(100vh - 120px);z-index:121;display:flex;flex-direction:column;overflow:hidden;' +
@@ -107,13 +146,14 @@
   '[data-mode="light"] #tk-panel{background:rgba(248,250,253,.96);box-shadow:0 20px 60px rgba(30,45,80,.25);}' +
   '[data-mode="light"] .tk-msg.me{background:rgba(20,30,55,.05);}' +
   '[data-mode="light"] .tk-input input{background:rgba(20,30,55,.05);}' +
-  '[data-mode="light"] .tk-dome{stroke:rgba(var(--accent-rgb),.8);}' +
-  '[data-mode="light"] .tk-lens{stroke:rgba(var(--accent-rgb),.7);}' +
-  '[data-mode="light"] .tk-ant,[data-mode="light"] .tk-mouth{stroke:rgba(var(--accent-rgb),.7);}' +
+  '[data-mode="light"] .rs-ring{border-color:rgba(var(--accent-rgb),1);border-width:2px;}' +
+  '[data-mode="light"] .rs-ring:after{opacity:.35;}' +
+  '[data-mode="light"] #tk-fab::before{background:radial-gradient(circle,rgba(var(--accent-rgb),.34),rgba(var(--accent-rgb),0) 62%);}' +
+  '[data-mode="light"] .rs-eye{box-shadow:0 0 6px rgba(var(--accent-rgb),1),0 0 0 1.5px rgba(var(--accent-rgb),.25);}' +
   '[data-mode="light"] #tk-fab{filter:drop-shadow(0 6px 16px rgba(30,45,80,.30));}' +
   '[data-mode="light"] #tk-fab .tk-ping{border-color:#eef1f7;}' +
   '@media(max-width:480px){#tk-panel{height:70vh;}}' +
-  '@media(prefers-reduced-motion:reduce){#tk-fab{animation:none;}}';
+  '@media(prefers-reduced-motion:reduce){#tk-fab,#tk-fab::before,.rs-ring,.rs-dots i,.rs-wave i{animation:none!important;}}';
 
   var GREETING = [
     "こんにちは！ I'm resuper — YANGA's little recon unit. 🕷️",
@@ -128,6 +168,25 @@
   ];
   var replyIdx = 0;
 
+  var QA = [
+    { q: "Difference between an AI agent and an LLM?",
+      a: "An LLM just predicts text — input in, text out, no memory, no hands. An agent wraps that model in a loop, gives it tools, memory and a goal, and lets it act until the goal is met. The model is the brain; the agent is the brain plus a body and the authority to use it." },
+    { q: "RAG vs MCP — what's the difference?",
+      a: "RAG feeds the model knowledge: it retrieves documents into the prompt so it can answer with current or private info. MCP gives the model hands: a protocol to call tools — read files, query databases, fetch URLs. RAG is what it reads; MCP is what it can do." },
+    { q: "Prompt injection vs jailbreak?",
+      a: "A jailbreak makes the model ignore its own safety rules. Prompt injection hijacks the app around the model — malicious text hidden in a document or tool output that the model then obeys as if it were your instruction. Jailbreak targets the model; injection targets the system." },
+    { q: "What's the 'confused deputy' in agent security?",
+      a: "A trusted component tricked into misusing its authority for an attacker. An MCP server or a downstream agent acts with its own privileges because a message told it to — without checking whether that request should be trusted. An old web-security bug in new agent clothing." },
+    { q: "MCP vs A2A?",
+      a: "MCP connects a model to tools (model to filesystem, database, API). A2A connects a model to other agents (agent to agent delegation). MCP goes down to capabilities; A2A goes across to peers. Both are pipes untrusted data can travel through." },
+    { q: "What's the 'lethal trifecta'?",
+      a: "Simon Willison's rule: an agent is dangerous when it holds all three — access to private data, exposure to untrusted content, and the ability to communicate externally. Any one alone is safe; together they let an injection read secrets and exfiltrate them. Most real agent stacks have all three by default." },
+    { q: "Agent vs automation workflow — where's the line?",
+      a: "A workflow follows a fixed script you wrote — deterministic steps. An agent chooses its own next step at runtime from what it observes. The line is who picks the path: your code, or the model. Autonomy is the line, and the risk." },
+    { q: "Why can't the model tell a trusted instruction from data?",
+      a: "Because the context window has no privilege separation — your system prompt, a user message, a retrieved document and a tool's output all arrive as the same undifferentiated text, and the model acts on all of it with equal authority. That flatness is the root cause of most agent-security bugs." }
+  ];
+
   function build() {
     if (document.getElementById('tk-fab')) return;
 
@@ -140,8 +199,12 @@
     fab.id = 'tk-fab';
     fab.type = 'button';
     fab.setAttribute('aria-label', 'Open chat with resuper');
-    fab.innerHTML = headSVG() + '<span class="tk-ping"></span>';
+    fab.innerHTML = faceHTML();
     document.body.appendChild(fab);
+
+    // power-on flicker
+    fab.classList.add('rs-boot');
+    setTimeout(function () { fab.classList.remove('rs-boot'); }, 650);
 
     var panel = document.createElement('div');
     panel.id = 'tk-panel';
@@ -150,9 +213,9 @@
     panel.innerHTML =
       '<div class="tk-scan" aria-hidden="true"></div>' +
       '<div class="tk-head-bar">' +
-        '<div id="tk-head">' + headSVG() + '</div>' +
+        '<div id="tk-head">' + faceHTML() + '</div>' +
         '<div class="tk-id"><span class="tk-name">RESUPER</span>' +
-        '<span class="tk-status">placeholder · offline</span></div>' +
+        '<span class="tk-status">recon unit · standby</span></div>' +
         '<button class="tk-close" type="button" aria-label="Close chat">✕</button>' +
       '</div>' +
       '<div class="tk-body" id="tk-body"></div>' +
@@ -168,8 +231,8 @@
     var seeded = false;
 
     // ---- cursor-tracking eyes (FAB head) ----
-    var pupils = fab.querySelector('.tk-pupils');
-    var tX = 0, tY = 0, cX = 0, cY = 0, MAXS = 4.2, NEAR = 260;
+    var eyes = fab.querySelector('.rs-eyes');
+    var tX = 0, tY = 0, cX = 0, cY = 0, MAXS = 3.2, NEAR = 260;
     document.addEventListener('mousemove', function (e) {
       if (document.body.classList.contains('tk-open')) { tX = tY = 0; return; }
       var r = fab.getBoundingClientRect();
@@ -181,7 +244,7 @@
     });
     (function follow() {
       cX += (tX - cX) * 0.18; cY += (tY - cY) * 0.18;
-      if (pupils) pupils.setAttribute('transform', 'translate(' + cX.toFixed(2) + ' ' + cY.toFixed(2) + ')');
+      if (eyes) { eyes.style.setProperty('--ex', cX.toFixed(1) + 'px'); eyes.style.setProperty('--ey', cY.toFixed(1) + 'px'); }
       requestAnimationFrame(follow);
     })();
 
@@ -194,6 +257,13 @@
         body.appendChild(m);
         body.scrollTop = body.scrollHeight;
       }, delay || 0);
+    }
+
+    function setState(s) {
+      document.querySelectorAll('.rs-face').forEach(function (f) {
+        f.classList.remove('is-thinking', 'is-speaking', 'is-success');
+        if (s && s !== 'idle') f.classList.add('is-' + s);
+      });
     }
 
     function open() {
@@ -227,9 +297,51 @@
       if (!v) return;
       addMsg('me', v);
       text.value = '';
-      addMsg('bot', REPLIES[replyIdx % REPLIES.length], 500);
-      replyIdx++;
+      setState('thinking');
+      setTimeout(function () {
+        addMsg('bot', REPLIES[replyIdx % REPLIES.length]);
+        replyIdx++;
+        setState('speaking');
+        setTimeout(function () { setState('idle'); }, 1400);
+      }, 700);
     });
+
+    // ---- teaser question bubble ----
+    var bubble = document.createElement('div');
+    bubble.id = 'tk-bubble';
+    bubble.setAttribute('role', 'button');
+    bubble.setAttribute('aria-label', 'Ask resuper the shown question');
+    document.body.appendChild(bubble);
+    var qaLast = -1, activeQA = null, bubbleT;
+    function pickQA() { var i; do { i = Math.floor(Math.random() * QA.length); } while (QA.length > 1 && i === qaLast); qaLast = i; return QA[i]; }
+    function showBubble(auto) {
+      if (document.body.classList.contains('tk-open')) return;
+      activeQA = pickQA();
+      bubble.innerHTML = '<span class="tk-b-hint">resuper asks</span>' + activeQA.q;
+      bubble.classList.add('show');
+      clearTimeout(bubbleT);
+      if (auto) bubbleT = setTimeout(function () { bubble.classList.remove('show'); }, 6500);
+    }
+    function hideBubble() { clearTimeout(bubbleT); bubble.classList.remove('show'); }
+    fab.addEventListener('mouseenter', function () { if (!document.body.classList.contains('tk-open')) showBubble(false); });
+    fab.addEventListener('mouseleave', function () { clearTimeout(bubbleT); bubbleT = setTimeout(hideBubble, 1600); });
+    fab.addEventListener('click', hideBubble);
+    bubble.addEventListener('mouseenter', function () { clearTimeout(bubbleT); });
+    bubble.addEventListener('mouseleave', function () { bubbleT = setTimeout(hideBubble, 1400); });
+    bubble.addEventListener('click', function () {
+      var qa = activeQA; hideBubble(); if (!qa) return;
+      var wasSeeded = seeded;
+      open();
+      var d = wasSeeded ? 150 : 1250;
+      addMsg('me', qa.q, d);
+      setTimeout(function () { setState('thinking'); }, d);
+      addMsg('bot', qa.a, d + 950);
+      setTimeout(function () { setState('speaking'); setTimeout(function () { setState('idle'); }, 1700); }, d + 950);
+    });
+    setInterval(function () {
+      if (document.body.classList.contains('tk-open') || bubble.classList.contains('show')) return;
+      if (Math.random() < 0.45) showBubble(true);
+    }, 16000);
 
     // idle blink for cuteness
     (function blinkLoop() {
