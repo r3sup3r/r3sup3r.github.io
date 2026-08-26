@@ -36,13 +36,25 @@
   '#tk-fab .tk-ping{position:absolute;top:5px;right:6px;width:11px;height:11px;border-radius:50%;' +
     'background:var(--accent);box-shadow:0 0 8px rgba(var(--accent-rgb),.9);border:2px solid var(--bg-deep);}' +
   '.tk-svg{width:100%;height:100%;display:block;overflow:visible;}' +
-  '.rs-face{display:block;position:relative;width:100%;height:100%;border-radius:50%;container-type:size;}' +
-  '.rs-ring{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 40%,#13223c,#070c15 78%);border:1.5px solid rgba(var(--accent-rgb),.8);box-shadow:0 0 8px rgba(var(--accent-rgb),.38),inset 0 0 8px rgba(var(--accent-rgb),.18);animation:rs-breathe 4s ease-in-out infinite;}' +
-  '.rs-ring:after{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,rgba(0,0,0,0) 1px 3px);opacity:.5;pointer-events:none;}' +
+  '.rs-face{display:block;position:relative;width:100%;height:100%;border-radius:50%;container-type:size;--cell:3.1px;--dc:.95px;--de:1.4px;}' +
+  '.rs-face::before{content:"";position:absolute;inset:-14%;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(var(--accent-rgb),.13),transparent 62%);animation:rs-dmglow 4s ease-in-out infinite;}' +
+  '.rs-face::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.24) 0 1px,transparent 1px 3px);opacity:.4;z-index:5;}' +
+  '@keyframes rs-dmglow{0%,100%{opacity:.6;}50%{opacity:1;}}' +
+  '.rs-ring{position:absolute;inset:0;background-image:radial-gradient(circle,rgba(var(--accent-rgb),.95) 0 var(--dc),rgba(var(--accent-rgb),.5) calc(var(--dc) + .2px),rgba(var(--accent-rgb),0) var(--de));background-size:var(--cell) var(--cell);-webkit-mask:radial-gradient(circle at 50% 50%,transparent 0 41%,#000 42.5% 48.8%,transparent 50.2%);mask:radial-gradient(circle at 50% 50%,transparent 0 41%,#000 42.5% 48.8%,transparent 50.2%);filter:drop-shadow(0 0 1.5px rgba(var(--accent-rgb),.55));opacity:.9;}' +
+  '.rs-eyes .rs-eye{display:none;}' +
+  '#tk-head .rs-face{--cell:2.5px;--dc:.8px;--de:1.15px;}' +
   '@keyframes rs-breathe{0%,100%{box-shadow:0 0 6px rgba(var(--accent-rgb),.34),inset 0 0 6px rgba(var(--accent-rgb),.15);}50%{box-shadow:0 0 12px rgba(var(--accent-rgb),.55),inset 0 0 10px rgba(var(--accent-rgb),.26);}}' +
-  '.rs-eyes{position:absolute;top:37%;left:0;right:0;display:flex;justify-content:center;gap:20%;transform:translate(var(--ex,0px),var(--ey,0px));transition:transform .05s linear;}' +
-  '.rs-eye{width:15%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 42%,#e2f4ff,var(--accent) 62%);box-shadow:0 0 5px rgba(var(--accent-rgb),.9),0 0 0 1.5px rgba(var(--accent-rgb),.18);}' +
-  '.rs-mouth{position:absolute;top:63%;left:50%;transform:translateX(-50%);width:26%;height:6%;border-radius:3px;background:rgba(var(--accent-rgb),.9);box-shadow:0 0 5px rgba(var(--accent-rgb),.7);display:none;}' +
+  '.rs-eyes{position:absolute;inset:0;transform:translate(var(--ex,0px),var(--ey,0px));transform-origin:50% 45%;transition:transform .05s linear;background-image:radial-gradient(circle,#e8f5ff 0 calc(var(--dc) - .12px),rgba(var(--accent-rgb),1) calc(var(--dc) + .16px),rgba(var(--accent-rgb),.1) var(--de),rgba(var(--accent-rgb),0) calc(var(--de) + .5px));background-size:var(--cell) var(--cell);-webkit-mask:radial-gradient(circle 7cqmin at 30% 45.5%,#000 90%,transparent 100%),radial-gradient(circle 7cqmin at 70% 45.5%,#000 90%,transparent 100%);mask:radial-gradient(circle 7cqmin at 30% 45.5%,#000 90%,transparent 100%),radial-gradient(circle 7cqmin at 70% 45.5%,#000 90%,transparent 100%);filter:drop-shadow(0 0 4px rgba(var(--accent-rgb),.9));}' +
+  '[data-mode="light"] .rs-face{background:radial-gradient(circle at 50% 47%,rgba(10,16,28,.92),rgba(10,16,28,.84) 58%,rgba(10,16,28,0) 74%);}' +
+  '.rs-mouth{position:absolute;inset:0;background-image:radial-gradient(circle,#d3ecff 0 var(--dc),rgba(var(--accent-rgb),1) var(--de),rgba(var(--accent-rgb),0) calc(var(--de) + .45px));background-size:var(--cell) var(--cell);-webkit-mask:linear-gradient(#000,#000) no-repeat 50% 65% / 22% 5.5%;mask:linear-gradient(#000,#000) no-repeat 50% 65% / 22% 5.5%;filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),.8));}' +
+  'body.gh-outline .rs-ring{-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Cpath%20fill=%27none%27%20stroke=%27%23fff%27%20stroke-width=%276%27%20stroke-linejoin=%27round%27%20stroke-linecap=%27round%27%20d=%27M12,54%20a38,38%200%200%201%2076,0%20L88,85%20a9.5,7%200%200%201%20-19,0%20a9.5,7%200%200%201%20-19,0%20a9.5,7%200%200%201%20-19,0%20a9.5,7%200%200%201%20-19,0%20Z%27/%3E%3C/svg%3E") no-repeat center/contain;mask:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Cpath%20fill=%27none%27%20stroke=%27%23fff%27%20stroke-width=%276%27%20stroke-linejoin=%27round%27%20stroke-linecap=%27round%27%20d=%27M12,54%20a38,38%200%200%201%2076,0%20L88,85%20a9.5,7%200%200%201%20-19,0%20a9.5,7%200%200%201%20-19,0%20a9.5,7%200%200%201%20-19,0%20a9.5,7%200%200%201%20-19,0%20Z%27/%3E%3C/svg%3E") no-repeat center/contain;}' +
+  'body.gh-solid .rs-ring{-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Cpath%20fill-rule=%27evenodd%27%20fill=%27%23fff%27%20d=%27M12,54%20a38,38%200%200%201%2076,0%20L88,93%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.5,8%20Z%20M30,48%20a9,11%200%201%200%200.1,0%20Z%20M70,48%20a9,11%200%201%200%200.1,0%20Z%27/%3E%3C/svg%3E") no-repeat center/contain;mask:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Cpath%20fill-rule=%27evenodd%27%20fill=%27%23fff%27%20d=%27M12,54%20a38,38%200%200%201%2076,0%20L88,93%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.5,8%20Z%20M30,48%20a9,11%200%201%200%200.1,0%20Z%20M70,48%20a9,11%200%201%200%200.1,0%20Z%27/%3E%3C/svg%3E") no-repeat center/contain;}' +
+  'body.gh-solid .rs-eyes,body.gh-solid .rs-mouth{display:none;}' +
+  'body.gh-neon .rs-ring{background-image:none;background-color:rgba(var(--accent-rgb),1);-webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Cpath%20fill=%27none%27%20stroke=%27%23fff%27%20stroke-width=%273.5%27%20stroke-linejoin=%27round%27%20stroke-linecap=%27round%27%20d=%27M12,54%20a38,38%200%200%201%2076,0%20L88,93%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.5,8%20Z%27/%3E%3C/svg%3E") no-repeat center/contain;mask:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20100%20100%27%3E%3Cpath%20fill=%27none%27%20stroke=%27%23fff%27%20stroke-width=%273.5%27%20stroke-linejoin=%27round%27%20stroke-linecap=%27round%27%20d=%27M12,54%20a38,38%200%200%201%2076,0%20L88,93%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.7,8%20l-12.7,-8%20l-12.5,8%20Z%27/%3E%3C/svg%3E") no-repeat center/contain;opacity:1;filter:drop-shadow(0 0 3px rgba(var(--accent-rgb),.95)) drop-shadow(0 0 8px rgba(var(--accent-rgb),.5));}' +
+  'body.gh-neon .rs-eyes{background-image:radial-gradient(circle 7cqmin at 30% 45.5%,#e6f5ff 0 24%,var(--accent) 66%,transparent 100%),radial-gradient(circle 7cqmin at 70% 45.5%,#e6f5ff 0 24%,var(--accent) 66%,transparent 100%);background-size:100% 100%;background-repeat:no-repeat;-webkit-mask:none;mask:none;filter:drop-shadow(0 0 5px rgba(var(--accent-rgb),.95)) drop-shadow(0 0 10px rgba(var(--accent-rgb),.5));}' +
+  'body.gh-neon .rs-mouth{display:none;}' +
+  '#gh-dev{position:fixed;left:14px;bottom:14px;z-index:130;font-family:var(--font-body,monospace);font-size:11px;letter-spacing:1px;color:var(--accent);background:rgba(8,12,18,.9);border:1px solid rgba(var(--accent-rgb),.4);border-radius:5px;padding:5px 10px;cursor:pointer;opacity:.72;}' +
+  '#gh-dev:hover{opacity:1;}' +
   '.rs-dots{position:absolute;top:60%;left:0;right:0;display:none;justify-content:center;gap:9%;}' +
   '.rs-dots i{width:8%;aspect-ratio:1;border-radius:50%;background:var(--accent);box-shadow:0 0 5px rgba(var(--accent-rgb),.9);animation:rs-dot 1s infinite;}' +
   '.rs-dots i:nth-child(2){animation-delay:.15s;}.rs-dots i:nth-child(3){animation-delay:.3s;}' +
@@ -78,18 +90,19 @@
   '.tk-head-bar,.tk-body,.tk-input{position:relative;z-index:1;}' +
   '#tk-fab.tk-blink .rs-eyes,#tk-head.tk-blink .rs-eyes{transform:translate(var(--ex,0px),var(--ey,0px)) scaleY(.12);}' +
   '@keyframes tk-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}' +
-  '#tk-bubble{position:fixed;right:22px;bottom:100px;max-width:236px;z-index:119;cursor:pointer;background:rgba(10,14,20,.96);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:12px;padding:10px 13px 11px;color:var(--text-primary);font-family:var(--font-prose,sans-serif);font-size:.82rem;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 14px rgba(var(--accent-rgb),.12);opacity:0;clip-path:inset(50% 0 50% 0 round 2px);transform-origin:center;pointer-events:none;}' +
-  '#tk-bubble .tk-b-hint{display:block;font-family:var(--font-body,monospace);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);opacity:.85;margin-bottom:5px;}' +
-  '#tk-bubble.show{opacity:1;clip-path:inset(0 0 0 0 round 12px);pointer-events:auto;animation:tk-crt-on .44s cubic-bezier(.2,.8,.25,1);}' +
-  '#tk-bubble.closing{pointer-events:none;animation:tk-crt-off .3s ease-in forwards;}' +
+  '#tk-bubble{position:fixed;right:22px;bottom:100px;max-width:246px;z-index:119;cursor:pointer;background:rgba(30,42,62,.44);-webkit-backdrop-filter:blur(9px) saturate(1.2);backdrop-filter:blur(9px) saturate(1.2);border:1px solid rgba(var(--accent-rgb),.55);border-radius:14px;padding:13px 15px;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.4),0 0 18px rgba(var(--accent-rgb),.38),0 0 40px rgba(var(--accent-rgb),.2);opacity:0;clip-path:inset(50% 0 50% 0 round 3px);transform-origin:center;pointer-events:none;}' +
+  '#tk-bubble .tk-b-q{display:block;color:var(--text-bright);font-family:var(--font-prose,"Inter",sans-serif);font-size:.9rem;line-height:1.45;}' +
+  '#tk-bubble::after{content:"";position:absolute;bottom:-8px;right:30px;width:14px;height:14px;background:rgba(30,42,62,.44);-webkit-backdrop-filter:blur(9px) saturate(1.2);backdrop-filter:blur(9px) saturate(1.2);border-right:1px solid rgba(var(--accent-rgb),.55);border-bottom:1px solid rgba(var(--accent-rgb),.55);transform:rotate(45deg);border-bottom-right-radius:2px;}' +
+  '#tk-bubble.show{opacity:1;clip-path:inset(-44px -44px -44px -44px round 16px);pointer-events:auto;animation:tk-b-on .44s cubic-bezier(.2,.8,.25,1);}' +
+  '#tk-bubble.closing{pointer-events:none;animation:tk-b-off .3s ease-in forwards;}' +
   '#tk-bubble .tk-b-scan{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);z-index:6;pointer-events:none;opacity:0;background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 18%,#eaf6ff,rgba(var(--accent-rgb),1) 82%,transparent);box-shadow:0 0 18px 2px rgba(var(--accent-rgb),.9);}' +
   '#tk-bubble.show .tk-b-scan{animation:tk-flash .44s ease-out;}' +
   '#tk-bubble.closing .tk-b-scan{animation:tk-flash-off .3s ease-in;}' +
   '#tk-bubble:hover{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 18px rgba(var(--accent-rgb),.24);}' +
-  '#tk-bubble::after{content:"";position:absolute;bottom:-6px;right:24px;width:11px;height:11px;background:rgba(10,14,20,.96);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}' +
   'body.tk-open #tk-bubble{opacity:0!important;pointer-events:none!important;}' +
-  '[data-mode="light"] #tk-bubble{background:rgba(248,250,253,.98);color:#28344c;}' +
-  '[data-mode="light"] #tk-bubble::after{background:rgba(248,250,253,.98);}' +
+  '[data-mode="light"] #tk-bubble{background:rgba(255,255,255,.6);border-color:rgba(var(--accent-rgb),.5);box-shadow:0 10px 30px rgba(60,80,120,.16),0 0 18px rgba(var(--accent-rgb),.3),0 0 40px rgba(var(--accent-rgb),.16);}' +
+  '[data-mode="light"] .tk-b-q{color:#1c2b45;}' +
+  '[data-mode="light"] #tk-bubble::after{background:rgba(255,255,255,.6);border-right-color:rgba(var(--accent-rgb),.5);border-bottom-color:rgba(var(--accent-rgb),.5);}' +
   // panel
   '#tk-panel{position:fixed;bottom:24px;right:24px;width:340px;max-width:calc(100vw - 32px);height:460px;' +
     'max-height:calc(100vh - 120px);z-index:121;display:flex;flex-direction:column;overflow:hidden;' +
@@ -110,6 +123,16 @@
     '0%{opacity:1;clip-path:inset(0 0 0 0 round 16px);transform:none;}' +
     '55%{opacity:1;clip-path:inset(49% 0 49% 0 round 2px);transform:scaleX(1);}' +
     '100%{opacity:0;clip-path:inset(50% 0 50% 0 round 2px);transform:scaleX(.3);}}' +
+  '@keyframes tk-b-on{' +
+    '0%{opacity:0;clip-path:inset(50% -44px 50% -44px round 2px);transform:scaleX(.35);}' +
+    '12%{opacity:1;transform:scaleX(1);}' +
+    '34%{clip-path:inset(49.5% -44px 49.5% -44px round 2px);transform:scaleX(1);}' +
+    '70%{clip-path:inset(-44px -44px -44px -44px round 16px);transform:scaleY(1.015);}' +
+    '100%{opacity:1;clip-path:inset(-44px -44px -44px -44px round 16px);transform:none;}}' +
+  '@keyframes tk-b-off{' +
+    '0%{opacity:1;clip-path:inset(-44px -44px -44px -44px round 16px);transform:none;}' +
+    '55%{opacity:1;clip-path:inset(49% -44px 49% -44px round 2px);transform:scaleX(1);}' +
+    '100%{opacity:0;clip-path:inset(50% -44px 50% -44px round 2px);transform:scaleX(.3);}}' +
   // bright bloom bar flashing along the collapsing/expanding hairline
   '.tk-scan{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);z-index:6;pointer-events:none;opacity:0;' +
     'background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 18%,#eaf6ff,rgba(var(--accent-rgb),1) 82%,transparent);' +
@@ -159,7 +182,7 @@
   '@media(prefers-reduced-motion:reduce){#tk-fab,#tk-fab::before,.rs-ring,.rs-dots i,.rs-wave i{animation:none!important;}}';
 
   var GREETING = [
-    "こんにちは！ I'm resuper — YANGA's little recon unit. 🕷️",
+    "こんにちは！ I'm ghost — YANGA's little recon unit. 🕷️",
     "Chat isn't wired to a real brain yet, but ask me anything and I'll pretend I'm listening."
   ];
   var REPLIES = [
@@ -198,10 +221,28 @@
     style.textContent = CSS;
     document.head.appendChild(style);
 
+    // --- ghost face version switch (dev) ---
+    var GKEY='yanga_ghost';
+    function curGhost(){ try{ return localStorage.getItem(GKEY)||'outline'; }catch(e){ return 'outline'; } }
+    var GHORDER=['outline','solid','neon'];
+    function setGhost(v){ if(GHORDER.indexOf(v)<0) v='outline';
+      document.body.classList.remove('gh-outline','gh-solid','gh-neon');
+      document.body.classList.add('gh-'+v);
+      try{ localStorage.setItem(GKEY,v); }catch(e){}
+      var d=document.getElementById('gh-dev'); if(d) d.textContent='ghost: '+v+'  \u21C4';
+      return v; }
+    setGhost(curGhost());
+    window.ghostFace=function(v){ if(!v||v==='toggle'){ v=GHORDER[(GHORDER.indexOf(curGhost())+1)%GHORDER.length]; } return setGhost(v); };
+    var devOn=false; try{ devOn = /[?#&]dev\b/.test(location.href) || localStorage.getItem('yanga_dev')==='1'; }catch(e){}
+    if(devOn){ var gbtn=document.createElement('button'); gbtn.id='gh-dev'; gbtn.type='button';
+      gbtn.textContent='ghost: '+curGhost()+'  \u21C4';
+      gbtn.addEventListener('click', function(){ window.ghostFace('toggle'); });
+      document.body.appendChild(gbtn); }
+
     var fab = document.createElement('button');
     fab.id = 'tk-fab';
     fab.type = 'button';
-    fab.setAttribute('aria-label', 'Open chat with resuper');
+    fab.setAttribute('aria-label', 'Open chat with ghost');
     fab.innerHTML = faceHTML();
     document.body.appendChild(fab);
 
@@ -212,18 +253,18 @@
     var panel = document.createElement('div');
     panel.id = 'tk-panel';
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', 'resuper chat');
+    panel.setAttribute('aria-label', 'ghost chat');
     panel.innerHTML =
       '<div class="tk-scan" aria-hidden="true"></div>' +
       '<div class="tk-head-bar">' +
         '<div id="tk-head">' + faceHTML() + '</div>' +
-        '<div class="tk-id"><span class="tk-name">RESUPER</span>' +
+        '<div class="tk-id"><span class="tk-name">GHOST</span>' +
         '<span class="tk-status">recon unit · standby</span></div>' +
         '<button class="tk-close" type="button" aria-label="Close chat">✕</button>' +
       '</div>' +
       '<div class="tk-body" id="tk-body"></div>' +
       '<form class="tk-input" id="tk-form">' +
-        '<input id="tk-text" type="text" autocomplete="off" placeholder="Ask resuper…">' +
+        '<input id="tk-text" type="text" autocomplete="off" placeholder="Ask ghost…">' +
         '<button class="tk-send" type="submit" aria-label="Send">➔</button>' +
       '</form>';
     document.body.appendChild(panel);
@@ -293,6 +334,7 @@
     panel.querySelector('.tk-close').addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && panel.classList.contains('open')) close();
+      if (!e.repeat && e.shiftKey && (e.code === 'KeyG' || e.key === 'G' || e.key === 'g')) { var t=(e.target||{}).tagName||''; if(t!=='INPUT'&&t!=='TEXTAREA'&&!(e.target&&e.target.isContentEditable)){ e.preventDefault(); window.ghostFace('toggle'); } }
     });
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -313,7 +355,7 @@
     var bubble = document.createElement('div');
     bubble.id = 'tk-bubble';
     bubble.setAttribute('role', 'button');
-    bubble.setAttribute('aria-label', 'Ask resuper the shown question');
+    bubble.setAttribute('aria-label', 'Ask ghost the shown question');
     document.body.appendChild(bubble);
     var qaLast = -1, activeQA = null, bubbleT, closeT, cooldownUntil = 0;
     function pickQA() { var i; do { i = Math.floor(Math.random() * QA.length); } while (QA.length > 1 && i === qaLast); qaLast = i; return QA[i]; }
@@ -322,7 +364,7 @@
       if (Date.now() < cooldownUntil || bubble.classList.contains('show')) return;
       clearTimeout(closeT); bubble.classList.remove('closing');
       activeQA = pickQA();
-      bubble.innerHTML = '<span class="tk-b-scan"></span><span class="tk-b-hint">resuper asks</span>' + activeQA.q;
+      bubble.innerHTML = '<span class="tk-b-scan"></span><span class="tk-b-q">' + activeQA.q + '</span>';
       bubble.classList.add('show');
       clearTimeout(bubbleT);
       if (auto) bubbleT = setTimeout(hideBubble, 6500);
