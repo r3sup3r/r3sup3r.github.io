@@ -78,12 +78,15 @@
   '.tk-head-bar,.tk-body,.tk-input{position:relative;z-index:1;}' +
   '#tk-fab.tk-blink .rs-eyes,#tk-head.tk-blink .rs-eyes{transform:translate(var(--ex,0px),var(--ey,0px)) scaleY(.12);}' +
   '@keyframes tk-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}' +
-  '#tk-bubble{position:fixed;right:22px;bottom:100px;max-width:236px;z-index:119;cursor:pointer;background:rgba(10,14,20,.96);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:12px;padding:10px 13px 11px;color:var(--text-primary);font-family:var(--font-prose,sans-serif);font-size:.82rem;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 14px rgba(var(--accent-rgb),.12);opacity:0;transform:translateY(8px) scale(.96);transform-origin:bottom right;transition:opacity .3s ease,transform .3s ease;pointer-events:none;}' +
+  '#tk-bubble{position:fixed;right:22px;bottom:100px;max-width:236px;z-index:119;cursor:pointer;background:rgba(10,14,20,.96);border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:12px;padding:10px 13px 11px;color:var(--text-primary);font-family:var(--font-prose,sans-serif);font-size:.82rem;line-height:1.45;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 14px rgba(var(--accent-rgb),.12);opacity:0;clip-path:inset(50% 0 50% 0 round 2px);transform-origin:center;pointer-events:none;}' +
   '#tk-bubble .tk-b-hint{display:block;font-family:var(--font-body,monospace);font-size:.55rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);opacity:.85;margin-bottom:5px;}' +
-  '#tk-bubble.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;animation:tk-bub-in .34s ease;}' +
+  '#tk-bubble.show{opacity:1;clip-path:inset(0 0 0 0 round 12px);pointer-events:auto;animation:tk-crt-on .44s cubic-bezier(.2,.8,.25,1);}' +
+  '#tk-bubble.closing{pointer-events:none;animation:tk-crt-off .3s ease-in forwards;}' +
+  '#tk-bubble .tk-b-scan{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);z-index:6;pointer-events:none;opacity:0;background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 18%,#eaf6ff,rgba(var(--accent-rgb),1) 82%,transparent);box-shadow:0 0 18px 2px rgba(var(--accent-rgb),.9);}' +
+  '#tk-bubble.show .tk-b-scan{animation:tk-flash .44s ease-out;}' +
+  '#tk-bubble.closing .tk-b-scan{animation:tk-flash-off .3s ease-in;}' +
   '#tk-bubble:hover{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 18px rgba(var(--accent-rgb),.24);}' +
   '#tk-bubble::after{content:"";position:absolute;bottom:-6px;right:24px;width:11px;height:11px;background:rgba(10,14,20,.96);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}' +
-  '@keyframes tk-bub-in{0%{opacity:0;transform:translateY(12px) scale(.9);}60%{transform:translateY(-2px) scale(1.02);}100%{opacity:1;transform:translateY(0) scale(1);}}' +
   'body.tk-open #tk-bubble{opacity:0!important;pointer-events:none!important;}' +
   '[data-mode="light"] #tk-bubble{background:rgba(248,250,253,.98);color:#28344c;}' +
   '[data-mode="light"] #tk-bubble::after{background:rgba(248,250,253,.98);}' +
@@ -312,22 +315,32 @@
     bubble.setAttribute('role', 'button');
     bubble.setAttribute('aria-label', 'Ask resuper the shown question');
     document.body.appendChild(bubble);
-    var qaLast = -1, activeQA = null, bubbleT;
+    var qaLast = -1, activeQA = null, bubbleT, closeT, cooldownUntil = 0;
     function pickQA() { var i; do { i = Math.floor(Math.random() * QA.length); } while (QA.length > 1 && i === qaLast); qaLast = i; return QA[i]; }
     function showBubble(auto) {
       if (document.body.classList.contains('tk-open')) return;
+      if (Date.now() < cooldownUntil || bubble.classList.contains('show')) return;
+      clearTimeout(closeT); bubble.classList.remove('closing');
       activeQA = pickQA();
-      bubble.innerHTML = '<span class="tk-b-hint">resuper asks</span>' + activeQA.q;
+      bubble.innerHTML = '<span class="tk-b-scan"></span><span class="tk-b-hint">resuper asks</span>' + activeQA.q;
       bubble.classList.add('show');
       clearTimeout(bubbleT);
-      if (auto) bubbleT = setTimeout(function () { bubble.classList.remove('show'); }, 6500);
+      if (auto) bubbleT = setTimeout(hideBubble, 6500);
     }
-    function hideBubble() { clearTimeout(bubbleT); bubble.classList.remove('show'); }
+    function hideBubble() {
+      clearTimeout(bubbleT);
+      if (!bubble.classList.contains('show')) return;
+      bubble.classList.remove('show');
+      bubble.classList.add('closing');
+      cooldownUntil = Date.now() + 1000;      // 1s cooldown before it can reopen
+      clearTimeout(closeT);
+      closeT = setTimeout(function () { bubble.classList.remove('closing'); }, 300);
+    }
     fab.addEventListener('mouseenter', function () { if (!document.body.classList.contains('tk-open')) showBubble(false); });
-    fab.addEventListener('mouseleave', function () { clearTimeout(bubbleT); bubbleT = setTimeout(hideBubble, 1600); });
+    fab.addEventListener('mouseleave', function () { clearTimeout(bubbleT); bubbleT = setTimeout(hideBubble, 350); });
     fab.addEventListener('click', hideBubble);
     bubble.addEventListener('mouseenter', function () { clearTimeout(bubbleT); });
-    bubble.addEventListener('mouseleave', function () { bubbleT = setTimeout(hideBubble, 1400); });
+    bubble.addEventListener('mouseleave', function () { bubbleT = setTimeout(hideBubble, 250); });
     bubble.addEventListener('click', function () {
       var qa = activeQA; hideBubble(); if (!qa) return;
       var wasSeeded = seeded;
