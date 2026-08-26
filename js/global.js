@@ -168,6 +168,9 @@
   // ── SITE-WIDE SEARCH INDEX ──
   // All searchable content — urls are relative to yanga root
   const searchIndex = [
+    { title: "What an AI Agent Actually Is", section: "blog", tagLabel: "POST", desc: "A model in a loop with tools and a stop condition; the anatomy of an agent and what breaks in each part.", tags: ["ai", "agents", "llm", "prompt injection", "mcp", "tools"], url: "posts/what-is-an-ai-agent.html" },
+    { title: "The RAG -> MCP -> A2A Attack Surface", section: "blog", tagLabel: "POST", desc: "One pipe of untrusted data, from retrieval to tools to peer agents.", tags: ["ai", "rag", "mcp", "a2a", "prompt injection"], url: "posts/rag-mcp-a2a-attack-surface.html" },
+    { title: "My Penetration Testing Methodology", section: "blog", tagLabel: "POST", desc: "The repeatable process I run on every engagement, scoping to reporting.", tags: ["pentesting", "methodology", "reporting", "active directory", "web"], url: "posts/penetration-testing-methodology.html" },
     { title: "Penetration Testing", section: "hub", tagLabel: "SECTION", desc: "Web application (WAPT) and infrastructure penetration testing.", tags: ["pentesting", "wapt", "web", "infrastructure", "network"], url: "sections/pentesting.html" },
     { title: "AI Agent Security", section: "hub", tagLabel: "SECTION", desc: "Attacking LLM applications and the agent infrastructure around them.", tags: ["ai", "red team", "llm", "prompt injection"], url: "sections/ai-red-teaming.html" },
     { title: "About", section: "site", tagLabel: "PROFILE", desc: "Who I am and how to get in touch.", tags: ["about", "whoami", "contact"], url: "about.html" },

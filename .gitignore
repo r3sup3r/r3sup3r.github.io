@@ -34,3 +34,7 @@ Thumbs.db
 # drafts + backups
 src/_drafts/
 *.bak
+
+# Cloudflare Worker local state
+bot/.wrangler/
+bot/node_modules/

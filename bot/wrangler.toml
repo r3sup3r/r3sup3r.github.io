@@ -1,0 +1,15 @@
+name = "ghost-bot"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Model id is a plain var so you can change it without editing code.
+# Confirm a current id at https://docs.claude.com/en/docs/about-claude/models
+[vars]
+MODEL = "claude-3-5-haiku-latest"
+
+# ---- optional: per-IP daily rate limit -------------------------------------
+# 1) create the namespace:   wrangler kv namespace create RL
+# 2) paste the printed id below and uncomment these three lines.
+# [[kv_namespaces]]
+# binding = "RL"
+# id = "PASTE_KV_NAMESPACE_ID_HERE"

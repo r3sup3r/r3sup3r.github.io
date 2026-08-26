@@ -8,6 +8,14 @@
   if (window.__tachikomaInit) return;
   window.__tachikomaInit = true;
 
+  // ---- ghost AI backend (Phase 1) ------------------------------------------
+  // Paste your deployed Cloudflare Worker URL here to switch ghost from the
+  // canned placeholder replies to the real Claude-backed brain. Empty = offline
+  // fallback (site never breaks if the Worker is down). See bot/README.md.
+  var GHOST_API = ''; // real brain UNPLUGGED — using canned replies. To re-enable: paste your Worker URL here (see bot/README.md).
+  var history = [];          // [{role:'user'|'assistant', content}] sent to the Worker
+  var MAX_TURNS = 12;
+
   // ---- cute Tachikoma head (shared by FAB + panel header) ----
   function faceHTML() {
     return '' +
@@ -181,9 +189,26 @@
   '[data-mode="light"] #tk-fab{filter:drop-shadow(0 6px 16px rgba(30,45,80,.30));}' +
   '[data-mode="light"] #tk-fab .tk-ping{border-color:#eef1f7;}' +
   '@media(max-width:480px){#tk-panel{height:70vh;}}' +
+  '#tk-fab{touch-action:none;}' +
+  '#tk-fab.tk-dragging{animation:none!important;cursor:grabbing;z-index:200;transition:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.55));}' +
+  '#tk-dock{display:inline-flex;align-items:center;justify-content:center;background:none;border:none;padding:4px 5px;margin:0;cursor:grab;color:var(--accent);line-height:0;filter:drop-shadow(0 0 5px rgba(var(--accent-rgb),.55));transition:transform .15s ease,filter .15s ease;touch-action:none;}' +
+  '#tk-dock:hover{transform:translateY(-1px) scale(1.1);filter:drop-shadow(0 0 9px rgba(var(--accent-rgb),.95));}' +
+  '#tk-dock:active{cursor:grabbing;}' +
+  '#tk-dock svg{width:20px;height:20px;display:block;}' +
+  '#tk-dock.tk-dock-pop{animation:tk-dock-in .5s cubic-bezier(.2,.9,.3,1.3);}' +
+  '@keyframes tk-dock-in{0%{transform:scale(0) rotate(-25deg);opacity:0;filter:drop-shadow(0 0 16px rgba(var(--accent-rgb),1)) brightness(2.2);}55%{opacity:1;transform:scale(1.25) rotate(4deg);}100%{transform:scale(1) rotate(0);opacity:1;}}' +
+  '.nav-utils.tk-dock-target{box-shadow:0 0 0 2px rgba(var(--accent-rgb),.6),0 0 16px rgba(var(--accent-rgb),.45);border-radius:9px;}' +
+  'nav.tk-dock-hot{box-shadow:inset 0 -2px 0 rgba(var(--accent-rgb),.65),0 6px 20px rgba(var(--accent-rgb),.16);transition:box-shadow .12s ease;}' +
+  '.tk-dock-flash{position:fixed;z-index:199;width:18px;height:18px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);background:radial-gradient(circle,#eaf6ff,rgba(var(--accent-rgb),.85) 40%,rgba(var(--accent-rgb),0) 72%);animation:tk-dock-flash .5s ease-out forwards;}' +
+  '@keyframes tk-dock-flash{0%{opacity:0;transform:translate(-50%,-50%) scale(.3);}30%{opacity:1;}100%{opacity:0;transform:translate(-50%,-50%) scale(3.4);}}' +
+  '.tk-spawn-burst{position:fixed;z-index:199;width:66px;height:66px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);border:2px solid rgba(var(--accent-rgb),.9);box-shadow:0 0 18px rgba(var(--accent-rgb),.6),inset 0 0 12px rgba(var(--accent-rgb),.4);animation:tk-spawn .5s cubic-bezier(.2,.8,.3,1) forwards;}' +
+  '@keyframes tk-spawn{0%{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(-30deg);}25%{opacity:1;}100%{opacity:0;transform:translate(-50%,-50%) scale(1.9) rotate(8deg);}}' +
   '@media(prefers-reduced-motion:reduce){#tk-fab,#tk-fab::before,.rs-ring,.rs-dots i,.rs-wave i{animation:none!important;}}';
 
-  var GREETING = [
+  var GREETING = GHOST_API ? [
+    "こんにちは！ I'm ghost — YANGA's recon unit. 🕷️",
+    "Ask me about pentesting, AI-agent security, or Laury's work."
+  ] : [
     "こんにちは！ I'm ghost — YANGA's little recon unit. 🕷️",
     "Chat isn't wired to a real brain yet, but ask me anything and I'll pretend I'm listening."
   ];
@@ -305,6 +330,64 @@
       }, delay || 0);
     }
 
+    // immediate message; returns the element (so we can stream text into it)
+    function addMsgNow(who, str) {
+      var m = document.createElement('div');
+      m.className = 'tk-msg ' + who;
+      m.textContent = str || '';
+      body.appendChild(m);
+      body.scrollTop = body.scrollHeight;
+      return m;
+    }
+
+    // send a user turn to ghost: real streaming if GHOST_API is set, else canned
+    function askGhost(userText) {
+      setState('thinking');
+      if (!GHOST_API) {
+        setTimeout(function () {
+          addMsgNow('bot', REPLIES[replyIdx % REPLIES.length]); replyIdx++;
+          setState('speaking'); setTimeout(function () { setState('idle'); }, 1400);
+        }, 700);
+        return;
+      }
+      history.push({ role: 'user', content: userText });
+      if (history.length > MAX_TURNS) history = history.slice(-MAX_TURNS);
+      var el = null, acc = '', started = false;
+      fetch(GHOST_API, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ messages: history })
+      }).then(function (res) {
+        if (!res.ok || !res.body) {
+          addMsgNow('bot', res.status === 429
+            ? 'ghost is catching its breath — too many questions right now. try again in a bit.'
+            : 'ghost\'s uplink dropped. try again in a moment.');
+          setState('idle');
+          return;
+        }
+        var reader = res.body.getReader(), dec = new TextDecoder();
+        function pump() {
+          return reader.read().then(function (r) {
+            if (r.done) {
+              if (acc) history.push({ role: 'assistant', content: acc });
+              setState('idle');
+              return;
+            }
+            var chunk = dec.decode(r.value, { stream: true });
+            if (chunk) {
+              if (!started) { started = true; setState('speaking'); el = addMsgNow('bot', ''); }
+              acc += chunk; el.textContent = acc; body.scrollTop = body.scrollHeight;
+            }
+            return pump();
+          });
+        }
+        return pump();
+      }).catch(function () {
+        if (!started) addMsgNow('bot', 'ghost\'s uplink dropped. try again in a moment.');
+        setState('idle');
+      });
+    }
+
     function setState(s) {
       document.querySelectorAll('.rs-face').forEach(function (f) {
         f.classList.remove('is-thinking', 'is-speaking', 'is-success');
@@ -313,6 +396,13 @@
     }
 
     function open() {
+      try {
+        var _a = (typeof isDocked === 'function' && isDocked() && dockEl && dockEl.isConnected) ? dockEl.getBoundingClientRect() : fab.getBoundingClientRect();
+        var _pw = Math.min(340, window.innerWidth - 32), _ph = Math.min(460, window.innerHeight - 120);
+        var _pl = Math.min(Math.max(12, _a.right - _pw), window.innerWidth - _pw - 12);
+        var _pt = Math.min(Math.max(12, _a.bottom - _ph), window.innerHeight - _ph - 12);
+        panel.style.left = _pl + 'px'; panel.style.top = _pt + 'px'; panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      } catch (e) {}
       panel.classList.remove('closing');
       panel.classList.add('open');
       document.body.classList.add('tk-open');
@@ -342,15 +432,9 @@
       e.preventDefault();
       var v = text.value.trim();
       if (!v) return;
-      addMsg('me', v);
+      addMsgNow('me', v);
       text.value = '';
-      setState('thinking');
-      setTimeout(function () {
-        addMsg('bot', REPLIES[replyIdx % REPLIES.length]);
-        replyIdx++;
-        setState('speaking');
-        setTimeout(function () { setState('idle'); }, 1400);
-      }, 700);
+      askGhost(v);
     });
 
     // ---- teaser question bubble ----
@@ -363,10 +447,15 @@
     function pickQA() { var i; do { i = Math.floor(Math.random() * QA.length); } while (QA.length > 1 && i === qaLast); qaLast = i; return QA[i]; }
     function showBubble(auto) {
       if (document.body.classList.contains('tk-open')) return;
+      if (fab.style.display === 'none') return;
       if (Date.now() < cooldownUntil || bubble.classList.contains('show')) return;
       clearTimeout(closeT); bubble.classList.remove('closing');
       activeQA = pickQA();
       bubble.innerHTML = '<span class="tk-b-scan"></span><span class="tk-b-q">' + activeQA.q + '</span>';
+      var _fr = fab.getBoundingClientRect();
+      bubble.style.left = 'auto'; bubble.style.top = 'auto';
+      bubble.style.right = Math.max(8, window.innerWidth - _fr.right - 2) + 'px';
+      bubble.style.bottom = Math.max(8, window.innerHeight - _fr.top + 10) + 'px';
       bubble.classList.add('show');
       clearTimeout(bubbleT);
       if (auto) bubbleT = setTimeout(hideBubble, 6500);
@@ -390,10 +479,14 @@
       var wasSeeded = seeded;
       open();
       var d = wasSeeded ? 150 : 1250;
-      addMsg('me', qa.q, d);
-      setTimeout(function () { setState('thinking'); }, d);
-      addMsg('bot', qa.a, d + 950);
-      setTimeout(function () { setState('speaking'); setTimeout(function () { setState('idle'); }, 1700); }, d + 950);
+      if (GHOST_API) {
+        setTimeout(function () { addMsgNow('me', qa.q); askGhost(qa.q); }, d);
+      } else {
+        addMsg('me', qa.q, d);
+        setTimeout(function () { setState('thinking'); }, d);
+        addMsg('bot', qa.a, d + 950);
+        setTimeout(function () { setState('speaking'); setTimeout(function () { setState('idle'); }, 1700); }, d + 950);
+      }
     });
     setInterval(function () {
       if (document.body.classList.contains('tk-open') || bubble.classList.contains('show')) return;
@@ -412,6 +505,165 @@
         blinkLoop();
       }, wait);
     })();
+
+    // ==== draggable ghost + dock into the nav ============================
+    var navEl = document.querySelector('nav');
+    var DOCK_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M4,12 a8,8 0 0 1 16,0 L20,21 l-2.7,-1.8 l-2.7,1.8 l-2.7,-1.8 l-2.7,1.8 l-2.7,-1.8 l-2.6,1.8 Z M9.2,11 a1.7,2.1 0 1 0 0.1,0 Z M14.8,11 a1.7,2.1 0 1 0 0.1,0 Z"/></svg>';
+    var DKEY = 'yanga_dock', PKEY = 'yanga_fabpos';
+    var dockEl = null, grab = { dx: 0, dy: 0 };
+    function navUtils() { return document.querySelector('.nav-utils'); }
+    function isDocked() { try { return localStorage.getItem(DKEY) === '1'; } catch (e) { return false; } }
+    function setDocked(v) { try { localStorage.setItem(DKEY, v ? '1' : '0'); } catch (e) {} }
+    function savePos(l, t) { try { localStorage.setItem(PKEY, JSON.stringify({ l: l, t: t })); } catch (e) {} }
+    function clearPos() { try { localStorage.removeItem(PKEY); } catch (e) {} }
+    function loadPos() { try { return JSON.parse(localStorage.getItem(PKEY) || 'null'); } catch (e) { return null; } }
+    function flashAt(x, y) {
+      var f = document.createElement('div'); f.className = 'tk-dock-flash';
+      f.style.left = x + 'px'; f.style.top = y + 'px';
+      document.body.appendChild(f);
+      setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 520);
+    }
+    function fabFloatTo(x, y) {
+      fab.style.right = 'auto'; fab.style.bottom = 'auto';
+      fab.style.left = x + 'px'; fab.style.top = y + 'px';
+    }
+    function overNav(x, y) {
+      if (!navEl) return false;
+      var nr = navEl.getBoundingClientRect();
+      return x >= nr.left && x <= nr.right && y >= nr.top - 4 && y <= nr.bottom + 8;
+    }
+    function beginDrag(gdx, gdy) { grab.dx = gdx; grab.dy = gdy; if (typeof hideBubble === 'function') hideBubble(); fab.classList.add('tk-dragging'); }
+    function dragTo(x, y) {
+      fabFloatTo(x - grab.dx, y - grab.dy);
+      var _hot = overNav(x, y), nu = navUtils();
+      if (navEl) navEl.classList.toggle('tk-dock-hot', _hot);
+      if (nu) nu.classList.toggle('tk-dock-target', _hot);
+    }
+    function endDrag(x, y) {
+      fab.classList.remove('tk-dragging');
+      if (navEl) navEl.classList.remove('tk-dock-hot'); var nu = navUtils(); if (nu) nu.classList.remove('tk-dock-target');
+      if (overNav(x, y)) { dockGhost(); return; }
+      var r = fab.getBoundingClientRect();
+      var l = Math.min(Math.max(8, r.left), window.innerWidth - r.width - 8);
+      var t = Math.min(Math.max(8, r.top), window.innerHeight - r.height - 8);
+      fabFloatTo(l, t); savePos(l, t); cooldownUntil = 0;
+    }
+    function armFabDrag(e) {
+      if (e.button != null && e.button !== 0) return;
+      var sx = e.clientX, sy = e.clientY, fr = fab.getBoundingClientRect();
+      var gdx = sx - fr.left, gdy = sy - fr.top, moved = false;
+      function mv(ev) {
+        if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 6) { moved = true; beginDrag(gdx, gdy); }
+        if (moved) { dragTo(ev.clientX, ev.clientY); ev.preventDefault(); }
+      }
+      function up(ev) {
+        document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up);
+        if (moved) { fab.__dragged = true; endDrag(ev.clientX, ev.clientY); }
+      }
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+    }
+    fab.addEventListener('pointerdown', armFabDrag);
+    fab.addEventListener('click', function (e) { if (fab.__dragged) { e.stopImmediatePropagation(); e.preventDefault(); fab.__dragged = false; } }, true);
+
+    function makeDock() {
+      var d = document.createElement('button');
+      d.id = 'tk-dock'; d.type = 'button'; d.title = 'ghost';
+      d.setAttribute('aria-label', 'ghost — open chat (drag to detach)');
+      d.innerHTML = DOCK_SVG;
+      d.addEventListener('pointerdown', armDockDrag);
+      return d;
+    }
+    function placeDock(animate) {
+      var nu = navUtils(); if (!nu) return;
+      if (!dockEl) dockEl = makeDock();
+      var chip = nu.querySelector('.theme-chip');
+      if (dockEl.parentNode !== nu) nu.insertBefore(dockEl, chip || nu.firstChild);
+      if (animate) { dockEl.classList.remove('tk-dock-pop'); void dockEl.offsetWidth; dockEl.classList.add('tk-dock-pop'); }
+    }
+    function dockGhost() {
+      var nu = navUtils(); if (!nu) return;
+      var fr = fab.getBoundingClientRect(), tr = nu.getBoundingClientRect();
+      var tx = (tr.left + 6) - (fr.left + fr.width / 2), ty = (tr.top + tr.height / 2) - (fr.top + fr.height / 2);
+      fab.style.transition = 'transform .42s cubic-bezier(.5,-0.28,.3,1), opacity .42s ease';
+      fab.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(.12) rotate(-10deg)';
+      fab.style.opacity = '0';
+      setTimeout(function () { flashAt(tr.left + 6, tr.top + tr.height / 2); }, 300);
+      setTimeout(function () {
+        fab.style.display = 'none';
+        fab.style.transition = ''; fab.style.transform = ''; fab.style.opacity = '';
+        setDocked(true); clearPos(); placeDock(true);
+      }, 430);
+    }
+    function spawnBurst(x, y) {
+      var e = document.createElement('div'); e.className = 'tk-spawn-burst';
+      e.style.left = x + 'px'; e.style.top = y + 'px';
+      document.body.appendChild(e);
+      setTimeout(function () { if (e.parentNode) e.parentNode.removeChild(e); }, 520);
+    }
+    function undockAt(x, y) {
+      var dr = (dockEl && dockEl.getBoundingClientRect) ? dockEl.getBoundingClientRect() : null;
+      if (dr) flashAt(dr.left + dr.width / 2, dr.top + dr.height / 2);   // ghost leaves the nav
+      if (dockEl && dockEl.parentNode) dockEl.parentNode.removeChild(dockEl);
+      setDocked(false);
+      fab.style.display = '';
+      beginDrag(33, 33); fabFloatTo(x - 33, y - 33);
+      spawnBurst(x, y); flashAt(x, y);                                   // ghost rematerializes
+    }
+    function armDockDrag(e) {
+      if (e.button != null && e.button !== 0) return;
+      var sx = e.clientX, sy = e.clientY, moved = false;
+      function mv(ev) {
+        if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 6) { moved = true; undockAt(ev.clientX, ev.clientY); }
+        if (moved) { dragTo(ev.clientX, ev.clientY); ev.preventDefault(); }
+      }
+      function up(ev) {
+        document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up);
+        if (moved) { fab.__dragged = true; endDrag(ev.clientX, ev.clientY); } else { open(); }
+      }
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+    }
+
+    // drag the whole panel by its header (works while chat is open)
+    var headBar = panel.querySelector('.tk-head-bar');
+    if (headBar) headBar.addEventListener('pointerdown', function (e) {
+      if (e.target.closest && e.target.closest('.tk-close')) return;
+      if (e.button != null && e.button !== 0) return;
+      var pr = panel.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, gdx = sx - pr.left, gdy = sy - pr.top, moved = false;
+      function mv(ev) {
+        if (!moved && Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 6) { moved = true; panel.style.transition = 'none'; }
+        if (moved) {
+          panel.style.right = 'auto'; panel.style.bottom = 'auto';
+          panel.style.left = (ev.clientX - gdx) + 'px'; panel.style.top = (ev.clientY - gdy) + 'px';
+          var _h = overNav(ev.clientX, ev.clientY); if (navEl) navEl.classList.toggle('tk-dock-hot', _h); var nu = navUtils(); if (nu) nu.classList.toggle('tk-dock-target', _h);
+          ev.preventDefault();
+        }
+      }
+      function up(ev) {
+        document.removeEventListener('pointermove', mv); document.removeEventListener('pointerup', up);
+        if (navEl) navEl.classList.remove('tk-dock-hot'); var nu = navUtils(); if (nu) nu.classList.remove('tk-dock-target');
+        panel.style.transition = '';
+        if (moved && overNav(ev.clientX, ev.clientY)) {
+          panel.style.left = ''; panel.style.top = ''; panel.style.right = ''; panel.style.bottom = '';
+          close(); setDocked(true); clearPos(); fab.style.display = 'none';
+          setTimeout(function () { placeDock(true); }, 140);
+        }
+      }
+      document.addEventListener('pointermove', mv); document.addEventListener('pointerup', up);
+    });
+
+    // survive PJAX nav swaps
+    if (navEl && window.MutationObserver) {
+      new MutationObserver(function () { if (isDocked() && (!dockEl || !dockEl.isConnected)) placeDock(false); }).observe(navEl, { childList: true, subtree: true });
+    }
+    window.addEventListener('resize', function () {
+      if (isDocked() || fab.style.display === 'none' || !fab.style.left) return;
+      var r = fab.getBoundingClientRect();
+      fabFloatTo(Math.min(Math.max(8, r.left), window.innerWidth - r.width - 8), Math.min(Math.max(8, r.top), window.innerHeight - r.height - 8));
+    });
+
+    // initial state
+    if (isDocked()) { fab.style.display = 'none'; placeDock(false); }
+    else { var _pos = loadPos(); if (_pos) fabFloatTo(_pos.l, _pos.t); }
   }
 
   if (document.readyState !== 'loading') build();
