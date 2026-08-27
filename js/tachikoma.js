@@ -81,14 +81,30 @@
   'body.mood-sleep .rs-eyes::before{left:30%;}' +
   'body.mood-sleep .rs-eyes::after{left:70%;}' +
   '[data-mode="light"] body.mood-sleep .rs-eyes::before,[data-mode="light"] body.mood-sleep .rs-eyes::after{background:#e7eef6;}' +
-  '.tk-zzz{position:absolute;top:-8px;left:8%;width:34px;height:50px;pointer-events:none;z-index:3;}' +
-  '.tk-zzz span{position:absolute;left:0;bottom:0;border-radius:50%;background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.55),rgba(var(--accent-rgb),.16) 62%,transparent 74%);border:1px solid rgba(var(--accent-rgb),.7);box-shadow:0 0 6px rgba(var(--accent-rgb),.5),inset 0 0 3px rgba(255,255,255,.3);opacity:0;animation:tk-bubfloat 2.6s ease-in infinite;}' +
-  '.tk-zzz span:nth-child(1){width:6px;height:6px;animation-delay:0s;}' +
-  '.tk-zzz span:nth-child(2){width:8px;height:8px;animation-delay:.85s;}' +
-  '.tk-zzz span:nth-child(3){width:10px;height:10px;animation-delay:1.7s;}' +
-  '.tk-zzz.tk-zzz-out span{animation:tk-bubpop .26s ease-out forwards;}' +
-  '@keyframes tk-bubfloat{0%{opacity:0;transform:translate(0,4px) scale(.3);}14%{opacity:1;}66%{opacity:.92;transform:translate(-11px,-26px) scale(1);}84%{opacity:.95;transform:translate(-15px,-34px) scale(1.12);}90%{opacity:.5;transform:translate(-15px,-34px) scale(1.65);}100%{opacity:0;transform:translate(-15px,-36px) scale(2.05);}}' +
-  '@keyframes tk-bubpop{0%{opacity:.9;}100%{opacity:0;transform:translate(-15px,-16px) scale(1.9);}}' +
+  // ── sleep FX host (one of 5 picked at random) ──
+  '.tk-sfx{position:absolute;inset:0;pointer-events:none;z-index:3;transition:opacity .25s;}' +
+  '.tk-sfx.tk-sfx-out{opacity:0;}' +
+  // 1 matrix glyphs
+  '.tk-sfx .sfx-mtx{position:absolute;font-family:var(--font-body,monospace);font-weight:700;color:var(--accent);text-shadow:0 0 6px rgba(var(--accent-rgb),.9);opacity:0;animation:tk-sfx-mtx 2.4s ease-in forwards;}' +
+  '@keyframes tk-sfx-mtx{0%{opacity:0;transform:translate(0,4px) scale(.6);}16%{opacity:1;}72%{opacity:.85;transform:translate(var(--dx,-8px),-34px) scale(1);}88%{opacity:.45;transform:translate(var(--dx,-8px),-42px) scale(1.1);}100%{opacity:0;transform:translate(var(--dx,-8px),-48px) scale(.4);}}' +
+  // 2 pixel dust
+  '.tk-sfx .sfx-dust{position:absolute;width:4px;height:4px;background:var(--accent);box-shadow:0 0 5px rgba(var(--accent-rgb),.9);opacity:0;animation:tk-sfx-dust 2s ease-out forwards;}' +
+  '@keyframes tk-sfx-dust{0%{opacity:0;transform:translate(0,3px) scale(1) rotate(0);}14%{opacity:1;}70%{opacity:1;transform:translate(var(--dx,-6px),-34px) scale(.75) rotate(140deg);}100%{opacity:0;transform:translate(var(--dx,-6px),-46px) scale(0) rotate(220deg);}}' +
+  // 3 snore waveform
+  '.tk-sfx .sfx-wave{position:absolute;top:-14px;left:50%;transform:translateX(-50%);filter:drop-shadow(0 0 4px rgba(var(--accent-rgb),.8));}' +
+  '.tk-sfx .sfx-wave .wl{animation:tk-sfx-wscroll 1.6s linear infinite;}' +
+  '@keyframes tk-sfx-wscroll{from{transform:translateX(0);}to{transform:translateX(-40px);}}' +
+  // 4 dropped packets
+  '.tk-sfx .sfx-pkt{position:absolute;font-family:var(--font-body,monospace);font-weight:700;font-size:9px;letter-spacing:-1px;color:var(--accent);text-shadow:0 0 5px rgba(var(--accent-rgb),.8);opacity:0;animation:tk-sfx-pkt 2.1s ease-in forwards;}' +
+  '@keyframes tk-sfx-pkt{0%{opacity:0;transform:translate(0,4px) scale(.6);}14%{opacity:1;}68%{opacity:1;color:var(--accent);transform:translate(var(--dx,-6px),-32px) scale(1);}82%{opacity:1;color:#ff3c3c;text-shadow:0 0 8px rgba(255,60,60,.95);transform:translate(var(--dx,-6px),-36px) scale(1.35);}100%{opacity:0;color:#ff3c3c;transform:translate(var(--dx,-6px),-38px) scale(.2);}}' +
+  // 5 CRT standby
+  '.tk-sfx .sfx-crt{position:absolute;inset:0;overflow:hidden;}' +
+  '.tk-sfx .sfx-crt .cg{position:absolute;inset:0;box-shadow:inset 0 0 14px rgba(var(--accent-rgb),.3);animation:tk-sfx-crtpulse 3s ease-in-out infinite;}' +
+  '.tk-sfx .sfx-crt .cs{position:absolute;left:-10%;width:120%;height:8px;background:linear-gradient(180deg,transparent,rgba(var(--accent-rgb),.55),transparent);top:-8px;animation:tk-sfx-crtscan 2.2s linear infinite;}' +
+  '.tk-sfx .sfx-crt-lab{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-family:var(--font-body,monospace);font-size:6px;letter-spacing:2px;color:var(--accent);text-shadow:0 0 5px rgba(var(--accent-rgb),.8);white-space:nowrap;animation:tk-sfx-crtblink 1.4s steps(1) infinite;}' +
+  '@keyframes tk-sfx-crtscan{0%{top:-8px;opacity:.2;}10%{opacity:1;}90%{opacity:1;}100%{top:100%;opacity:.2;}}' +
+  '@keyframes tk-sfx-crtpulse{0%,100%{opacity:.4;}50%{opacity:1;}}' +
+  '@keyframes tk-sfx-crtblink{0%,60%{opacity:1;}61%,100%{opacity:.15;}}' +
   // ── AWAKEN: startled wide eyes + jolt + "!" pop ──
   'body.mood-wake .rs-eyes{background:none!important;background-image:none!important;-webkit-mask:none!important;mask:none!important;}' +
   'body.mood-wake .rs-eyes::before,body.mood-wake .rs-eyes::after{content:"";position:absolute;top:46%;width:24cqmin;height:24cqmin;background:#070c15;border-radius:50%;transform:translate(-50%,-50%);animation:tk-eyewake .55s cubic-bezier(.2,1.3,.4,1);}' +
@@ -605,32 +621,58 @@
       document.body.classList.remove('mood-angry', 'mood-happy', 'mood-sleep', 'mood-wake');
       if (m) document.body.classList.add(m);
     }
-    function spawnZzz() {
-      if (fab.querySelector('.tk-zzz')) return;
-      var z = document.createElement('div'); z.className = 'tk-zzz';
-      z.innerHTML = '<span></span><span></span><span></span>';
-      fab.appendChild(z);
+    // one of 5 sleep FX is chosen at random each time the ghost sleeps
+    var SLEEPFX = ['mtx', 'dust', 'wave', 'pkt', 'crt'];
+    var GLYPHS = '\u30A2\u30A4\u30A6\u30A8\u30AA\u30AB\u30AD\u30AF\u30B1\u30B3\u30B5\u30B7\u30B9\u30BB\u30BD\u30BF\u30C1\u30C4\u30C6\u30C80123456789';
+    var _sfxTimer = null;
+    function _sfxPos(el) { el.style.left = (24 + Math.random() * 18) + '%'; el.style.top = (4 + Math.random() * 6) + 'px'; el.style.setProperty('--dx', (Math.random() * -12 - 3).toFixed(0) + 'px'); }
+    function _waveD() { var d = 'M-40,12'; for (var x = -40; x <= 120; x += 40) { d += ' L' + (x + 26) + ',12 l2,-8 l2,16 l2,-8 L' + (x + 40) + ',12'; } return d; }
+    function startSleepFx() {
+      stopSleepFx(false);
+      var kind = window.__ghostSleepKind || SLEEPFX[Math.floor(Math.random() * SLEEPFX.length)];
+      var host = document.createElement('div'); host.className = 'tk-sfx'; host.setAttribute('data-sfx', kind);
+      fab.appendChild(host);
+      if (kind === 'mtx') {
+        _sfxTimer = setInterval(function () {
+          var g = document.createElement('span'); g.className = 'sfx-mtx'; g.textContent = GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
+          g.style.fontSize = (9 + Math.floor(Math.random() * 5)) + 'px'; _sfxPos(g);
+          host.appendChild(g); g.addEventListener('animationend', function () { g.remove(); });
+        }, 520);
+      } else if (kind === 'dust') {
+        _sfxTimer = setInterval(function () {
+          var d = document.createElement('span'); d.className = 'sfx-dust'; var sz = 3 + Math.random() * 3; d.style.width = sz + 'px'; d.style.height = sz + 'px'; _sfxPos(d);
+          host.appendChild(d); d.addEventListener('animationend', function () { d.remove(); });
+        }, 240);
+      } else if (kind === 'pkt') {
+        _sfxTimer = setInterval(function () {
+          var k = document.createElement('span'); k.className = 'sfx-pkt'; k.textContent = '[' + (Math.random() < 0.5 ? '\u25AA' : '\u25AB') + ']'; _sfxPos(k);
+          host.appendChild(k); k.addEventListener('animationend', function () { k.remove(); });
+        }, 620);
+      } else if (kind === 'wave') {
+        host.innerHTML = '<svg class="sfx-wave" viewBox="0 0 80 24" width="80" height="24"><path class="wl" d="' + _waveD() + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+      } else {
+        host.innerHTML = '<div class="sfx-crt"><div class="cg"></div><div class="cs"></div></div><div class="sfx-crt-lab">STANDBY</div>';
+      }
     }
-    function killZzz(scatter) {
-      var z = fab.querySelector('.tk-zzz'); if (!z) return;
-      if (scatter) { z.classList.add('tk-zzz-out'); setTimeout(function () { if (z.parentNode) z.remove(); }, 340); }
-      else z.remove();
+    function stopSleepFx(fade) {
+      if (_sfxTimer) { clearInterval(_sfxTimer); _sfxTimer = null; }
+      var h = fab.querySelector('.tk-sfx'); if (!h) return;
+      if (fade) { h.classList.add('tk-sfx-out'); setTimeout(function () { if (h.parentNode) h.remove(); }, 300); }
+      else h.remove();
     }
     function goSleep() {
       if (window.__ghostSleeping) return;
-      window.__ghostSleeping = true;      // pauses moods, glitches, blink, teaser
-      clearTimeout(fab.__glxT);           // kill any in-progress glitch immediately
-      fab.className = fab.className.replace(/\bglx-\S+/g, '').replace(/\s+/g, ' ').trim();
-      setMood('mood-sleep'); spawnZzz();
+      window.__ghostSleeping = true;      // pauses moods, blink, teaser (glitches keep running)
+      setMood('mood-sleep'); startSleepFx();
     }
     function clearSleep() {               // silent wake (dev cycle) — no animation
       if (!window.__ghostSleeping) return;
-      window.__ghostSleeping = false; killZzz(false); setMood(''); scheduleMood();
+      window.__ghostSleeping = false; stopSleepFx(false); setMood(''); scheduleMood();
     }
     function wake() {                     // startled awakening: jolt + wide eyes + "!" pop
       if (!window.__ghostSleeping) return;
       window.__ghostSleeping = false;
-      killZzz(true);
+      stopSleepFx(true);
       setMood('mood-wake');
       var hd = document.getElementById('tk-head');
       fab.classList.add('tk-wake'); if (hd) hd.classList.add('tk-wake');
