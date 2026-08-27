@@ -739,6 +739,7 @@
   function applyTheme(name, skipEffect) {
     var t = paletteFor(name);
     if (!t) return;
+    document.documentElement.setAttribute('data-theme', name); // expose theme for CSS (ghost eyes, etc.)
     var r = document.documentElement.style;
 
     // --- Visual transition effect ---
@@ -915,6 +916,50 @@
     if (!overlay) return;
     var navigating = false;
 
+    // Signature home-page intro: a grid of black tiles that dissolves left-to-right.
+    // Reused for BOTH the first full load and every PJAX arrival on the home page.
+    window.yangaBlockReveal = function(duration) {
+      duration = duration || 1200;
+      if (document.getElementById('revealGrid')) return; // don't stack reveals
+      var navEl = document.querySelector('nav');
+      var navH = navEl ? Math.round(navEl.getBoundingClientRect().bottom) : 0; // keep the menu bar clear
+      var grid = document.createElement('div');
+      grid.id = 'revealGrid';
+      grid.style.cssText = 'position:fixed;left:0;right:0;bottom:0;top:' + navH + 'px;z-index:9998;pointer-events:none;display:grid;';
+      var cols = Math.ceil(window.innerWidth / 40), rows = Math.ceil((window.innerHeight - navH) / 40);
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ',1fr)';
+      grid.style.gridTemplateRows = 'repeat(' + rows + ',1fr)';
+      var blocks = [];
+      for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+        var block = document.createElement('div');
+        block.style.cssText = 'background:#0a0a0f;';
+        var colNorm = c / cols;
+        blocks.push({ el: block, startT: colNorm * 0.6 + Math.random() * 0.2, fadeLen: 0.1 + Math.random() * 0.2 });
+        grid.appendChild(block);
+      }
+      document.body.appendChild(grid);
+      // Keep the live background (matrix) visible THROUGH the dissolve: lift it above the
+      // tiles but clip it below the nav so the menu bar stays untouched.
+      var mtx = document.getElementById('matrix-bg'), mz = '', mcp = '';
+      if (mtx) { mz = mtx.style.zIndex; mcp = mtx.style.clipPath;
+        mtx.style.zIndex = '9999'; mtx.style.clipPath = 'inset(' + navH + 'px 0 0 0)'; }
+      function restoreBg() { if (mtx) { mtx.style.zIndex = mz; mtx.style.clipPath = mcp; } }
+      var start = performance.now();
+      (function frame(now) {
+        var pr = (now - start) / duration;
+        if (pr >= 1) { grid.remove(); restoreBg(); return; }
+        for (var i = 0; i < blocks.length; i++) {
+          var b = blocks[i];
+          if (pr >= b.startT) b.el.style.opacity = Math.max(0, 1 - (pr - b.startT) / b.fadeLen);
+        }
+        requestAnimationFrame(frame);
+      })(performance.now());
+    };
+    function isHomeUrl(u) {
+      try { var path = new URL(u, location.href).pathname; return /(^|\/)(index\.html)?$/.test(path); }
+      catch (e) { return /(^|\/)(index\.html)?$/.test(u); }
+    }
+
     function getContentEls() {
       var els = [];
       Array.prototype.forEach.call(overlay.children, function(child) {
@@ -1074,6 +1119,10 @@
         // 16. (Re)build the lateral table of contents for article pages
         if (window.buildPostTOC) window.buildPostTOC();
         if (window.hlCode) window.hlCode();
+
+        // Home page always renders via the signature block-dissolve intro,
+        // no matter which page the navigation came from.
+        if (isHomeUrl(url)) window.yangaBlockReveal();
 
         navigating = false;
 

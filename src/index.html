@@ -1055,10 +1055,7 @@ window.addEventListener('pageshow', function(e) {
 (function() {
   var boot = document.getElementById('bootScreen');
   if (!boot) return;
-  if (sessionStorage.getItem('yanga_booted')) {
-    boot.remove();
-    return;
-  }
+  // Always play the intro on the home page (removed the first-visit-only guard).
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
   document.querySelector('.overlay').style.opacity = '0';
@@ -1077,13 +1074,21 @@ window.addEventListener('pageshow', function(e) {
   function startReveal() {
     boot.remove();
     document.querySelector('.overlay').style.opacity = '1';
-    (document.getElementById('matrix-bg')||{style:{}}).style.opacity = '0.15';
+    var mtx = (document.getElementById('matrix-bg')||{style:{}});
+    mtx.style.opacity = '0.15';
+
+    var navEl = document.querySelector('nav');
+    var navH = navEl ? Math.round(navEl.getBoundingClientRect().bottom) : 0; // keep the menu bar clear
+    // Lift the live matrix background above the tiles (clipped below the nav) so the
+    // background keeps running during the dissolve and the menu bar stays untouched.
+    var mz = mtx.style.zIndex, mcp = mtx.style.clipPath;
+    mtx.style.zIndex = '9999'; mtx.style.clipPath = 'inset(' + navH + 'px 0 0 0)';
 
     var revealGrid = document.createElement('div');
     revealGrid.id = 'revealGrid';
-    revealGrid.style.cssText = 'position:fixed;inset:0;z-index:9998;pointer-events:none;display:grid;';
+    revealGrid.style.cssText = 'position:fixed;left:0;right:0;bottom:0;top:' + navH + 'px;z-index:9998;pointer-events:none;display:grid;';
     var bCols = Math.ceil(window.innerWidth / 40);
-    var bRows = Math.ceil(window.innerHeight / 40);
+    var bRows = Math.ceil((window.innerHeight - navH) / 40);
     revealGrid.style.gridTemplateColumns = 'repeat(' + bCols + ',1fr)';
     revealGrid.style.gridTemplateRows = 'repeat(' + bRows + ',1fr)';
 
@@ -1106,6 +1111,7 @@ window.addEventListener('pageshow', function(e) {
       var p = (now - revealStart) / REVEAL_DURATION;
       if (p >= 1) {
         revealGrid.remove();
+        mtx.style.zIndex = mz; mtx.style.clipPath = mcp;
         finish();
         return;
       }
