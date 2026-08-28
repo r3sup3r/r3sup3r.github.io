@@ -56,11 +56,20 @@
             <h2>Latest writing</h2>
             <a href="blog.html" class="latest-all">All writing &rarr;</a>
           </div>
-          <a class="latest-post" href="posts/deep-learning-labels-myth.html">
-            <div class="latest-meta"><span class="latest-cat">CLARIFICATIONS</span><span class="latest-date">August 2026</span></div>
-            <h3>Deep Learning Doesn't Mean "No Labels"</h3>
-            <p>While working through the AI track on TryHackMe, I came across a passage that appears to contradict itself about machine learning and deep learning: it claims that deep learning requires no labelled data, only a paragraph after demonstrating a supervised learning example built entirely on labelled data. The problem, however, goes deeper than an inconsistent paragraph&mdash;the distinction it presents between ML and DL is technically misleading.</p>
-          </a>
+          {{#latestPosts}}
+        <a class="latest-post" href="{{root}}posts/{{slug}}">
+          <div class="latest-meta"><span class="latest-cat">{{category}}</span><span class="latest-date">{{dateHuman}}</span></div>
+          <h3>{{title}}</h3>
+          <p>{{excerpt}}</p>
+        </a>
+{{/latestPosts}}
+{{#noPosts}}
+        <div class="latest-post latest-empty">
+          <div class="latest-meta"><span class="latest-cat">// no entries yet</span></div>
+          <h3>Nothing published yet</h3>
+          <p>First write-ups are in progress — new work lands here as it ships.</p>
+        </div>
+{{/noPosts}}
 
 
           <div class="home-quote">
@@ -777,7 +786,7 @@ function initTerminal() {
   // ── Static commands ──
   var commands = {
     help: '__HELP__',
-    ls: 'pentesting/  ai-red-team/  ctf/  blog/  tools/  about.txt  skills.txt',
+    ls: 'pentesting/  ai-security/  blog/  about.txt  skills.txt',
     whoami: 'YANGA — pentester pivoting to AI security. Breaking systems to make them stronger.',
     'cat about.txt': 'Offensive security researcher building <a href="about.html">YANGA</a> — a hub for pentesting, AI security, and emerging threat research.',
     'cat skills.txt': 'Web App Pentesting ██████████ 100%\nActive Directory   █████████░ 90%\nWiFi Hacking       ████████░░ 80%\nAI Security        ███░░░░░░░ 30%',
@@ -793,15 +802,14 @@ function initTerminal() {
   };
 
   var gotos = {
-    pentesting: 'sections/pentesting.html',
-    'ai-red-teaming': 'sections/ai-red-teaming.html',
-    'ai-red-team': 'sections/ai-red-teaming.html',
-    ai: 'sections/ai-red-teaming.html',
-    ctf: 'sections/ctf.html',
-    writeups: 'sections/ctf.html',
-    blog: 'blog.html', tools: 'tools.html',
-    about: 'about.html', home: 'index.html'
-  };
+      pentesting: 'sections/pentesting.html',
+      pentest: 'sections/pentesting.html',
+      'ai-security': 'sections/ai-red-teaming.html',
+      'ai-red-teaming': 'sections/ai-red-teaming.html',
+      ai: 'sections/ai-red-teaming.html',
+      blog: 'blog.html',
+      about: 'about.html', home: 'index.html'
+    };
 
   // ── Command history (up to 5) ──
   var cmdHistory = [];
@@ -845,8 +853,9 @@ function initTerminal() {
       var parts = cmd.split(/\s+/);
       var color = parts[1];
       var currentTheme = (window.__yangaGetTheme && window.__yangaGetTheme()) || 'blue';
-      if (!color || !{ green:1, blue:1, red:1 }[color]) {
-        output.innerHTML = 'Usage: ' + acc('theme [green|blue|red]') + '\nCurrent: ' + acc(currentTheme);
+      var THEMES7 = { green:1, blue:1, red:1, orange:1, yellow:1, pink:1, purple:1 };
+        if (!color || !THEMES7[color]) {
+        output.innerHTML = 'Usage: ' + acc('theme [green|blue|red|orange|yellow|pink|purple]') + '\nCurrent: ' + acc(currentTheme);
         return;
       }
       // Theme dots are no longer in the DOM — call the exposed applier directly.
@@ -895,9 +904,7 @@ function initTerminal() {
     // Direct navigation shortcuts
     if (cmd === 'ai') { output.innerHTML = acc('Navigating to AI Security...'); setTimeout(function() { window.location.href = 'sections/ai-red-teaming.html'; }, 400); return; }
     if (cmd === 'pentest' || cmd === 'pentesting') { output.innerHTML = acc('Navigating to Pentesting...'); setTimeout(function() { window.location.href = 'sections/pentesting.html'; }, 400); return; }
-    if (cmd === 'ctf' || cmd === 'writeups') { output.innerHTML = acc('Navigating to CTF & Writeups...'); setTimeout(function() { window.location.href = 'sections/ctf.html'; }, 400); return; }
     if (cmd === 'blog') { output.innerHTML = acc('Navigating to Blog...'); setTimeout(function() { window.location.href = 'blog.html'; }, 400); return; }
-    if (cmd === 'tools') { output.innerHTML = acc('Navigating to Tools...'); setTimeout(function() { window.location.href = 'tools.html'; }, 400); return; }
     if (cmd === 'about') { output.innerHTML = acc('Navigating to About...'); setTimeout(function() { window.location.href = 'about.html'; }, 400); return; }
     if (cmd === 'void') { output.innerHTML = acc('Entering the void...') + ' signal lost.'; setTimeout(function() { window.location.href = 'void'; }, 600); return; }
 
@@ -925,9 +932,7 @@ function initTerminal() {
         + acc('Navigation:') + '\n'
         + '  ai                      Go to AI Security\n'
         + '  pentest                 Go to Pentesting\n'
-        + '  ctf                     Go to CTF &amp; Writeups\n'
         + '  blog                    Go to Blog\n'
-        + '  tools                   Go to Tools\n'
         + '  about                   Go to About\n'
         + '  void                    Enter the void\n'
         + '  goto [page]             Navigate to a page\n'
@@ -948,7 +953,7 @@ function initTerminal() {
         + '  figlet [text]           Render text as ASCII block art\n'
         + '  cmatrix                 Matrix rain animation\n'
         + '  glitch                  Glitch the page\n'
-        + '  theme [green|blue|red]  Switch site color theme\n'
+        + '  theme [color]           Switch color theme (7 available)\n'
         + '\n'
         + acc('System:') + '\n'
         + '  clear                   Clear terminal output\n'
@@ -1055,8 +1060,11 @@ window.addEventListener('pageshow', function(e) {
 (function() {
   var boot = document.getElementById('bootScreen');
   if (!boot) return;
-  if (sessionStorage.getItem('yanga_booted')) {   // intro plays only on first home visit
+  if (sessionStorage.getItem('yanga_booted') ||
+      (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    // intro plays only on first home visit — and never when reduced motion is requested
     boot.remove();
+    window.dispatchEvent(new Event('bootComplete'));
     return;
   }
   document.documentElement.style.overflow = 'hidden';

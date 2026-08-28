@@ -11,7 +11,8 @@
   window.__matrixColor = (_t && _themes[_t]) ? _themes[_t] : '#00a8ff';
 })();
 const canvas = document.getElementById('matrix-bg');
-if (canvas) {
+var _mtxReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (canvas && !_mtxReduce) {
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;

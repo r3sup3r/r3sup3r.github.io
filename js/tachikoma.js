@@ -24,7 +24,6 @@
       '<svg class="rs-body" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>' +
       '<span class="rs-eyes"><span class="rs-eye"></span><span class="rs-eye"></span></span>' +
       '<span class="rs-mouth"></span>' +
-      '<span class="rs-noise"></span>' +
       '<span class="rs-dots"><i></i><i></i><i></i></span>' +
       '<span class="rs-wave"><i></i><i></i><i></i><i></i></span>' +
       '<span class="rs-load"></span>' +
@@ -351,6 +350,22 @@
   '.tk-dev-row .tk-dev-lbl{margin-left:auto;color:var(--text-secondary);text-align:right;padding-left:10px;}' +
   '.tk-dev-row kbd{font-family:var(--font-body,monospace);font-size:.64rem;line-height:1;padding:3px 6px;border:1px solid rgba(var(--accent-rgb),.4);border-bottom-width:2px;border-radius:4px;background:rgba(var(--accent-rgb),.08);color:var(--accent);white-space:nowrap;}' +
   '.tk-dev-row .plus{color:var(--text-muted);font-size:.6rem;}' +
+  '#tk-panel{transition:width .18s ease;}' +
+  '.tk-ctl-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:.78rem;color:var(--text-secondary);}' +
+  '.tk-ctl-lbl{flex:1;}' +
+  '.tk-seg{display:inline-flex;border:1px solid rgba(var(--accent-rgb),.35);border-radius:7px;overflow:hidden;}' +
+  '.tk-segb{background:none;border:none;color:var(--text-muted);font-family:var(--font-body,monospace);font-size:.72rem;padding:4px 11px;cursor:pointer;transition:background .15s,color .15s;min-width:34px;}' +
+  '.tk-segb+.tk-segb{border-left:1px solid rgba(var(--accent-rgb),.25);}' +
+  '.tk-segb:hover{color:var(--accent);}' +
+  '.tk-segb.active{background:rgba(var(--accent-rgb),.16);color:var(--accent);}' +
+  '.tk-actb{background:rgba(var(--accent-rgb),.08);border:1px solid rgba(var(--accent-rgb),.35);color:var(--accent);font-family:var(--font-body,monospace);font-size:.72rem;padding:5px 13px;border-radius:7px;cursor:pointer;transition:background .15s;}' +
+  '.tk-actb:hover{background:rgba(var(--accent-rgb),.18);}' +
+  '.tk-actb.tk-danger{border-color:rgba(255,80,80,.5);color:#ff7a7a;background:rgba(255,60,60,.08);}' +
+  '.tk-actb.tk-danger:hover{background:rgba(255,60,60,.18);}' +
+  '.tk-tgl{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text-muted);font-family:var(--font-body,monospace);font-size:.72rem;padding:5px 13px;border-radius:7px;cursor:pointer;min-width:46px;transition:background .15s,color .15s,border-color .15s;}' +
+  '.tk-tgl.on{background:rgba(var(--accent-rgb),.16);border-color:rgba(var(--accent-rgb),.5);color:var(--accent);}' +
+  'body.tk-movable-on #tk-panel .tk-head-bar{cursor:grab;}' +
+  'body.tk-movable-on #tk-panel .tk-head-bar:active{cursor:grabbing;}' +
   '.tk-body{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:11px;scrollbar-width:thin;}' +
   '.tk-msg{max-width:82%;padding:9px 12px;border-radius:12px;font-family:var(--font-prose);font-size:.82rem;' +
     'line-height:1.5;animation:tk-pop .25s ease;}' +
@@ -378,26 +393,14 @@
   '[data-mode="light"] #tk-fab .tk-ping{border-color:#eef1f7;}' +
   '@media(max-width:480px){#tk-panel{height:70vh;}}' +
   '#tk-fab.glx-rgb .rs-face{animation:tk-g-rgb .38s ease-out;}' +
-  '#tk-fab.glx-jit .rs-face{animation:tk-g-jit .34s linear;}' +
   '#tk-fab.glx-slice .rs-face{animation:tk-g-slice .44s steps(1,end);}' +
   '#tk-fab.glx-invert .rs-face{animation:tk-g-invert .32s ease-out;}' +
   '#tk-fab.glx-camo{animation:tk-camo 2.65s ease-in-out !important;}' +
   '#tk-fab.glx-tear .rs-face{animation:tk-g-tear .54s steps(1,end);}' +
-  '#tk-fab.glx-flick .rs-face{animation:tk-g-flick .46s;}' +
-  '#tk-fab.glx-roll .rs-face{animation:tk-g-roll .54s;}' +
-  '#tk-fab.glx-block .rs-face{animation:tk-g-block .54s steps(1,end);}' +
   '#tk-fab.glx-echo .rs-face{animation:tk-g-echo .54s;}' +
-  '#tk-fab.glx-static .rs-face{animation:tk-g-flick .56s;}' +
-  '#tk-fab.glx-static .rs-noise{animation:tk-g-static .56s;}' +
-  '.rs-noise{position:absolute;inset:0;z-index:6;opacity:0;pointer-events:none;mix-blend-mode:screen;background:url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27120%27%20height=%27120%27%3E%3Cfilter%20id=%27n%27%3E%3CfeTurbulence%20type=%27fractalNoise%27%20baseFrequency=%270.9%27%20numOctaves=%272%27/%3E%3CfeColorMatrix%20values=%270%200%200%200%200.2%200%200%200%200%200.7%200%200%200%200%201%200%200%200%201.1%200%27/%3E%3C/filter%3E%3Crect%20width=%27120%27%20height=%27120%27%20filter=%27url(%23n)%27/%3E%3C/svg%3E")%20center/120px%20120px;}' +
   '@keyframes tk-g-tear{0%,100%{clip-path:inset(0);transform:none;}12%{clip-path:inset(0 0 50% 0);transform:translateX(9px);}18%{clip-path:inset(50% 0 0 0);transform:translateX(-9px);}24%{clip-path:inset(0);transform:none;}46%{clip-path:inset(0 0 50% 0);transform:translateX(-7px);}52%{clip-path:inset(50% 0 0 0);transform:translateX(7px);}58%{clip-path:inset(0);transform:none;}}' +
-  '@keyframes tk-g-flick{0%,100%{opacity:1;filter:none;}20%{opacity:.25;}34%{opacity:1;filter:brightness(2.2);}48%{opacity:.5;}62%{opacity:1;}80%{opacity:.15;}90%{opacity:1;}}' +
-  '@keyframes tk-g-roll{0%,100%{transform:translateY(0);filter:none;}15%{transform:translateY(-6px);}30%{transform:translateY(5px);}45%{transform:translateY(-8px);filter:brightness(1.4);}60%{transform:translateY(4px);}78%{transform:translateY(-3px);}}' +
-  '@keyframes tk-g-block{0%,100%{clip-path:inset(0);transform:none;filter:none;}12%{clip-path:inset(26% 52% 55% 14%);transform:translateX(16px);}18%{clip-path:inset(0);transform:none;}40%{clip-path:inset(58% 18% 22% 50%);transform:translateX(-13px);filter:invert(1);}46%{clip-path:inset(0);transform:none;filter:none;}66%{clip-path:inset(40% 30% 40% 30%);transform:translateY(-8px);}72%{clip-path:inset(0);transform:none;}}' +
   '@keyframes tk-g-echo{0%,100%{filter:none;}25%{filter:drop-shadow(-10px 0 0 rgba(var(--accent-rgb),.5)) drop-shadow(-20px 0 0 rgba(var(--accent-rgb),.25));}55%{filter:drop-shadow(-16px 0 0 rgba(var(--accent-rgb),.5)) drop-shadow(-30px 0 0 rgba(var(--accent-rgb),.2));}80%{filter:drop-shadow(-6px 0 0 rgba(var(--accent-rgb),.4));}}' +
-  '@keyframes tk-g-static{0%,100%{opacity:0;}20%{opacity:.7;}40%{opacity:.3;}60%{opacity:.6;}80%{opacity:.22;}}' +
   '@keyframes tk-g-rgb{0%,100%{filter:none;transform:none;}25%{filter:drop-shadow(3px 0 0 rgba(255,40,80,.9)) drop-shadow(-3px 0 0 rgba(0,230,255,.9));transform:translateX(1px);}55%{filter:drop-shadow(-4px 0 0 rgba(255,40,80,.9)) drop-shadow(4px 0 0 rgba(0,230,255,.9));transform:translateX(-1px);}80%{filter:drop-shadow(2px 0 0 rgba(255,40,80,.9)) drop-shadow(-2px 0 0 rgba(0,230,255,.9));}}' +
-  '@keyframes tk-g-jit{0%,100%{transform:translate(0,0) skewX(0);}15%{transform:translate(-2px,1px) skewX(4deg);}30%{transform:translate(2px,-1px) skewX(-3deg);}45%{transform:translate(-2px,0);}60%{transform:translate(2px,1px) skewX(3deg);}78%{transform:translate(-1px,-1px);}}' +
   '@keyframes tk-g-slice{0%,100%{clip-path:inset(0);transform:none;}18%{clip-path:inset(28% 0 44% 0);transform:translateX(7px);}23%{clip-path:inset(0);transform:none;}46%{clip-path:inset(58% 0 14% 0);transform:translateX(-9px);}51%{clip-path:inset(0);transform:none;}72%{clip-path:inset(8% 0 72% 0);transform:translateX(6px);}77%{clip-path:inset(0);transform:none;}}' +
   '@keyframes tk-g-invert{0%,100%{filter:none;}30%{filter:invert(1) hue-rotate(180deg) saturate(1.6);}55%{filter:none;}72%{filter:invert(1) hue-rotate(180deg) saturate(1.6);}}' +
   '@keyframes tk-camo{0%{filter:none;opacity:1;}12%{filter:hue-rotate(160deg) saturate(.3) brightness(1.6);opacity:.6;}26%{filter:saturate(0) brightness(2.6) blur(2px) contrast(.5);opacity:.08;}44%{filter:saturate(0) brightness(3) blur(3px);opacity:.04;}62%{filter:saturate(0) brightness(3) blur(3px);opacity:.05;}80%{filter:hue-rotate(140deg) saturate(2) brightness(1.5) blur(1px);opacity:.5;}100%{filter:none;opacity:1;}}' +
@@ -483,7 +486,7 @@
         '<div id="tk-head">' + faceHTML() + '</div>' +
         '<div class="tk-id"><span class="tk-name">GHOST</span>' +
         '<span class="tk-status">recon unit · standby</span></div>' +
-        '<button class="tk-gear" type="button" aria-label="Dev shortcuts" title="Dev shortcuts">\u2699</button>' +
+        '<button class="tk-gear" type="button" aria-label="Settings" title="Settings">\u2699</button>' +
         '<button class="tk-close" type="button" aria-label="Close chat">✕</button>' +
       '</div>' +
       '<div class="tk-body" id="tk-body"></div>' +
@@ -491,7 +494,7 @@
         '<input id="tk-text" type="text" autocomplete="off" placeholder="Ask ghost…">' +
         '<button class="tk-send" type="submit" aria-label="Send">➔</button>' +
       '</form>' +
-      '<div class="tk-dev" id="tk-dev"><div class="tk-dev-h">DEV SHORTCUTS<button class="tk-dev-x" type="button" aria-label="Close">✕</button></div><div class="tk-dev-list" id="tk-dev-list"></div></div>';
+      '<div class="tk-dev" id="tk-dev"><div class="tk-dev-h">CONTROLS<button class="tk-dev-x" type="button" aria-label="Close">✕</button></div><div class="tk-dev-list" id="tk-dev-list"></div></div>';
     document.body.appendChild(panel);
 
     var body = panel.querySelector('#tk-body');
@@ -499,35 +502,110 @@
     var text = panel.querySelector('#tk-text');
     var seeded = false;
 
-    // ---- dev shortcuts cheatsheet (gear) ----
+    // ---- window state (dock / width / move) + settings gear ----
+    var WIN_KEY = 'yanga_chat_win';
+    var winState = (function () { try { return JSON.parse(localStorage.getItem(WIN_KEY)) || {}; } catch (e) { return {}; } })();
+    if (typeof winState.side !== 'string') winState.side = 'right';
+    if (typeof winState.width !== 'number') winState.width = 340;
+    function saveWin() { try { localStorage.setItem(WIN_KEY, JSON.stringify(winState)); } catch (e) {} }
+    function applyWin() {
+      var w = Math.max(300, Math.min(winState.width || 340, window.innerWidth - 20));
+      panel.style.width = w + 'px';
+      if (winState.moved && winState.x != null && winState.y != null) {
+        var maxX = window.innerWidth - w - 6, maxY = window.innerHeight - 90;
+        panel.style.left = Math.max(6, Math.min(winState.x, maxX)) + 'px';
+        panel.style.top = Math.max(64, Math.min(winState.y, maxY)) + 'px';
+        panel.style.right = 'auto'; panel.style.bottom = 'auto';
+      } else {
+        panel.style.top = 'auto'; panel.style.bottom = '24px';
+        if (winState.side === 'left') { panel.style.left = '24px'; panel.style.right = 'auto'; }
+        else { panel.style.right = '24px'; panel.style.left = 'auto'; }
+      }
+      document.body.classList.toggle('tk-movable-on', !!winState.moveOn);
+    }
+    applyWin();
+    window.addEventListener('resize', applyWin, { passive: true });
+
+    // drag by the header bar when "move" is on
     (function () {
-      var DEV = [
+      var dragging = false, ox = 0, oy = 0, headBar = panel.querySelector('.tk-head-bar');
+      headBar.addEventListener('mousedown', function (e) {
+        if (!winState.moveOn || (e.target.closest && e.target.closest('button'))) return;
+        var r = panel.getBoundingClientRect(); dragging = true; ox = e.clientX - r.left; oy = e.clientY - r.top;
+        document.body.style.userSelect = 'none'; e.preventDefault();
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        winState.moved = true; winState.x = e.clientX - ox; winState.y = e.clientY - oy; applyWin();
+      });
+      window.addEventListener('mouseup', function () { if (dragging) { dragging = false; document.body.style.userSelect = ''; saveWin(); } });
+    })();
+
+    // clear the conversation (fresh greeting)
+    function clearChat() { body.innerHTML = ''; seeded = true; GREETING.forEach(function (g, i) { addMsg('bot', g, 160 + i * 480); }); }
+
+    (function () {
+      var SHORTCUTS = [
         ['Glitches', [
           ['Shift','1','RGB split'],['Shift','2','Slice'],['Shift','3','Tear'],
-          ['Shift','4','Flicker'],['Shift','5','Roll'],['Shift','6','Block'],
-          ['Shift','7','Static'],['Shift','8','Jitter'],['Shift','9','Echo'],
-          ['Shift','0','Invert'],['Shift','C','Camouflage']
+          ['Shift','4','Echo'],['Shift','5','Invert'],['Shift','C','Camouflage']
         ]],
         ['Theme', [
-          ['T',null,'Cycle colour (blue / green / red)'],
+          ['T',null,'Cycle colour'],
           ['Shift','T','Cycle transition style']
         ]],
         ['Ghost', [
-          ['Shift','G','Cycle ghost look (LED / CRT / neon\u2026)'],
-          ['Shift','S','Sleep \u00b7 step sleep FX (hover to wake)']
+          ['Shift','G','Cycle ghost look'],
+          ['Shift','S','Step sleep FX (hover to wake)']
         ]]
       ];
-      var html = '';
-      DEV.forEach(function (grp) {
-        html += '<div class="tk-dev-cat">' + grp[0] + '</div>';
+      var win =
+        '<div class="tk-dev-cat">Window</div>' +
+        '<div class="tk-ctl-row"><span class="tk-ctl-lbl">Dock side</span><span class="tk-seg">' +
+          '<button class="tk-segb" type="button" data-act="dock-left">Left</button>' +
+          '<button class="tk-segb" type="button" data-act="dock-right">Right</button></span></div>' +
+        '<div class="tk-ctl-row"><span class="tk-ctl-lbl">Width</span><span class="tk-seg">' +
+          '<button class="tk-segb" type="button" data-act="narrow" title="Narrower">−</button>' +
+          '<button class="tk-segb" type="button" data-act="wide" title="Wider">+</button></span></div>' +
+        '<div class="tk-ctl-row"><span class="tk-ctl-lbl">Drag to move</span><button class="tk-tgl" type="button" data-act="move">Off</button></div>' +
+        '<div class="tk-ctl-row"><span class="tk-ctl-lbl">Reset window</span><button class="tk-actb" type="button" data-act="reset">Reset</button></div>' +
+        '<div class="tk-dev-cat">Conversation</div>' +
+        '<div class="tk-ctl-row"><span class="tk-ctl-lbl">Clear conversation</span><button class="tk-actb tk-danger" type="button" data-act="clear">Clear</button></div>';
+      var sc = '';
+      SHORTCUTS.forEach(function (grp) {
+        sc += '<div class="tk-dev-cat">' + grp[0] + '</div>';
         grp[1].forEach(function (row) {
           var keys = '<kbd>' + row[0] + '</kbd>' + (row[1] ? '<span class="plus">+</span><kbd>' + row[1] + '</kbd>' : '');
-          html += '<div class="tk-dev-row">' + keys + '<span class="tk-dev-lbl">' + row[2] + '</span></div>';
+          sc += '<div class="tk-dev-row">' + keys + '<span class="tk-dev-lbl">' + row[2] + '</span></div>';
         });
       });
-      panel.querySelector('#tk-dev-list').innerHTML = html;
+      var list = panel.querySelector('#tk-dev-list');
+      list.innerHTML = win + '<div class="tk-dev-cat">Shortcuts</div>' + sc;
+
+      function syncControls() {
+        var L = list.querySelector('[data-act="dock-left"]'), R = list.querySelector('[data-act="dock-right"]');
+        var docked = !winState.moved;
+        if (L) L.classList.toggle('active', docked && winState.side === 'left');
+        if (R) R.classList.toggle('active', docked && winState.side === 'right');
+        var mv = list.querySelector('[data-act="move"]');
+        if (mv) { mv.classList.toggle('on', !!winState.moveOn); mv.textContent = winState.moveOn ? 'On' : 'Off'; }
+      }
+      syncControls();
+
+      list.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-act]'); if (!b) return;
+        var act = b.getAttribute('data-act');
+        if (act === 'dock-left' || act === 'dock-right') { winState.side = act === 'dock-left' ? 'left' : 'right'; winState.moved = false; winState.x = winState.y = null; }
+        else if (act === 'narrow') { winState.width = Math.max(300, (winState.width || 340) - 44); }
+        else if (act === 'wide') { winState.width = Math.min(window.innerWidth - 20, (winState.width || 340) + 44); }
+        else if (act === 'move') { winState.moveOn = !winState.moveOn; }
+        else if (act === 'reset') { winState = { side: 'right', width: 340, moved: false, x: null, y: null, moveOn: false }; }
+        else if (act === 'clear') { clearChat(); }
+        applyWin(); saveWin(); syncControls();
+      });
+
       var dev = panel.querySelector('#tk-dev');
-      panel.querySelector('.tk-gear').addEventListener('click', function () { dev.classList.add('show'); });
+      panel.querySelector('.tk-gear').addEventListener('click', function () { syncControls(); dev.classList.add('show'); });
       panel.querySelector('.tk-dev-x').addEventListener('click', function () { dev.classList.remove('show'); });
     })();
 
@@ -759,7 +837,7 @@
     fab.addEventListener('click', open);
     panel.querySelector('.tk-close').addEventListener('click', close);
     // ---- glitch playback (dev): Shift+1..0 fire a specific glitch, Shift+C = camo ----
-    var GLITCH_DUR = { 'glx-rgb':420,'glx-jit':380,'glx-slice':480,'glx-tear':560,'glx-flick':470,'glx-roll':560,'glx-echo':560,'glx-block':560,'glx-static':580,'glx-invert':360,'glx-camo':2700 };
+    var GLITCH_DUR = { 'glx-rgb':420,'glx-slice':480,'glx-tear':560,'glx-echo':560,'glx-invert':360,'glx-camo':2700 };
     function playGlitch(cls) {
       if (!fab) return;
       fab.className = fab.className.replace(/\bglx-\S+/g, '').replace(/\s+/g, ' ').trim();
@@ -769,7 +847,7 @@
       fab.__glxT = setTimeout(function () { fab.classList.remove(cls); }, (GLITCH_DUR[cls] || 500) + 80);
     }
     window.ghostGlitch = function (n) { playGlitch(n.indexOf('glx-') === 0 ? n : ('glx-' + n)); };
-    var GLX_KEYS = { Digit1:'glx-rgb', Digit2:'glx-slice', Digit3:'glx-tear', Digit4:'glx-flick', Digit5:'glx-roll', Digit6:'glx-block', Digit7:'glx-static', Digit8:'glx-jit', Digit9:'glx-echo', Digit0:'glx-invert', KeyC:'glx-camo' };
+    var GLX_KEYS = { Digit1:'glx-rgb', Digit2:'glx-slice', Digit3:'glx-tear', Digit4:'glx-echo', Digit5:'glx-invert', KeyC:'glx-camo' };
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && panel.classList.contains('open')) close();
       if (e.repeat || !e.shiftKey) return;
@@ -939,7 +1017,7 @@
       if (m) document.body.classList.add(m);
     }
     // one of 5 sleep FX is chosen at random each time the ghost sleeps
-    var SLEEPFX = ['mtx', 'dust', 'wave', 'pkt', 'crt', 'bub', 'zzz'];
+    var SLEEPFX = ['bub', 'crt', 'zzz'];   // only: bubble, standby (crt), and Zzz — others unplugged
     var GLYPHS = '\u30A2\u30A4\u30A6\u30A8\u30AA\u30AB\u30AD\u30AF\u30B1\u30B3\u30B5\u30B7\u30B9\u30BB\u30BD\u30BF\u30C1\u30C4\u30C6\u30C80123456789';
     var _sfxTimer = null;
     function _sfxPos(el) { el.style.left = (24 + Math.random() * 18) + '%'; el.style.top = (4 + Math.random() * 6) + 'px'; el.style.setProperty('--dx', (Math.random() * -12 - 3).toFixed(0) + 'px'); }

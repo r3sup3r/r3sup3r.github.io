@@ -1,10 +1,10 @@
 <!--
 {
   "title": "YANGA — AI Agent Security",
-  "description": "AI security research: prompt injection, indirect injection through retrieved data, agent tool abuse, and the local lab framework behind it.",
+  "description": "Security across the AI agent pipeline — RAG, MCP, and A2A. Attack surface and defenses.",
   "layout": "base",
   "activeNav": "airedteam",
-  "headExtra": "<style>.hub{max-width:1000px;margin:0 auto;padding:0 30px 80px}.hub-head{font-family:var(--font-display);font-size:.6rem;letter-spacing:3px;color:var(--accent);margin:34px 0 16px;padding-bottom:9px;border-bottom:1px solid rgba(var(--accent-rgb),.12)}.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}.hub-card{display:block;text-decoration:none;background:rgba(var(--accent-rgb),.03);border:1px solid rgba(var(--accent-rgb),.1);border-radius:8px;padding:18px 20px;transition:all .25s}.hub-card:hover{border-color:rgba(var(--accent-rgb),.32);background:rgba(var(--accent-rgb),.06);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.35)}.hub-kicker{font-family:var(--font-display);font-size:.5rem;letter-spacing:2px;color:var(--accent);opacity:.8;display:block;margin-bottom:8px}.hub-card h3{font-family:var(--font-display);font-size:.78rem;letter-spacing:1px;color:var(--text-bright);margin:0 0 8px;line-height:1.45}.hub-card p{font-family:var(--font-prose);font-size:.82rem;color:var(--text-secondary);line-height:1.6;margin:0;text-align:left}.hub-lead{font-family:var(--font-prose);color:var(--text-primary);font-size:.9rem;line-height:1.8;max-width:660px;margin:0 auto 6px;text-align:center}</style>"
+  "postSection": "ai"
 }
 -->
 
@@ -15,9 +15,25 @@
   <div class="accent-bar green"></div>
 </section>
 
+<p class="section-intro">Where offensive security meets systems that reason and act. I treat the RAG &rarr; MCP &rarr; A2A pipeline as one continuous path of untrusted data, and probe where it turns into instructions, then into actions.</p>
+
 <div class="hub">
+  <div class="blog-timeline">
+{{#sectionPosts}}
+    <div class="tl-item" data-category="{{catKey}}">
+      <div class="tl-date">{{dateLabel}}</div>
+      <a class="tl-card" href="{{root}}posts/{{slug}}">
+        <h4><i class="fa-solid {{icon}}"></i>{{title}}</h4>
+        <p>{{excerpt}}</p>
+        <div class="tl-meta"><span class="tl-type tag-{{catKey}}">{{category}}</span><span class="tl-read">{{read}}</span></div>
+      </a>
+    </div>
+{{/sectionPosts}}
+  </div>
+{{#noSectionPosts}}
   <div class="empty-state">
     <span class="empty-state-tag">// no entries yet</span>
     <p>First write-ups are in progress — new work lands here as it ships.</p>
   </div>
+{{/noSectionPosts}}
 </div>

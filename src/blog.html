@@ -16,19 +16,28 @@
 
 <div class="filter-bar">
   <button class="filter-btn active" data-filter="all">All</button>
-  <button class="filter-btn" data-filter="pentesting">Pentesting</button>
-  <button class="filter-btn" data-filter="ai-security">AI Security</button>
+  <button class="filter-btn" data-filter="build">Build</button>
+  <button class="filter-btn" data-filter="understand">Understand</button>
+  <button class="filter-btn" data-filter="break">Break</button>
 </div>
 
 <div class="blog-timeline">
-  <div class="tl-item" data-category="clarifications">
-    <div class="tl-date">AUGUST 2026</div>
-    <a class="tl-card" href="{{root}}posts/deep-learning-labels-myth.html">
-      <h4><i class="fa-solid fa-lightbulb"></i>Deep Learning Doesn't Mean "No Labels"</h4>
-      <p>While working through the AI track on TryHackMe, I came across a passage that appears to contradict itself about machine learning and deep learning: it claims that deep learning requires no labelled data, only a paragraph after demonstrating a supervised learning example built entirely on labelled data. The problem, however, goes deeper than an inconsistent paragraph&mdash;the distinction it presents between ML and DL is technically misleading.</p>
-      <div class="tl-meta"><span class="tl-type" role="button" tabindex="0">CLARIFICATIONS</span><span class="tl-read">7 MIN</span></div>
+{{#posts}}
+  <div class="tl-item" data-category="{{catKey}}">
+    <div class="tl-date">{{dateLabel}}</div>
+    <a class="tl-card" href="{{root}}posts/{{slug}}">
+      <h4><i class="fa-solid {{icon}}"></i>{{title}}</h4>
+      <p>{{excerpt}}</p>
+      <div class="tl-meta"><span class="tl-type tag-{{catKey}}" role="button" tabindex="0">{{category}}</span><span class="tl-read">{{read}}</span></div>
     </a>
   </div>
+{{/posts}}
+{{#noPosts}}
+  <div class="empty-state">
+    <span class="empty-state-tag">// no entries yet</span>
+    <p>First write-ups are in progress — new work lands here as it ships.</p>
+  </div>
+{{/noPosts}}
 </div>
 
 <script>

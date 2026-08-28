@@ -2108,3 +2108,34 @@ body::before {
 .tl-type { cursor: pointer; transition: background 0.25s, color 0.25s; }
 .tl-type:hover { background: rgba(var(--accent-rgb),0.16); color: var(--accent); }
 .tl-type:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+/* === REDUCED MOTION ===
+   Respect the OS "reduce motion" setting. Neutralizes the ambient/idle
+   animations (matrix rain is stopped in JS; boot intro is skipped) and
+   collapses decorative CSS animations & transitions so elements settle at
+   their end state instead of moving. Functional layout is untouched. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  #matrix-bg { display: none !important; }
+  .typer-cursor { animation: none !important; }
+}
+
+/* Section (Topics) landing framing — distinguishes a section hub from a filtered blog list. */
+.section-intro {
+  max-width: 720px; margin: 0 auto 6px; padding: 0 16px;
+  color: var(--text-secondary); font-size: 1rem; line-height: 1.7; text-align: center;
+}
+@media (max-width: 600px) { .section-intro { font-size: 0.92rem; } }
+
+/* === BUILD / UNDERSTAND / BREAK tags === (fixed hues, independent of the active theme) */
+.tl-type.tag-build      { color: #3ddc97; background: rgba(61,220,151,0.10); }
+.tl-type.tag-understand { color: #4aa8ff; background: rgba(74,168,255,0.10); }
+.tl-type.tag-break      { color: #ff6b5e; background: rgba(255,107,94,0.10); }
+.tl-type.tag-build:hover      { color: #3ddc97; background: rgba(61,220,151,0.18); }
+.tl-type.tag-understand:hover { color: #4aa8ff; background: rgba(74,168,255,0.18); }
+.tl-type.tag-break:hover      { color: #ff6b5e; background: rgba(255,107,94,0.18); }
