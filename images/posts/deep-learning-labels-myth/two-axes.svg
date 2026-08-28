@@ -1,0 +1,76 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The course collapses two independent axes into one. Left: a single line from classical ML (needs labels) to deep learning (no labels). Right: two axes — what the model is (classical to deep) and what it learns from (labelled to no labels) — with SVM, MNIST, k-means and an LLM in the four quadrants, and deep learning spanning both label states.">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#00a8ff"/>
+    </marker>
+    <marker id="arwdim" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#5f7488"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="630" rx="16" ry="16" fill="#0a0e14"/>
+  <rect x="1" y="1" width="1198" height="628" rx="16" ry="16" fill="none" stroke="#00a8ff" stroke-opacity="0.14" stroke-width="2"/>
+
+  <!-- Title -->
+  <text x="60" y="72" font-family="'Orbitron','DejaVu Sans',sans-serif" font-size="34" font-weight="700" fill="#eaf2ff">Two axes, not one</text>
+  <text x="60" y="104" font-family="'DejaVu Sans Mono',monospace" font-size="18" fill="#7f93a8">why &#8220;deep learning needs no labels&#8221; is a category mistake</text>
+
+  <!-- divider -->
+  <line x1="600" y1="150" x2="600" y2="520" stroke="#00a8ff" stroke-opacity="0.12" stroke-width="1.5" stroke-dasharray="4 6"/>
+
+  <!-- ========== LEFT: the course's picture (1D) ========== -->
+  <text x="70" y="185" font-family="'DejaVu Sans Mono',monospace" font-size="16" letter-spacing="2" fill="#7f93a8">THE COURSE&#8217;S PICTURE</text>
+
+  <!-- 1D line -->
+  <line x1="130" y1="330" x2="500" y2="330" stroke="#5f7488" stroke-width="2.5" marker-end="url(#arwdim)"/>
+  <circle cx="150" cy="330" r="8" fill="#00a8ff"/>
+  <circle cx="470" cy="330" r="8" fill="#00a8ff"/>
+
+  <text x="150" y="372" font-family="'DejaVu Sans Mono',monospace" font-size="18" fill="#eaf2ff" text-anchor="middle">classical ML</text>
+  <text x="150" y="396" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#7f93a8" text-anchor="middle">needs labels</text>
+
+  <text x="470" y="372" font-family="'DejaVu Sans Mono',monospace" font-size="18" fill="#eaf2ff" text-anchor="middle">deep learning</text>
+  <text x="470" y="396" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#ff5c6c" text-anchor="middle">&#8220;no labels&#8221;</text>
+
+  <!-- mistake mark -->
+  <text x="470" y="300" font-family="'DejaVu Sans Mono',monospace" font-size="30" fill="#ff5c6c" text-anchor="middle">&#10007;</text>
+  <text x="310" y="465" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#7f93a8" text-anchor="middle">one line, one difference:</text>
+  <text x="310" y="487" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#7f93a8" text-anchor="middle">the difference is just &#8220;labels&#8221;</text>
+
+  <!-- ========== RIGHT: the actual picture (2D) ========== -->
+  <text x="662" y="185" font-family="'DejaVu Sans Mono',monospace" font-size="16" letter-spacing="2" fill="#7f93a8">THE ACTUAL PICTURE</text>
+
+  <!-- deep-learning column highlight -->
+  <rect x="1000" y="228" width="118" height="252" rx="10" fill="#00a8ff" fill-opacity="0.07" stroke="#00a8ff" stroke-opacity="0.35" stroke-width="1.5"/>
+  <text x="1059" y="512" font-family="'DejaVu Sans Mono',monospace" font-size="14" fill="#00a8ff" text-anchor="middle">deep learning</text>
+
+  <!-- axes -->
+  <line x1="700" y1="470" x2="1150" y2="470" stroke="#00a8ff" stroke-width="2" marker-end="url(#arw)"/>
+  <line x1="700" y1="470" x2="700" y2="215" stroke="#00a8ff" stroke-width="2" marker-end="url(#arw)"/>
+
+  <!-- axis labels -->
+  <text x="925" y="527" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#9fb2c4" text-anchor="middle">what the model is  &#8594;</text>
+  <text x="710" y="232" font-family="'DejaVu Sans Mono',monospace" font-size="14" fill="#9fb2c4">&#8593; what it learns from</text>
+
+  <!-- axis ticks -->
+  <text x="800" y="497" font-family="'DejaVu Sans Mono',monospace" font-size="14" fill="#7f93a8" text-anchor="middle">classical</text>
+  <text x="1059" y="497" font-family="'DejaVu Sans Mono',monospace" font-size="14" fill="#7f93a8" text-anchor="middle">deep</text>
+  <text x="690" y="450" font-family="'DejaVu Sans Mono',monospace" font-size="13" fill="#7f93a8" text-anchor="end">no labels</text>
+  <text x="690" y="266" font-family="'DejaVu Sans Mono',monospace" font-size="13" fill="#7f93a8" text-anchor="end">labelled</text>
+
+  <!-- quadrant points -->
+  <circle cx="800" cy="410" r="7" fill="#9fb2c4"/>
+  <text x="800" y="392" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#eaf2ff" text-anchor="middle">k-means</text>
+
+  <circle cx="800" cy="290" r="7" fill="#9fb2c4"/>
+  <text x="800" y="272" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#eaf2ff" text-anchor="middle">SVM</text>
+
+  <circle cx="1059" cy="290" r="8" fill="#00a8ff"/>
+  <text x="1059" y="272" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#eaf2ff" text-anchor="middle">MNIST</text>
+
+  <circle cx="1059" cy="410" r="8" fill="#00a8ff"/>
+  <text x="1059" y="392" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#eaf2ff" text-anchor="middle">an LLM</text>
+
+  <!-- bottom caption -->
+  <text x="600" y="612" font-family="'DejaVu Sans Mono',monospace" font-size="15" fill="#5f7488" text-anchor="middle">&#8220;deep learning&#8221; answers what the model is; &#8220;labelled&#8221; answers what it learns from &#8212; fusing them is the mistake</text>
+</svg>

@@ -56,10 +56,10 @@
             <h2>Latest writing</h2>
             <a href="blog.html" class="latest-all">All writing &rarr;</a>
           </div>
-          <a class="latest-post" href="posts/rag-mcp-a2a-attack-surface.html">
-            <div class="latest-meta"><span class="latest-cat">AI AGENT SECURITY</span><span class="latest-date">August 2026</span></div>
-            <h3>The RAG &rarr; MCP &rarr; A2A Attack Surface</h3>
-            <p>RAG, MCP, and A2A aren't three technologies to secure separately &mdash; they're one pipe that untrusted data walks end to end. A map of where it becomes instructions, then actions, then someone else's problem.</p>
+          <a class="latest-post" href="posts/deep-learning-labels-myth.html">
+            <div class="latest-meta"><span class="latest-cat">CLARIFICATIONS</span><span class="latest-date">August 2026</span></div>
+            <h3>Deep Learning Doesn't Mean "No Labels"</h3>
+            <p>While working through the AI track on TryHackMe, I came across a passage that appears to contradict itself about machine learning and deep learning: it claims that deep learning requires no labelled data, only a paragraph after demonstrating a supervised learning example built entirely on labelled data. The problem, however, goes deeper than an inconsistent paragraph&mdash;the distinction it presents between ML and DL is technically misleading.</p>
           </a>
 
 
@@ -1055,7 +1055,10 @@ window.addEventListener('pageshow', function(e) {
 (function() {
   var boot = document.getElementById('bootScreen');
   if (!boot) return;
-  // Always play the intro on the home page (removed the first-visit-only guard).
+  if (sessionStorage.getItem('yanga_booted')) {   // intro plays only on first home visit
+    boot.remove();
+    return;
+  }
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
   document.querySelector('.overlay').style.opacity = '0';

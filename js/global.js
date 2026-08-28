@@ -168,8 +168,7 @@
   // ── SITE-WIDE SEARCH INDEX ──
   // All searchable content — urls are relative to yanga root
   const searchIndex = [
-    { title: "What an AI Agent Actually Is", section: "blog", tagLabel: "POST", desc: "A model in a loop with tools and a stop condition; the anatomy of an agent and what breaks in each part.", tags: ["ai", "agents", "llm", "prompt injection", "mcp", "tools"], url: "posts/what-is-an-ai-agent.html" },
-    { title: "The RAG -> MCP -> A2A Attack Surface", section: "blog", tagLabel: "POST", desc: "One pipe of untrusted data, from retrieval to tools to peer agents.", tags: ["ai", "rag", "mcp", "a2a", "prompt injection"], url: "posts/rag-mcp-a2a-attack-surface.html" },
+    { title: "Deep Learning Doesn't Mean \"No Labels\"", section: "blog", tagLabel: "POST", desc: "The ML-vs-DL 'no labels' myth, and the two-axis mental model that replaces it.", tags: ["ai", "deep learning", "machine learning", "fundamentals", "clarifications", "labels"], url: "posts/deep-learning-labels-myth.html" },
     { title: "My Penetration Testing Methodology", section: "blog", tagLabel: "POST", desc: "The repeatable process I run on every engagement, scoping to reporting.", tags: ["pentesting", "methodology", "reporting", "active directory", "web"], url: "posts/penetration-testing-methodology.html" },
     { title: "Penetration Testing", section: "hub", tagLabel: "SECTION", desc: "Web application (WAPT) and infrastructure penetration testing.", tags: ["pentesting", "wapt", "web", "infrastructure", "network"], url: "sections/pentesting.html" },
     { title: "AI Agent Security", section: "hub", tagLabel: "SECTION", desc: "Attacking LLM applications and the agent infrastructure around them.", tags: ["ai", "red team", "llm", "prompt injection"], url: "sections/ai-red-teaming.html" },
@@ -415,12 +414,20 @@
   var THEMES = window.__yangaThemes || {
     green: { rgb: '0,255,157', hex: '#00ff9d', dim: '#00cc7d', teal: '#64ffda' },
     blue:  { rgb: '0,168,255', hex: '#00a8ff', dim: '#0088cc', teal: '#64d8ff' },
-    red:   { rgb: '255,60,60', hex: '#ff3c3c', dim: '#cc3030', teal: '#ff8a8a' }
+    red:   { rgb: '255,60,60', hex: '#ff3c3c', dim: '#cc3030', teal: '#ff8a8a' },
+    orange:{ rgb: '255,140,40', hex: '#ff8c28', dim: '#cc7020', teal: '#ffb37a' },
+    yellow:{ rgb: '255,206,54', hex: '#ffce36', dim: '#cca82b', teal: '#ffe38f' },
+    pink:  { rgb: '255,92,196', hex: '#ff5cc4', dim: '#cc4a9c', teal: '#ff9edd' },
+    purple:{ rgb: '176,112,255', hex: '#b070ff', dim: '#8c58cc', teal: '#ccaaff' }
   };
   var THEMES_LIGHT = window.__yangaThemesLight || {
     green: { rgb: '0,158,102', hex: '#009e66', dim: '#007a4f', teal: '#0c9c8a' },
     blue:  { rgb: '0,122,204', hex: '#007acc', dim: '#005f99', teal: '#0c86b8' },
-    red:   { rgb: '214,40,40', hex: '#d62828', dim: '#a51d1d', teal: '#c05555' }
+    red:   { rgb: '214,40,40', hex: '#d62828', dim: '#a51d1d', teal: '#c05555' },
+    orange:{ rgb: '204,102,16', hex: '#cc6610', dim: '#a3520d', teal: '#c07d3a' },
+    yellow:{ rgb: '176,132,10', hex: '#b0840a', dim: '#8a6708', teal: '#a68a2e' },
+    pink:  { rgb: '200,30,140', hex: '#c81e8c', dim: '#a0176f', teal: '#bb4a97' },
+    purple:{ rgb: '122,62,204', hex: '#7a3ecc', dim: '#5f30a0', teal: '#8a5ec0' }
   };
   function currentMode() {
     return document.documentElement.getAttribute('data-mode') === 'light' ? 'light' : 'dark';
@@ -436,7 +443,7 @@
   var GLITCH_CHARS = '01@#$%&!?><{}[]=/\\|~^*';
 
   // dev: which theme-transition style fires ('corrupt' = default data-corruption, 'crt' = CRT reboot)
-  var THEME_FX = (function(){ try { return localStorage.getItem('yanga_themefx') || 'corrupt'; } catch(e){ return 'corrupt'; } })();
+  var THEME_FX = (function(){ try { return localStorage.getItem('yanga_themefx') || 'crtline'; } catch(e){ return 'crtline'; } })();
 
   function ensureCorruptCanvas() {
     if (!_corruptCanvas) {
@@ -685,15 +692,17 @@
         var t2=(p-0.42)/0.30, e2=1-Math.pow(1-t2,2), bh=H*e2, top=cy-bh/2;
         var gr=ctx.createLinearGradient(0,top,0,top+bh);
         gr.addColorStop(0,'transparent');
-        gr.addColorStop(0.5,'rgba('+Math.min(255,R+55)+','+Math.min(255,G+55)+','+Math.min(255,B+55)+','+(0.2*(1-t2*0.35)).toFixed(2)+')');
+        gr.addColorStop(0.5,'rgba('+Math.min(255,R+55)+','+Math.min(255,G+55)+','+Math.min(255,B+55)+','+(0.42*(1-t2*0.35)).toFixed(2)+')');
         gr.addColorStop(1,'transparent');
         ctx.fillStyle=gr; ctx.fillRect(0,top,W,bh);
-        ctx.fillStyle='rgba(255,255,255,'+(0.3*(1-t2)).toFixed(2)+')';
+        ctx.fillStyle='rgba(255,255,255,'+(0.6*(1-t2)).toFixed(2)+')';
         ctx.fillRect(0,top,W,1.5); ctx.fillRect(0,top+bh-1.5,W,1.5);
+        ctx.fillStyle='rgba(255,255,255,'+(0.5*e2*(1-t2*0.55)).toFixed(2)+')'; ctx.fillRect(0,top,W,bh);   // brighter flash
         ctx.fillStyle='rgba(0,0,0,0.08)'; for(var y=top;y<top+bh;y+=3) ctx.fillRect(0,y|0,W,1);
       } else { // FADE phase: full flash settles out, revealing the theme
-        var t3=(p-0.72)/0.28, a3=(1-t3)*0.14;
-        ctx.fillStyle='rgba('+R+','+G+','+B+','+a3.toFixed(2)+')'; ctx.fillRect(0,0,W,H);
+        var t3=(p-0.72)/0.28, a3=(1-t3)*0.34;
+        ctx.fillStyle='rgba('+Math.min(255,R+90)+','+Math.min(255,G+90)+','+Math.min(255,B+90)+','+a3.toFixed(2)+')'; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle='rgba(255,255,255,'+((1-t3)*0.22).toFixed(2)+')'; ctx.fillRect(0,0,W,H);
         ctx.fillStyle='rgba(0,0,0,'+(0.06*(1-t3)).toFixed(2)+')'; for(var y2=0;y2<H;y2+=3) ctx.fillRect(0,y2,W,1);
       }
       _corruptRAF=requestAnimationFrame(frame);
@@ -705,7 +714,7 @@
     var R=c.rgb[0],G=c.rgb[1],B=c.rgb[2],fontSize=14,cols=Math.floor(W/fontSize);
     var CH='アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789@#$%&*+=';
     var trail=13, chars=[]; for(var i=0;i<cols;i++) chars.push({});
-    var st=performance.now(), pxPerMs=H/430, settle=220;
+    var st=performance.now(), pxPerMs=H/720, settle=300;
     var totalRows=Math.ceil(H/fontSize)+trail+2, dur=totalRows*fontSize/pxPerMs + settle;
     function frame(now){ var el=now-st; if(el>dur){ ctx.clearRect(0,0,W,H); return; } ctx.clearRect(0,0,W,H);
       ctx.font=fontSize+'px monospace';            // same weight/size as the background matrix
@@ -720,15 +729,32 @@
         } }
       _corruptRAF=requestAnimationFrame(frame);
     } _corruptRAF=requestAnimationFrame(frame); }
+  // CRT SCAN LINE — theme transition = the exact bubble scan line, full-screen (draws in from the
+  // centre, holds, fades) + a bright flash as it snaps to full width. In the new theme colour.
+  function fireScanLine(c){
+    if(_corruptRAF)cancelAnimationFrame(_corruptRAF);
+    if(!document.getElementById('fx-scanline-style')){
+      var st=document.createElement('style'); st.id='fx-scanline-style';
+      st.textContent='#fx-scanline{position:fixed;inset:0;z-index:99998;pointer-events:none;}'
+        +'#fx-scanline .fx-line{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);transform-origin:center;background:linear-gradient(90deg,transparent,rgba(var(--fxacc),1) 18%,#eaf6ff,rgba(var(--fxacc),1) 82%,transparent);box-shadow:0 0 18px 2px rgba(var(--fxacc),.9);opacity:0;animation:fx-scanline .7s ease-out forwards;}'
+        +'#fx-scanline .fx-flash{position:absolute;inset:0;background:#eaf6ff;opacity:0;animation:fx-flash .7s ease-out forwards;}'
+        +'@keyframes fx-scanline{0%{opacity:0;transform:translateY(-50%) scaleX(.35);}12%{opacity:1;transform:translateY(-50%) scaleX(1);}55%{opacity:1;transform:translateY(-50%) scaleX(1);}100%{opacity:0;transform:translateY(-50%) scaleX(1);}}'
+        +'@keyframes fx-flash{0%,12%{opacity:0;}20%{opacity:.5;}34%{opacity:.14;}100%{opacity:0;}}';
+      document.head.appendChild(st);
+    }
+    var old=document.getElementById('fx-scanline'); if(old) old.remove();
+    var el=document.createElement('div'); el.id='fx-scanline';
+    el.style.setProperty('--fxacc', c.rgb.join(','));
+    el.innerHTML='<span class="fx-line"></span>';
+    document.body.appendChild(el);
+    el.addEventListener('animationend', function(){ if(el.parentNode) el.remove(); });
+    setTimeout(function(){ if(el.parentNode) el.remove(); }, 900);
+  }
   var FX = [
     { id:'corrupt',   name:'DATA CORRUPTION',  run:function(c){ fireDataCorruption(c.rgb); } },
     { id:'crt',       name:'CRT REBOOT',       run:function(c){ fireCRTReboot(c.rgb); } },
-    { id:'scanbloom', name:'SCANLINE BLOOM',   run:fireScanBloom },
+    { id:'crtline',   name:'CRT SCAN LINE',    run:fireScanLine },
     { id:'matrixdrop',name:'MATRIX RAIN DROP', run:fireMatrixDrop },
-    { id:'pulse',     name:'RADIAL PULSE',     run:firePulse },
-    { id:'circuit',   name:'CIRCUIT TRACE',    run:fireCircuit },
-    { id:'pcb',       name:'PCB FLOOD FILL',   run:firePCB },
-    { id:'neural',    name:'NEURAL WEB PULSE', run:fireNeural }
   ];
   function runThemeFx(c){ var f=null; for(var i=0;i<FX.length;i++){ if(FX[i].id===THEME_FX){ f=FX[i]; break; } } if(!f) f=FX[0]; f.run(c); }
   function fxToast(name){ var el=document.getElementById('fx-toast');
@@ -748,16 +774,19 @@
       // Enable CSS transitions on all themed elements
       document.body.classList.add('theme-transitioning');
 
-      // Apply new colors (transition will animate them)
-      r.setProperty('--accent-rgb', t.rgb);
-      r.setProperty('--accent', t.hex);
-      r.setProperty('--accent-dim', t.dim);
-      r.setProperty('--teal', t.teal);
-
-      // Fire data corruption effect with the new color
       var rgb = t.rgb.split(',').map(Number);
       var _ox = window.innerWidth - 30, _oy = 40;
       try { var _cbtn = document.querySelector('.theme-chip'); if (_cbtn) { var _rc = _cbtn.getBoundingClientRect(); if (_rc.width) { _ox = _rc.left + _rc.width / 2; _oy = _rc.top + _rc.height / 2; } } } catch (_e) {}
+
+      // Swap the accent CSS variables to the new theme
+      var _applyVars = function () {
+        r.setProperty('--accent-rgb', t.rgb);
+        r.setProperty('--accent', t.hex);
+        r.setProperty('--accent-dim', t.dim);
+        r.setProperty('--teal', t.teal);
+      };
+
+      _applyVars();
       requestAnimationFrame(function() {
         runThemeFx({ rgb: rgb, hex: t.hex, ox: _ox, oy: _oy });
       });
@@ -793,24 +822,34 @@
       _chip.setAttribute('data-theme', name);
       var _v = _chip.querySelector('.theme-chip-val');
       if (_v) _v.textContent = name;
+      var _sws = _chip.querySelectorAll('.theme-sw');
+      for (var _s = 0; _s < _sws.length; _s++) { _sws[_s].classList.toggle('active', _sws[_s].getAttribute('data-theme-name') === name); }
     }
   }
 
   // ── Theme selector: CLI-flag chip (cycles the accent colour) ──
   var navUtils = document.querySelector('.nav-utils');
-  var cycleOrder = ['blue', 'green', 'red'];
+  var cycleOrder = ['blue', 'green', 'red', 'orange', 'yellow', 'pink', 'purple'];
   var chip = document.createElement('button');
   chip.type = 'button';
   chip.className = 'theme-chip';
   chip.title = 'Cycle accent colour';
   chip.setAttribute('aria-label', 'Cycle accent colour');
-  chip.innerHTML = '<span class="theme-chip-glyph" aria-hidden="true">\u25CF</span>';
+  var _swHtml = '';
+  cycleOrder.forEach(function(nm){ var hx=(THEMES[nm]&&THEMES[nm].hex)||'#888';
+    _swHtml += '<span class="theme-sw" role="button" tabindex="0" data-theme-name="'+nm+'" aria-label="'+nm+'" title="'+nm+'" style="--sw:'+hx+'"></span>'; });
+  chip.innerHTML = '<span class="theme-chip-glyph" aria-hidden="true">\u25CF</span>'
+    + '<span class="theme-dd" role="menu">'+_swHtml+'</span>';
   chip.addEventListener('click', function(e) {
     e.preventDefault(); e.stopPropagation();
+    var sw = (e.target && e.target.closest) ? e.target.closest('.theme-sw') : null;
+    if (sw) { applyTheme(sw.getAttribute('data-theme-name')); return; }
     var cur = chip.getAttribute('data-theme') || 'blue';
     var i = cycleOrder.indexOf(cur);
     applyTheme(cycleOrder[(i + 1) % cycleOrder.length]);
   });
+  chip.addEventListener('keydown', function(e){ var sw=(e.target&&e.target.closest)?e.target.closest('.theme-sw'):null;
+    if(sw && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); applyTheme(sw.getAttribute('data-theme-name')); } });
   if (navUtils) navUtils.insertBefore(chip, navUtils.firstChild);
 
   // -- Light/dark mode toggle (sun/moon) --
@@ -839,7 +878,7 @@
     e.preventDefault(); e.stopPropagation();
     applyMode(currentMode() === 'light' ? 'dark' : 'light');
   });
-  if (navUtils) navUtils.insertBefore(modeBtn, chip.nextSibling);
+  // light/dark toggle unwired for the moment — modeBtn kept but not inserted into the nav
   window.__yangaApplyMode = function(mode) {
     document.documentElement.setAttribute('data-mode', mode);
     var meta = document.querySelector('meta[name="theme-color"]');
@@ -874,8 +913,27 @@
 .theme-chip {\
   display: inline-flex; align-items: center; justify-content: center;\
   background: none; border: none; padding: 6px; margin-right: 2px;\
-  cursor: pointer; line-height: 1;\
+  cursor: pointer; line-height: 1; position: relative;\
 }\
+.theme-dd {\
+  position: absolute; top: 100%; right: 0; display: flex; flex-wrap: nowrap; gap: 7px;\
+  padding: 10px 10px 9px; background: rgba(8,12,18,0.97);\
+  border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 10px;\
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5); z-index: 400;\
+  opacity: 0; visibility: hidden; transform: translateY(-8px) scale(0.86); transform-origin: top right; pointer-events: none;\
+  transition: opacity .18s ease, transform .3s cubic-bezier(.2,1.35,.35,1), visibility .18s;\
+}\
+.theme-chip:hover .theme-dd { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }\
+.theme-sw {\
+  width: 12px; height: 12px; border-radius: 50%; background: var(--sw);\
+  border: 1.5px solid rgba(255,255,255,0.14); box-shadow: 0 0 5px var(--sw);\
+  cursor: pointer; transition: transform .15s ease, border-color .15s ease;\
+}\
+.theme-sw:hover { transform: scale(1.25); border-color: #fff; }\
+.theme-sw.active { transform: scale(1.25); border-color: #fff; }\
+@keyframes tk-sw-pop { 0%{opacity:0; transform:scale(0) translateY(9px);} 55%{opacity:1; transform:scale(1.32) translateY(0);} 100%{opacity:1; transform:scale(1);} }\
+.theme-chip:hover .theme-sw { animation: tk-sw-pop .34s cubic-bezier(.2,1.4,.4,1) backwards; }\
+.theme-chip:hover .theme-sw:nth-child(1){ animation-delay:.05s; } .theme-chip:hover .theme-sw:nth-child(2){ animation-delay:.09s; } .theme-chip:hover .theme-sw:nth-child(3){ animation-delay:.13s; } .theme-chip:hover .theme-sw:nth-child(4){ animation-delay:.17s; } .theme-chip:hover .theme-sw:nth-child(5){ animation-delay:.21s; } .theme-chip:hover .theme-sw:nth-child(6){ animation-delay:.25s; } .theme-chip:hover .theme-sw:nth-child(7){ animation-delay:.29s; }\
 .theme-chip-glyph {\
   color: var(--accent); font-size: 0.7rem;\
   text-shadow: 0 0 6px rgba(var(--accent-rgb),0.6);\
@@ -1120,10 +1178,6 @@
         if (window.buildPostTOC) window.buildPostTOC();
         if (window.hlCode) window.hlCode();
 
-        // Home page always renders via the signature block-dissolve intro,
-        // no matter which page the navigation came from.
-        if (isHomeUrl(url)) window.yangaBlockReveal();
-
         navigating = false;
 
       }).catch(function(err) {
@@ -1258,8 +1312,6 @@ window.addEventListener('pageshow', function (e) {
 .post-toc-label { font-family: var(--font-body); font-size: 0.6rem; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-muted); }
 .post-toc-count { font-family: var(--font-body); font-size: 0.6rem; letter-spacing: 1px; color: var(--accent); text-shadow: 0 0 6px rgba(var(--accent-rgb),0.5); }
 .post-toc ul { list-style: none; margin: 0; padding: 0; position: relative; }
-.post-toc ul::before { content: ''; position: absolute; left: 6px; top: 10px; bottom: 10px; width: 2px; background: var(--border); border-radius: 2px; }
-.post-toc ul::after { content: ''; position: absolute; left: 6px; top: 10px; width: 2px; height: var(--toc-fill, 0%); max-height: calc(100% - 20px); border-radius: 2px; background: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb),0.8); transition: height .15s ease; }
 .post-toc li { position: relative; }
 .post-toc li::before { content: ''; position: absolute; left: 2px; top: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg-deep); border: 2px solid var(--border); box-sizing: border-box; z-index: 1; transition: background .25s ease, border-color .25s ease, box-shadow .25s ease; }
 .post-toc a { display: block; padding: 7px 0 7px 28px; color: var(--text-muted); font-family: var(--font-body); font-size: 0.82rem; line-height: 1.35; text-decoration: none; transition: color .2s ease; }
@@ -1314,7 +1366,8 @@ window.addEventListener('pageshow', function (e) {
     function spy() {
       place();
       var idx = 0;
-      for (var i = 0; i < hs.length; i++) { if (hs[i].getBoundingClientRect().top - 140 <= 0) idx = i; }
+      var actLine = window.innerHeight * 0.5; // active = section whose heading is above the viewport centre
+      for (var i = 0; i < hs.length; i++) { if (hs[i].getBoundingClientRect().top - actLine <= 0) idx = i; }
       // At (or near) the bottom of the page the last headings can never cross the
       // activation line, so pin to the final section and complete the rail.
       if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 2)) {

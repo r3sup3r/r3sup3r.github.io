@@ -1,7 +1,7 @@
 <!--
 {
   "title": "Blog — YANGA",
-  "description": "All research articles — penetration testing and AI security.",
+  "description": "All research articles — penetration testing, AI security, and concept clarifications.",
   "layout": "base",
   "activeNav": "blog"
 }
@@ -10,7 +10,7 @@
 <section class="project-hero">
   <h1>ARTICLES</h1>
   <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><span class="current">blog</span></div>
-  <p class="project-tagline">All research articles — penetration testing and AI security.</p>
+  <p class="project-tagline">All research articles — penetration testing, AI security, and concept clarifications.</p>
   <div class="accent-bar green"></div>
 </section>
 
@@ -21,20 +21,12 @@
 </div>
 
 <div class="blog-timeline">
-  <div class="tl-item" data-category="ai-security">
+  <div class="tl-item" data-category="clarifications">
     <div class="tl-date">AUGUST 2026</div>
-    <a class="tl-card" href="{{root}}posts/what-is-an-ai-agent.html">
-      <h4><i class="fa-solid fa-rotate"></i>What an AI Agent Actually Is</h4>
-      <p>A model in a loop with tools and a stop condition &mdash; and every part of that sentence is attack surface. The anatomy of an agent, part by part, from a security seat.</p>
-      <div class="tl-meta"><span class="tl-type">AI AGENT SECURITY</span><span class="tl-read">13 MIN</span></div>
-    </a>
-  </div>
-  <div class="tl-item" data-category="ai-security">
-    <div class="tl-date">AUGUST 2026</div>
-    <a class="tl-card" href="{{root}}posts/rag-mcp-a2a-attack-surface.html">
-      <h4><i class="fa-solid fa-diagram-project"></i>The RAG &rarr; MCP &rarr; A2A Attack Surface</h4>
-      <p>RAG, MCP, and A2A aren't three technologies to secure separately &mdash; they're one pipe that untrusted data walks end to end. A map of where it becomes instructions, then actions, then someone else's problem.</p>
-      <div class="tl-meta"><span class="tl-type">AI AGENT SECURITY</span><span class="tl-read">11 MIN</span></div>
+    <a class="tl-card" href="{{root}}posts/deep-learning-labels-myth.html">
+      <h4><i class="fa-solid fa-lightbulb"></i>Deep Learning Doesn't Mean "No Labels"</h4>
+      <p>While working through the AI track on TryHackMe, I came across a passage that appears to contradict itself about machine learning and deep learning: it claims that deep learning requires no labelled data, only a paragraph after demonstrating a supervised learning example built entirely on labelled data. The problem, however, goes deeper than an inconsistent paragraph&mdash;the distinction it presents between ML and DL is technically misleading.</p>
+      <div class="tl-meta"><span class="tl-type" role="button" tabindex="0">CLARIFICATIONS</span><span class="tl-read">7 MIN</span></div>
     </a>
   </div>
 </div>
@@ -52,4 +44,28 @@ function filterPosts(category) {
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => filterPosts(btn.dataset.filter));
 });
+
+// Category tags on the cards are clickable. They sit inside the card's <a>,
+// so intercept the click, cancel the card navigation, and filter in place.
+document.querySelectorAll('.tl-type').forEach(tag => {
+  var item = tag.closest('.tl-item');
+  var cat = item && item.dataset.category;
+  if (!cat) return;
+  var go = function (e) {
+    e.preventDefault(); e.stopPropagation();
+    filterPosts(cat);
+    try { history.replaceState(null, '', '#' + cat); } catch (x) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  tag.addEventListener('click', go);
+  tag.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') go(e); });
+});
+
+// A tag link from an article arrives as blog.html#<category>; apply it on load.
+function applyHashFilter() {
+  var h = (location.hash || '').replace('#', '');
+  if (h && (h === 'all' || document.querySelector('.tl-item[data-category="' + h + '"]'))) filterPosts(h);
+}
+applyHashFilter();
+window.addEventListener('hashchange', applyHashFilter);
 </script>

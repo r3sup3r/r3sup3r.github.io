@@ -4,14 +4,22 @@
   var THEMES = {
     green: { rgb: '0,255,157', hex: '#00ff9d', dim: '#00cc7d', teal: '#64ffda' },
     blue:  { rgb: '0,168,255', hex: '#00a8ff', dim: '#0088cc', teal: '#64d8ff' },
-    red:   { rgb: '255,60,60', hex: '#ff3c3c', dim: '#cc3030', teal: '#ff8a8a' }
+    red:   { rgb: '255,60,60', hex: '#ff3c3c', dim: '#cc3030', teal: '#ff8a8a' },
+    orange:{ rgb: '255,140,40', hex: '#ff8c28', dim: '#cc7020', teal: '#ffb37a' },
+    yellow:{ rgb: '255,206,54', hex: '#ffce36', dim: '#cca82b', teal: '#ffe38f' },
+    pink:  { rgb: '255,92,196', hex: '#ff5cc4', dim: '#cc4a9c', teal: '#ff9edd' },
+    purple:{ rgb: '176,112,255', hex: '#b070ff', dim: '#8c58cc', teal: '#ccaaff' }
   };
 
   // Darker accent variants for light mode (neons wash out on paper)
   var THEMES_LIGHT = {
     green: { rgb: '0,158,102', hex: '#009e66', dim: '#007a4f', teal: '#0c9c8a' },
     blue:  { rgb: '0,122,204', hex: '#007acc', dim: '#005f99', teal: '#0c86b8' },
-    red:   { rgb: '214,40,40', hex: '#d62828', dim: '#a51d1d', teal: '#c05555' }
+    red:   { rgb: '214,40,40', hex: '#d62828', dim: '#a51d1d', teal: '#c05555' },
+    orange:{ rgb: '204,102,16', hex: '#cc6610', dim: '#a3520d', teal: '#c07d3a' },
+    yellow:{ rgb: '176,132,10', hex: '#b0840a', dim: '#8a6708', teal: '#a68a2e' },
+    pink:  { rgb: '200,30,140', hex: '#c81e8c', dim: '#a0176f', teal: '#bb4a97' },
+    purple:{ rgb: '122,62,204', hex: '#7a3ecc', dim: '#5f30a0', teal: '#8a5ec0' }
   };
 
   // --- Read from window.name (JSON blob that survives same-tab navigation on any protocol) ---
@@ -43,7 +51,7 @@
       var match = document.cookie.match(/yanga_mode=(\w+)/);
       if (match) m = match[1];
     }
-    return (m === 'light') ? 'light' : 'dark';
+    return 'dark'; // light mode unwired for the moment (force dark, ignore saved pref)
   }
 
   function getTheme() {
