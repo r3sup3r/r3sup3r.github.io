@@ -16,7 +16,7 @@ const OUT      = path.join(ROOT, '_site');
 // Site-wide constants (used for feeds, canonical URLs, and structured data)
 const SITE_URL   = 'https://r3sup3r.github.io';
 const SITE_TITLE = 'YANGA';
-const SITE_DESC  = 'Security research notes — penetration testing and AI red teaming.';
+const SITE_DESC  = 'Security research notes: penetration testing and AI red teaming.';
 const DEFAULT_OG = SITE_URL + '/images/og-default.png';
 const AUTHOR = {
   '@type': 'Person',
@@ -161,7 +161,7 @@ function collectPosts() {
       if (d.draft) return null;
       const dt = new Date(d.date + 'T12:00:00Z');
       const month = MONTHS[dt.getUTCMonth()];
-      const title = (d.title || f).replace(/\s*—\s*YANGA$/, '');
+      const title = (d.title || f).replace(/\s*[·—-]\s*YANGA$/, '');
       return {
         slug: f,
         url: `${SITE_URL}/posts/${f}`,

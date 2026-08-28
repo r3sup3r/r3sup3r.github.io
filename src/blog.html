@@ -1,7 +1,7 @@
 <!--
 {
-  "title": "Blog — YANGA",
-  "description": "All research articles — penetration testing, AI security, and concept clarifications.",
+  "title": "Blog · YANGA",
+  "description": "All research articles: penetration testing, AI security, and concept clarifications.",
   "layout": "base",
   "activeNav": "blog"
 }
@@ -10,71 +10,25 @@
 <section class="project-hero">
   <h1>ARTICLES</h1>
   <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><span class="current">blog</span></div>
-  <p class="project-tagline">All research articles — penetration testing, AI security, and concept clarifications.</p>
+  <p class="project-tagline">All research articles: penetration testing, AI security, and concept clarifications.</p>
   <div class="accent-bar green"></div>
 </section>
 
-<div class="filter-bar">
-  <button class="filter-btn active" data-filter="all">All</button>
-  <button class="filter-btn" data-filter="build">Build</button>
-  <button class="filter-btn" data-filter="understand">Understand</button>
-  <button class="filter-btn" data-filter="break">Break</button>
-</div>
-
 <div class="blog-timeline">
 {{#posts}}
-  <div class="tl-item" data-category="{{catKey}}">
+  <div class="tl-item">
     <div class="tl-date">{{dateLabel}}</div>
     <a class="tl-card" href="{{root}}posts/{{slug}}">
       <h4><i class="fa-solid {{icon}}"></i>{{title}}</h4>
       <p>{{excerpt}}</p>
-      <div class="tl-meta"><span class="tl-type tag-{{catKey}}" role="button" tabindex="0">{{category}}</span><span class="tl-read">{{read}}</span></div>
+      <div class="tl-meta"><span class="tl-read">{{read}}</span></div>
     </a>
   </div>
 {{/posts}}
 {{#noPosts}}
   <div class="empty-state">
     <span class="empty-state-tag">// no entries yet</span>
-    <p>First write-ups are in progress — new work lands here as it ships.</p>
+    <p>First write-ups are in progress. New work lands here as it ships.</p>
   </div>
 {{/noPosts}}
 </div>
-
-<script>
-function filterPosts(category) {
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.filter === category);
-  });
-  document.querySelectorAll('.tl-item').forEach(item => {
-    item.style.display = (category === 'all' || item.dataset.category === category) ? '' : 'none';
-  });
-}
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => filterPosts(btn.dataset.filter));
-});
-
-// Category tags on the cards are clickable. They sit inside the card's <a>,
-// so intercept the click, cancel the card navigation, and filter in place.
-document.querySelectorAll('.tl-type').forEach(tag => {
-  var item = tag.closest('.tl-item');
-  var cat = item && item.dataset.category;
-  if (!cat) return;
-  var go = function (e) {
-    e.preventDefault(); e.stopPropagation();
-    filterPosts(cat);
-    try { history.replaceState(null, '', '#' + cat); } catch (x) {}
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  tag.addEventListener('click', go);
-  tag.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') go(e); });
-});
-
-// A tag link from an article arrives as blog.html#<category>; apply it on load.
-function applyHashFilter() {
-  var h = (location.hash || '').replace('#', '');
-  if (h && (h === 'all' || document.querySelector('.tl-item[data-category="' + h + '"]'))) filterPosts(h);
-}
-applyHashFilter();
-window.addEventListener('hashchange', applyHashFilter);
-</script>

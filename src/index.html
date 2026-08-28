@@ -1,6 +1,6 @@
 <!--
 {
-  "title": "YANGA — Penetration Testing & Security Research",
+  "title": "YANGA · Penetration Testing & Security Research",
   "description": "Cybersecurity research blog covering penetration testing, AI security, and offensive security.",
   "layout": "base",
   "activeNav": "home",
@@ -16,7 +16,7 @@
         <p class="hero-sub">The best way to understand how a system can be attacked is to understand how it is built.</p>
       </section>
 
-      <div class="home-row">
+      <div class="home-row{{#noPosts}} home-row--empty{{/noPosts}}">
         <aside class="home-side">
           <section class="id-card">
             <a class="id-avatar" href="{{root}}about.html" aria-label="whoami"><i class="fa-solid fa-user-secret id-avatar-ph" aria-hidden="true"></i><img src="{{root}}images/avatar.gif" alt="YANGA" onerror="this.remove()"><span class="id-go"><i class="fa-solid fa-user" aria-hidden="true"></i></span></a>
@@ -36,7 +36,7 @@
             <div class="snap-card">
               <div class="snap-label">Focus</div>
               <div class="snap-row"><span>Web &amp; infrastructure pentest</span></div>
-              <div class="snap-row"><span>AI agent security</span><span class="snap-sub">RAG · MCP · A2A</span></div>
+              <div class="snap-row"><span>AI agent security</span></div>
             </div>
             <div class="snap-card">
               <div class="snap-label">Languages</div>
@@ -67,7 +67,7 @@
         <div class="latest-post latest-empty">
           <div class="latest-meta"><span class="latest-cat">// no entries yet</span></div>
           <h3>Nothing published yet</h3>
-          <p>First write-ups are in progress — new work lands here as it ships.</p>
+          <p>First write-ups are in progress. New work lands here as it ships.</p>
         </div>
 {{/noPosts}}
 

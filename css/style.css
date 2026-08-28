@@ -440,7 +440,7 @@ nav {
   text-transform: uppercase; margin-bottom: 20px;
 }
 .hero h1 {
-  font-family: var(--font-prose); font-size: 3.4rem; font-weight: 800; letter-spacing: -1px;
+  font-family: var(--font-display); font-size: clamp(2rem, 5.4vw, 3.1rem); font-weight: 800; letter-spacing: 0.5px;
   color: var(--text-bright); line-height: 1.05; margin-bottom: 20px;
 }
 /* "Hacking" partial glitch (auto-glitch targets only .flag-green) */
@@ -1654,6 +1654,9 @@ footer .footer-links a {
   transition: color 0.3s;
 }
 footer .footer-links a:hover { color: var(--accent); }
+footer .footer-links a.footer-coffee { color: var(--accent); }
+footer .footer-links a.footer-coffee i { margin-right: 5px; }
+footer .footer-links a.footer-coffee:hover { text-shadow: 0 0 10px rgba(var(--accent-rgb),0.5); }
 
 /* === RESPONSIVE === */
 @media (max-width: 1100px) {
@@ -1926,7 +1929,7 @@ body::before {
 .snap-row + .snap-row { margin-top: 7px; }
 .snap-sub { font-family: var(--font-body); font-size: 0.6rem; letter-spacing: 0.6px; color: var(--text-muted); white-space: nowrap; }
 .snap-tag { font-family: var(--font-body); font-size: 0.56rem; letter-spacing: 1px; text-transform: uppercase; padding: 2px 7px; border-radius: 100px; border: 1px solid var(--border); color: var(--text-muted); white-space: nowrap; }
-.snap-tag.wip { color: var(--amber, #ffb454); border-color: rgba(255,180,84,0.3); }
+.snap-tag.wip { color: var(--accent); border-color: rgba(var(--accent-rgb),0.35); }
 .snap-langs { display: flex; flex-wrap: wrap; gap: 6px; }
 .snap-lang { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-body); font-size: 0.68rem; color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; }
 .snap-lang i { font-style: normal; font-size: 0.55rem; letter-spacing: 0.5px; color: var(--text-muted); }
@@ -2071,7 +2074,7 @@ body::before {
 .cert-name { font-family: var(--font-body); font-size: 0.84rem; color: var(--text-bright); letter-spacing: 0.5px; }
 .cert-badge { font-family: var(--font-body); font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase;
   padding: 3px 8px; border-radius: 20px; border: 1px solid; white-space: nowrap; }
-.cert-badge.wip { color: #e0a13c; border-color: rgba(224,161,60,0.5); background: rgba(224,161,60,0.08); }
+.cert-badge.wip { color: var(--accent); border-color: rgba(var(--accent-rgb),0.45); background: rgba(var(--accent-rgb),0.08); }
 .edu-item { padding: 11px 14px; border: 1px solid var(--border); border-radius: 9px; background: rgba(var(--bg-deep-rgb),0.4); }
 .edu-deg { display: block; font-family: var(--font-prose); font-weight: 700; font-size: 0.9rem; color: var(--text-bright); }
 .edu-meta { display: block; font-family: var(--font-body); font-size: 0.68rem; letter-spacing: 0.5px; color: var(--text-muted); margin-top: 3px; }
@@ -2132,10 +2135,9 @@ body::before {
 }
 @media (max-width: 600px) { .section-intro { font-size: 0.92rem; } }
 
-/* === BUILD / UNDERSTAND / BREAK tags === (fixed hues, independent of the active theme) */
-.tl-type.tag-build      { color: #3ddc97; background: rgba(61,220,151,0.10); }
-.tl-type.tag-understand { color: #4aa8ff; background: rgba(74,168,255,0.10); }
-.tl-type.tag-break      { color: #ff6b5e; background: rgba(255,107,94,0.10); }
-.tl-type.tag-build:hover      { color: #3ddc97; background: rgba(61,220,151,0.18); }
-.tl-type.tag-understand:hover { color: #4aa8ff; background: rgba(74,168,255,0.18); }
-.tl-type.tag-break:hover      { color: #ff6b5e; background: rgba(255,107,94,0.18); }
+
+
+/* Empty homepage: don't stretch the writing column into a void; let it sit natural
+   height with the quote directly under the empty-state card. */
+.home-row--empty { align-items: start; }
+.home-row--empty .home-quote { margin-top: 28px; min-height: 0; }

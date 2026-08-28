@@ -999,7 +999,7 @@
       ];
       var total = POOL.reduce(function (a, g) { return a + g.w; }, 0);
       function fire() {
-        if (!document.body.classList.contains('tk-open') && fab.style.display !== 'none' && fab.className.indexOf('glx-') === -1) {
+        if (!window.__ghostSleeping && !document.body.classList.contains('tk-open') && fab.style.display !== 'none' && fab.className.indexOf('glx-') === -1) {
           var r = Math.random() * total, g = POOL[0];
           for (var i = 0; i < POOL.length; i++) { r -= POOL[i].w; if (r <= 0) { g = POOL[i]; break; } }
           fab.classList.add(g.c);
@@ -1082,7 +1082,7 @@
     var SLEEP_MS = 5 * 60 * 1000, _autoWakeT;
     function goSleep(kind) {
       if (window.__ghostSleeping) return;
-      window.__ghostSleeping = true;      // pauses blink & teaser (glitches keep running)
+      window.__ghostSleeping = true;      // pauses blink, teaser, and idle glitches
       setMood('mood-sleep'); startSleepFx(kind);
       clearTimeout(_autoWakeT);
       _autoWakeT = setTimeout(function () { if (window.__ghostSleeping) wake(); }, SLEEP_MS);
