@@ -175,9 +175,9 @@
   '#tk-bubble.show{opacity:1;clip-path:inset(-44px -44px -44px -44px round 16px);pointer-events:auto;animation:tk-b-crt .62s cubic-bezier(.2,.8,.25,1);}' +
   '#tk-bubble.closing{pointer-events:none;animation:tk-b-crt-off .46s cubic-bezier(.4,0,.7,.4) forwards;}' +
   '#tk-bubble .tk-b-scan{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);z-index:6;pointer-events:none;opacity:0;background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 18%,#eaf6ff,rgba(var(--accent-rgb),1) 82%,transparent);box-shadow:0 0 18px 2px rgba(var(--accent-rgb),.9);}' +
-  '#tk-bubble.show[data-fx="crtline"] .tk-b-scan,#tk-bubble.show[data-fx="scanbloom"] .tk-b-scan{animation:tk-b-line .62s ease-out;}' +
+  '#tk-bubble.show[data-fx="crtline"] .tk-b-scan,#tk-bubble.show[data-fx="crt"] .tk-b-scan,#tk-bubble.show[data-fx="scanbloom"] .tk-b-scan{animation:tk-b-line .62s ease-out;}' +
   '#tk-bubble.show .tk-b-q{animation:tk-b-qin .62s both;}' +
-  '#tk-bubble.closing[data-fx="crtline"] .tk-b-scan,#tk-bubble.closing[data-fx="scanbloom"] .tk-b-scan{animation:tk-b-line-off .46s ease-in;}' +
+  '#tk-bubble.closing[data-fx="crtline"] .tk-b-scan,#tk-bubble.closing[data-fx="crt"] .tk-b-scan,#tk-bubble.closing[data-fx="scanbloom"] .tk-b-scan{animation:tk-b-line-off .46s ease-in;}' +
   '/* per-FX bubble CLOSE = reverse of the open */' +
   '#tk-bubble.closing[data-fx="crt"]{animation:tk-b-reboot-off .46s cubic-bezier(.4,0,.7,.4) forwards;}' +
   '#tk-bubble.closing[data-fx="crt"] .tk-b-flash{animation:tk-b-flashpow .46s ease-out;}' +
@@ -289,7 +289,7 @@
   '.tk-scan{position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);z-index:6;pointer-events:none;opacity:0;' +
     'background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 18%,#eaf6ff,rgba(var(--accent-rgb),1) 82%,transparent);' +
     'box-shadow:0 0 18px 2px rgba(var(--accent-rgb),.9);}' +
-  '#tk-panel.open[data-fx="crtline"] .tk-scan,#tk-panel.open[data-fx="scanbloom"] .tk-scan{animation:tk-b-line .58s ease-out;}' +
+  '#tk-panel.open[data-fx="crtline"] .tk-scan,#tk-panel.open[data-fx="crt"] .tk-scan,#tk-panel.open[data-fx="scanbloom"] .tk-scan{animation:tk-b-line .58s ease-out;}' +
   '/* ---- per-FX chat panel open (mirrors the theme transitions) ---- */' +
   '#tk-panel .tk-p-fx{position:absolute;inset:0;pointer-events:none;z-index:7;border-radius:16px;overflow:hidden;}' +
   '#tk-panel.open[data-fx="crt"]{animation:tk-panel-reboot .58s cubic-bezier(.2,.9,.3,1);}' +
@@ -311,7 +311,7 @@
   '.tk-b-pcb .tk-b-node:nth-child(4){animation-delay:.3s;}' +
   '.tk-b-pcb .tk-b-node:nth-child(5){animation-delay:.4s;}' +
   '.tk-b-pcb .tk-b-node:nth-child(6){animation-delay:.5s;}' +
-  '#tk-panel.closing[data-fx="crtline"] .tk-scan,#tk-panel.closing[data-fx="scanbloom"] .tk-scan{animation:tk-b-line-off .44s ease-in;}' +
+  '#tk-panel.closing[data-fx="crtline"] .tk-scan,#tk-panel.closing[data-fx="crt"] .tk-scan,#tk-panel.closing[data-fx="scanbloom"] .tk-scan{animation:tk-b-line-off .44s ease-in;}' +
   '/* per-FX chat panel CLOSE = reverse of the open */' +
   '#tk-panel.closing[data-fx="crt"]{animation:tk-panel-reboot-off .5s cubic-bezier(.4,0,.7,.4) forwards;}' +
   '#tk-panel.closing[data-fx="crt"] .tk-p-fx .tk-b-flash{animation:tk-b-flashpow .5s ease-out;}' +
