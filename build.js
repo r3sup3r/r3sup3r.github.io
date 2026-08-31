@@ -173,6 +173,8 @@ function collectPosts() {
         section: d.section || '',
         read: d.read || '',
         icon: d.icon || 'fa-angle-right',
+        series: d.series || '',
+        seriesOrder: (Number.isFinite(d.seriesOrder) ? d.seriesOrder : 999),
         cover: d.cover || '',
         date: dt,
         dateISO: d.date,
@@ -185,6 +187,27 @@ function collectPosts() {
 }
 
 const POSTS = collectPosts();
+
+function collectSeries(posts){
+  const map={};
+  for(const p of posts){ if(!p.series) continue; (map[p.series]=map[p.series]||[]).push(p); }
+  for(const k in map){ map[k].sort((a,b)=>a.seriesOrder-b.seriesOrder); }
+  return map;
+}
+const SERIES = collectSeries(POSTS);
+function htmlEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function renderSeriesCard(name, list, root, currentSlug, compact, noHead){
+  const parts=list.length;
+  const items=list.map(p=>{
+    const num=String(p.seriesOrder).padStart(2,'0');
+    const cur=p.slug===currentSlug;
+    const href=root+'posts/'+p.slug;
+    const label=cur?`<span class="series-link">${htmlEsc(p.title)}</span>`:`<a class="series-link" href="${href}">${htmlEsc(p.title)}</a>`;
+    const read=p.read?`<span class="series-read">${htmlEsc(p.read)}</span>`:``;
+    return `<li class="series-item${cur?' is-current':''}"${cur?' aria-current="true"':''}><span class="series-num">${num}</span>${label}${read}</li>`;
+  }).join('');
+  return `<aside class="series-card${compact?' series-card--compact':''}" aria-label="${htmlEsc(name)} series">${noHead?'':'<div class="series-head"><span class="series-tag">SERIES</span><span class="series-name">'+htmlEsc(name)+'</span><span class="series-count">'+parts+' part'+(parts===1?'':'s')+'</span></div>'}<ul class="series-list">${items}</ul></aside>`;
+}
 
 // ── Compute root-relative path prefix ───────
 
@@ -324,6 +347,8 @@ function buildPage(srcFile, relPath, layouts, partials) {
   const ogImage = cover || DEFAULT_OG;
   const twitterCard = cover ? 'summary_large_image' : 'summary';
   const jsonld = jsonLdFor(relPath, canonical, thisPost);
+  const seriesCard = (thisPost && thisPost.series && SERIES[thisPost.series]) ? renderSeriesCard(thisPost.series, SERIES[thisPost.series], root, thisPost.slug) : '';
+  const adTrackSeries = SERIES['AD Track'] ? renderSeriesCard('AD Track', SERIES['AD Track'], root, thisPost ? thisPost.slug : null, true, true) : '';
 
   // Post listings (front-matter driven)
   const listPosts = POSTS.map(p => ({
@@ -343,6 +368,8 @@ function buildPage(srcFile, relPath, layouts, partials) {
     ogImage,
     twitterCard,
     jsonld,
+    seriesCard,
+    adTrackSeries,
     posts: listPosts,
     hasPosts: listPosts.length > 0,
     noPosts: listPosts.length === 0,

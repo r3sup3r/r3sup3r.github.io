@@ -168,6 +168,8 @@
   // ── SITE-WIDE SEARCH INDEX ──
   // All searchable content — urls are relative to yanga root
   const searchIndex = [
+    { title: "A Goal Is Not a Method", section: "blog", tagLabel: "POST", desc: "The creed of this blog: understanding the condition that lets a command work is the skill, not the command.", tags: ["method", "mindset", "methodology", "active directory", "pentesting", "ctf", "creed"], url: "posts/goal-is-not-a-method.html" },
+    { title: "The Open Door Is Not the Floor — SMB Null Session", section: "blog", tagLabel: "POST", desc: "Null / anonymous SMB enumeration reframed: a successful enum is a finding, not a free step.", tags: ["smb", "null session", "ipc$", "active directory", "enumeration", "pentesting", "rpc", "samr"], url: "posts/null-smb-enum-is-a-finding.html" },
     { title: "Deep Learning Doesn't Mean \"No Labels\"", section: "blog", tagLabel: "POST", desc: "The ML-vs-DL 'no labels' myth, and the two-axis mental model that replaces it.", tags: ["ai", "deep learning", "machine learning", "fundamentals", "clarifications", "labels"], url: "posts/deep-learning-labels-myth.html" },
     { title: "My Penetration Testing Methodology", section: "blog", tagLabel: "POST", desc: "The repeatable process I run on every engagement, scoping to reporting.", tags: ["pentesting", "methodology", "reporting", "active directory", "web"], url: "posts/penetration-testing-methodology.html" },
     { title: "Penetration Testing", section: "hub", tagLabel: "SECTION", desc: "Web application (WAPT) and infrastructure penetration testing.", tags: ["pentesting", "wapt", "web", "infrastructure", "network"], url: "sections/pentesting.html" },
@@ -729,6 +731,24 @@
         } }
       _corruptRAF=requestAnimationFrame(frame);
     } _corruptRAF=requestAnimationFrame(frame); }
+  // STATIC BURST — theme transition = a full-screen wall of chunky TV noise in the new colour that snaps in and dissolves.
+  function fireStatic(rgb){ if(_corruptRAF)cancelAnimationFrame(_corruptRAF);
+    var ctx=ensureCorruptCanvas(), W=_corruptCanvas.width, H=_corruptCanvas.height;
+    var R=rgb[0],G=rgb[1],B=rgb[2];
+    var sw=Math.max(2,Math.floor(W/4)), sh=Math.max(2,Math.floor(H/4));
+    var buf=document.createElement('canvas'); buf.width=sw; buf.height=sh; var bx=buf.getContext('2d');
+    ctx.imageSmoothingEnabled=false;
+    var st=performance.now(), dur=620;
+    function frame(now){ var el=now-st; if(el>dur){ ctx.clearRect(0,0,W,H); return; }
+      var a=Math.max(0,1-el/dur);
+      var img=bx.createImageData(sw,sh), d=img.data;
+      for(var i=0;i<d.length;i+=4){ if(Math.random()>0.5){ if(Math.random()>0.72){ d[i]=234;d[i+1]=246;d[i+2]=255; } else { d[i]=R;d[i+1]=G;d[i+2]=B; } d[i+3]=(Math.random()*235*a)|0; } else d[i+3]=0; }
+      bx.putImageData(img,0,0);
+      ctx.clearRect(0,0,W,H); ctx.globalAlpha=1; ctx.drawImage(buf,0,0,sw,sh,0,0,W,H);
+      // occasional bright horizontal tear band
+      if(Math.random()<0.5){ var ty=Math.random()*H, th=2+Math.random()*6; ctx.fillStyle='rgba(234,246,255,'+(0.25*a).toFixed(2)+')'; ctx.fillRect(0,ty,W,th); }
+      _corruptRAF=requestAnimationFrame(frame);
+    } _corruptRAF=requestAnimationFrame(frame); }
   // CRT SCAN LINE — theme transition = the exact bubble scan line, full-screen (draws in from the
   // centre, holds, fades) + a bright flash as it snaps to full width. In the new theme colour.
   function fireScanLine(c){
@@ -755,6 +775,7 @@
     { id:'crt',       name:'CRT REBOOT',       run:function(c){ fireCRTReboot(c.rgb); } },
     { id:'crtline',   name:'CRT SCAN LINE',    run:fireScanLine },
     { id:'matrixdrop',name:'MATRIX RAIN DROP', run:fireMatrixDrop },
+    { id:'static',    name:'STATIC BURST',     run:function(c){ fireStatic(c.rgb); } },
   ];
   function runThemeFx(c){ var f=null; for(var i=0;i<FX.length;i++){ if(FX[i].id===THEME_FX){ f=FX[i]; break; } } if(!f) f=FX[0]; f.run(c); }
   function fxToast(name){ var el=document.getElementById('fx-toast');
@@ -939,6 +960,8 @@
 .theme-dd.dd-closing[data-fx="crt"] { animation: tk-b-reboot-off .46s cubic-bezier(.4,0,.7,.4) forwards; }\
 .theme-dd.dd-closing[data-fx="corrupt"] { animation: tk-dd-corrupt-off .46s both; }\
 .theme-dd.dd-closing[data-fx="matrixdrop"] { animation: tk-dd-mtx-off .44s ease-in forwards; }\
+.theme-dd.dd-open[data-fx="static"] { animation: tk-dd-static .52s steps(7,end); }\
+.theme-dd.dd-closing[data-fx="static"] { animation: tk-dd-static-off .42s steps(5,end) forwards; }\
 .theme-dd::before { content:""; position:absolute; left:9px; right:9px; top:50%; height:2px; transform:translateY(-50%); pointer-events:none; opacity:0; background:linear-gradient(90deg,transparent,rgba(var(--accent-rgb),1) 20%,#eaf6ff,rgba(var(--accent-rgb),1) 80%,transparent); box-shadow:0 0 12px 1px rgba(var(--accent-rgb),0.9); }\
 .theme-dd.dd-open[data-fx="crtline"]::before, .theme-dd.dd-open[data-fx="crt"]::before { animation: tk-b-line .62s ease-out; }\
 .theme-dd.dd-closing[data-fx="crtline"]::before, .theme-dd.dd-closing[data-fx="crt"]::before { animation: tk-b-line-off .46s ease-in; }\
@@ -953,6 +976,8 @@
 @keyframes tk-dd-corrupt-off { 0%{opacity:1;transform:none;clip-path:inset(0 0 0 0 round 10px);} 16%{transform:translate(5px,0) skewX(4deg);clip-path:inset(8% 0 55% 0 round 10px);} 32%{transform:translate(-7px,2px) skewX(-5deg);clip-path:inset(50% 0 10% 0 round 10px);} 52%{transform:translate(5px,-1px);clip-path:inset(22% 0 40% 0 round 10px);} 72%{opacity:.5;transform:translate(-4px,0) skewX(6deg);} 100%{opacity:0;transform:translate(8px,0) skewX(-8deg);} }\
 @keyframes tk-dd-mtx { 0%{opacity:1;clip-path:inset(0 0 100% 0 round 10px);} 100%{clip-path:inset(0 0 0 0 round 10px);} }\
 @keyframes tk-dd-mtx-off { 0%{opacity:1;clip-path:inset(0 0 0 0 round 10px);} 100%{opacity:1;clip-path:inset(100% 0 0 0 round 10px);} }\
+@keyframes tk-dd-static { 0%{opacity:0;clip-path:inset(0 0 100% 0 round 10px);filter:brightness(2.4) contrast(1.4);} 18%{opacity:.55;} 28%{opacity:.14;} 44%{opacity:.85;clip-path:inset(0 0 42% 0 round 10px);} 58%{opacity:.35;} 78%{opacity:1;clip-path:inset(0 0 0 0 round 10px);filter:brightness(1.35);} 90%{opacity:.6;} 100%{opacity:1;clip-path:inset(0 0 0 0 round 10px);filter:none;} }\
+@keyframes tk-dd-static-off { 0%{opacity:1;filter:brightness(1);} 30%{opacity:.4;filter:brightness(2.2);} 55%{opacity:.7;} 100%{opacity:0;filter:brightness(1.5);} }\
 @keyframes tk-dd-line-off { 0%{opacity:0;} 53%{opacity:0;} 65%{opacity:1;} 85%{opacity:1;} 100%{opacity:0;} }\
 @keyframes tk-dd-flash { 0%,58%{opacity:0;} 70%{opacity:.38;} 82%{opacity:.1;} 100%{opacity:0;} }\
 @keyframes tk-dd-flash-c { 0%{opacity:0;} 53%{opacity:0;} 63%{opacity:.32;} 80%{opacity:0;} 100%{opacity:0;} }\
@@ -966,6 +991,7 @@
 .theme-sw.active { transform: scale(1.25); border-color: #fff; }\
 @keyframes tk-dd-qin { 0%,60%{opacity:0;} 82%{opacity:1;} 100%{opacity:1;} }\
 .theme-dd.dd-open .theme-sw { animation: tk-b-qin .62s both; }\
+.theme-dd.dd-open[data-fx="static"] .theme-sw { animation: tk-b-qin .52s both; }\
 .theme-dd.dd-closing[data-fx="crtline"] .theme-sw, .theme-dd.dd-closing[data-fx="crt"] .theme-sw { animation: tk-b-qout .46s both; }\
 @keyframes tk-dd-swout { 0%{opacity:1;} 26%{opacity:0;} 100%{opacity:0;} }\
 .theme-chip-glyph {\
