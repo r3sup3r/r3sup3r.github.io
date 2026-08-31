@@ -1,0 +1,921 @@
+<!--
+{
+  "title": "Huntress CTF 2024 — YANGA",
+  "description": "Huntress CTF 2024",
+  "layout": "base",
+  "activeNav": "blog",
+  "date": "2024-10-02",
+  "excerpt": "My first CTF, written up end to end — reversing, forensics, malware and web challenges, with the reasoning behind each flag."
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">huntress-ctf-2024</span></div>
+  <h1>Huntress CTF 2024</h1>
+  <div class="article-meta">
+    <span>CTF &middot; WRITEUP</span>
+    <span>October 2024</span>
+    <span>25 min read</span>
+  </div>
+</div>
+
+<article class="article-body">
+<p class="figure"><img src="{{root}}images/posts/huntress-ctf-2024/cover.B3sHt4yy_1FHRax.webp" alt="" loading="lazy"></p>
+
+<h2 id="huntress-ctf-2024">Huntress CTF 2024</h2>
+
+<p>This was my first time participating in a real Capture The Flag (CTF) event, and I’m genuinely proud of how far I was able to get. While I collaborated with a great team of colleagues, I made sure to independently tackle and document the challenges I worked on. This write-up highlights the solutions I personally contributed to, along with what I learned along the way.</p>
+
+<h2 id="challenge-overview">Challenge Overview</h2>
+
+<p>I competed as <strong>reSUper</strong> in the CTF with my team <strong>OffsecThink</strong>. I scored <strong>2753 points</strong>, contributing to our total of <strong>5092 points</strong>, and we placed <strong>168th</strong> out of <strong>3447 teams</strong>. Not bad for a first run. I learned a lot and had a great time!</p>
+
+<h3 id="tables-and-graphs">Tables and Graphs</h3>
+
+<p><em>Add description here</em></p>
+
+<p class="figure"><img src="{{root}}images/posts/huntress-ctf-2024/image.B56IKyFG_1iipAa.webp" alt="leaderboard" loading="lazy"><br>
+<img src="{{root}}images/posts/huntress-ctf-2024/images.BESImv-8_Z1nLEC2.webp" alt="solves" loading="lazy"><br>
+<img src="{{root}}images/posts/huntress-ctf-2024/ScoreOverTime.CAPpYSCC_Lm63x.webp" alt="score over time" loading="lazy"></p>
+
+<h3 id="solves-by-category">Solves by category</h3>
+
+<p><em>This section lists the challenges I solved, grouped by category. It gives a quick overview of the areas I focused on during the CTF, from reverse engineering and malware analysis to web, forensics, and warmups. Some were tough, some were fun, but all of them taught me something new.</em></p>
+
+<table>
+<thead><tr><th>Challenge</th><th>Category</th></tr></thead>
+<tbody>
+<tr><td><a href="#stack-it">Stack it</a></td><td>Reverse Engineering</td></tr>
+<tr><td><a href="#knights-quest">Knight’s Quest</a></td><td>Reverse Engineering</td></tr>
+<tr><td><a href="#ocean-locust">Ocean Locust</a></td><td>Reverse Engineering</td></tr>
+<tr><td><a href="#rustline">Rustline</a></td><td>Malware</td></tr>
+<tr><td><a href="#eepy">Eepy</a></td><td>Malware</td></tr>
+<tr><td><a href="#mimi">Mimi</a></td><td>Malware</td></tr>
+<tr><td><a href="#discount-programming-device">Discount Programming Device</a></td><td>Malware</td></tr>
+<tr><td><a href="#ancient-fossil">Ancient Fossil</a></td><td>Forensics</td></tr>
+<tr><td><a href="#keyboard-junkie">Keyboard Junkie</a></td><td>Forensics</td></tr>
+<tr><td><a href="#obfuscation-station">Obfuscation Station</a></td><td>Forensics</td></tr>
+<tr><td><a href="#helpfuldesk">HelpfulDesk</a></td><td>Web</td></tr>
+<tr><td><a href="#linux-basics">Linux Basics</a></td><td>Miscellaneous</td></tr>
+<tr><td><a href="#malibu">Malibu</a></td><td>Miscellaneous</td></tr>
+<tr><td><a href="#typo">Typo</a></td><td>Warmups</td></tr>
+<tr><td><a href="#finders-fee">Finders Fee</a></td><td>Warmups</td></tr>
+<tr><td><a href="#i-cant-ssh">I Can’t SSH</a></td><td>Warmups</td></tr>
+<tr><td><a href="#txt-message">TXT Message</a></td><td>Warmups</td></tr>
+<tr><td><a href="#cattle">Cattle</a></td><td>Warmups</td></tr>
+</tbody>
+</table>
+
+<h2 id="writeups">Writeups</h2>
+
+<h3 id="stack-it">Stack it</h3>
+
+<p class="figure"><img src="{{root}}images/posts/huntress-ctf-2024/description.D-azPygY_Z14AQq4.webp" alt="stack it description" loading="lazy"></p>
+
+<p>First I Enumerate the sample.</p>
+
+<ul>
+  <li>Checking the file format and any embedded files.</li>
+</ul>
+
+<pre><code class="language-shell">┌──(kali㉿kali)-[~/stackit]
+└─$ file stack_it.bin
+stack_it.bin: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, stripped</code></pre>
+
+<pre><code class="language-shell">┌──(kali㉿kali)-[~/stackit]
+└─$ binwalk stack_it.bin
+
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             ELF, 32-bit LSB executable, Intel 80386, version 1 (SYSV)</code></pre>
+
+<p>The sample is a 32-bit Linux Executable Format file. All necessary libraries are statically linked into the binary. It is stripped of debug information and contains no embedded files.</p>
+
+<pre><code class="language-plaintext">Checking for interesting strings and inspecting the hexdump.</code></pre>
+
+<pre><code class="language-shell">┌──(kali㉿kali)-[~/stackit]
+└─$ strings stack_it.bin
+Hello, World!
+SQQUR^V
+1ecff8bece9486287dc76521a84bb7c0 # Interesting!
+.shstrtab
+.text
+.data
+.bss</code></pre>
+
+<pre><code class="language-shell">┌──(kali㉿kali)-[~/stackit]
+└─$ xxd stack_it.bin
+00000000: 7f45 4c46 0101 0100 0000 0000 0000 0000  .ELF............ # Elf format (7f 45 4c 46)
+00000010: 0200 0300 0100 0000 0090 0408 3400 0000  ............4...
+00000020: 6c20 0000 0000 0000 3400 2000 0300 2800  l ......4. ...(.
+00000030: 0500 0400 0100 0000 0000 0000 0080 0408  ................
+00000040: 0080 0408 9400 0000 9400 0000 0400 0000  ................
+00000050: 0010 0000 0100 0000 0010 0000 0090 0408  ................
+00000060: 0090 0408 7d00 0000 7d00 0000 0500 0000  ....}...}.......
+00000070: 0010 0000 0100 0000 0020 0000 00a0 0408  ......... ......
+00000080: 00a0 0408 4e00 0000 7400 0000 0600 0000  ....N...t.......
+*
+00001000: c605 50a0 0408 66c6 0551 a004 086c c605  ..P...f..Q...l..
+00001010: 52a0 0408 61c6 0553 a004 0867 c605 54a0  R...a..S...g..T.
+00001020: 0408 7b8d 350e a004 088d 3d2e a004 088d  ..{.5.....=.....
+00001030: 1555 a004 08b9 2000 0000 8a06 3207 8802  .U.... .....2...
+00001040: 4647 42e2 f5c6 027d 42c6 0200 8d15 50a0  FGB....}B.....P.
+00001050: 0408 b924 0000 00ff 3283 c204 e2f9 ba0d  ...$....2.......
+00001060: 0000 00b9 00a0 0408 bb01 0000 00b8 0400  ................
+00001070: 0000 cd80 b801 0000 0031 dbcd 8000 0000  .........1......
+*
+00002000: 4865 6c6c 6f2c 2057 6f72 6c64 2100 5351  Hello, World!.SQ # Hello, World!
+00002010: 5155 525e 5607 0104 0d02 0003 565b 0f50  QUR^V.......V[.P # SQQUR^V
+00002020: 0701 5350 0b50 5500 515b 0106 5306 3165  ..SP.PU.Q[..S.1e # 1ecff8bece9486287dc76521a84bb7c0
+00002030: 6366 6638 6265 6365 3934 3836 3238 3764  cff8bece9486287d
+00002040: 6337 3635 3231 6138 3462 6237 6330 002e  c76521a84bb7c0..
+00002050: 7368 7374 7274 6162 002e 7465 7874 002e  shstrtab..text.. # .shstrtab .text
+00002060: 6461 7461 002e 6273 7300 0000 0000 0000  data..bss....... # .data .bss
+*
+00002090: 0000 0000 0b00 0000 0100 0000 0600 0000  ................
+000020a0: 0090 0408 0010 0000 7d00 0000 0000 0000  ........}.......
+000020b0: 0000 0000 1000 0000 0000 0000 1100 0000  ................
+000020c0: 0100 0000 0300 0000 00a0 0408 0020 0000  ............. ..
+000020d0: 4e00 0000 0000 0000 0000 0000 0400 0000  N...............
+000020e0: 0000 0000 1700 0000 0800 0000 0300 0000  ................
+000020f0: 50a0 0408 4e20 0000 2400 0000 0000 0000  P...N ..$.......
+00002100: 0000 0000 0400 0000 0000 0000 0100 0000  ................
+00002110: 0300 0000 0000 0000 0000 0000 4e20 0000  ............N ..
+00002120: 1c00 0000 0000 0000 0000 0000 0100 0000  ................
+00002130: 0000 0000                                ....</code></pre>
+
+<p>After enumerating the sample, I execute the binary to observe its runtime behavior and understand what it does.</p>
+
+<pre><code class="language-shell">┌──(kali㉿kali)-[~/stackit]
+└─$ chmod +x stack_it.bin
+
+
+┌──(kali㉿kali)-[~/stackit]
+└─$ ./stack_it.bin
+Hello, World!</code></pre>
+
+<p>The output of the binary execution is simply the string “Hello, World!”. At this point, to better understand the purpose of the embedded strings; particularly “SQQUR^V” and “1ecff8bece9486287dc76521a84bb7c0” I’ll analyze the binary’s execution flow using IDA Pro.</p>
+
+<h3 id="ida">IDA</h3>
+
+<p>In IDA’s graph view, I can clearly see that the first section of this function is responsible for initializing a string at memory address 0x804A050 with the value flag{</p>
+
+<pre><code class="language-shell">mov ds:byte_804A050, 66h ; 'f'
+mov ds:byte_804A051, 6Ch ; 'l'
+mov ds:byte_804A052, 61h ; 'a'
+mov ds:byte_804A053, 67h ; 'g'
+mov ds:byte_804A054, 7Bh ; '{'</code></pre>
+
+<p>In the following instructions of this initial section, data from unk_804A00E and unk_804A02E are loaded into the source and destination buffers, pointed to by esi and edi respectively. The ecx register is set to 0x20 (32 bytes), which acts as the loop counter for the upcoming XOR operation.</p>
+
+<pre><code class="language-shell">lea edi, unk_804A00E
+lea esi, unk_804A02E
+mov ecx, 20h ; 32 bytes</code></pre>
+
+<p>In IDA’s data view, I observe that the memory region between unk_804A00E and unk_804A02E spans exactly 32 bytes, aligning with the loop’s counter (ecx = 0x20).</p>
+
+<p>The second section of the function contains the loop that performs the XOR decryption. It operates byte-by-byte over two buffers:</p>
+
+<pre><code class="language-plaintext">A byte is read from the input buffer pointed to by esi (unk_804A02E),
+
+
+It is XORed with a corresponding byte from the key buffer pointed to by edi (unk_804A00E),
+
+
+The result is stored in the output buffer at edx (starting at 0x804A055), which is right after the mov ds:byte_804A054, 7Bh ; '{' instruction meaning the XORed bytes are written in memory after the flag{ string.</code></pre>
+
+<p>After each iteration, the pointers are incremented to the next byte, and the counter in ecx is decremented. The loop continues for 32 bytes, as defined by the initial value of ecx, effectively performing a simple XOR decryption operation.</p>
+
+<p>loc_804903A:
+mov     al, [esi]       ; Load byte from input
+xor     al, [edi]       ; XOR with key
+mov     [edx], al       ; Store result in output
+inc     esi             ; Increments position to next byte (add esi, 1)
+inc     edi
+inc     edx
+loop    loc_804903A     ; Decrease ecx, loop if not zero</p>
+
+<p>The third part of the code completes the construction of the flag. It concatenates three components:</p>
+
+<pre><code class="language-plaintext">The prefix string flag{, stored at address 0x804A050,
+
+
+The decrypted 32-byte content stored right after, starting at 0x804A055,
+
+
+The closing brace } appended at the end.</code></pre>
+
+<p>This forms the full flag string in memory.</p>
+
+<p>At this point, further analysis of the binary isn’t necessary, as I already have everything I need: the encrypted flag and the corresponding XOR key to decrypt it. To perform the decryption, I use CyberChef
+. But first, I need to extract the hex values of both the encrypted content and the key. For this purpose, I use ImHex</p>
+
+<p>┌──(kali㉿kali)-[~/stackit]
+└─$ imhex stack_it.bin</p>
+
+<pre><code class="language-plaintext">Hex values:
+
+
+    Key = 53 51 51 55 52 5E 56 07 01 04 0D 02 00 03 56 5B 0F 50 07 01 53 50 0B 50 55 00 51 5B 01 06 53
+
+
+    Encrypted Flag = 31 65 63 66 66 38 62 65 63 65 39 34 38 36 32 38 37 64 63 37 36 35 32 31 61 38 34 62 62 37 63 30
+
+
+Flag: flag{b4234f4bba4685dc84d6ee9a48e9c10c}</code></pre>
+
+<p>Knights Quest</p>
+
+<p>Add description here</p>
+
+<p>Ocean Locust</p>
+
+<p>Add description here
+Rustline</p>
+
+<p>Add description here
+Eepy</p>
+
+<p>Add description here
+Mimi</p>
+
+<p>Add description here</p>
+
+<p>For this challenge I started by enumerating the file.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/mimi]
+└─$ file mimi
+mimi: Mini DuMP crash report, 18 streams, Tue Sep 10 02:33:22 2024, 0x461826 type</p>
+
+<p>Judged by this output we can confirm that the file is a memory dump of a crash report, a Mini DuMP crash report. So I Googled what was a Mini DuMP crash report.</p>
+
+<p>Knowing that I continued with my information gathering.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/mimi]
+└─$ strings mimi &gt; mimi_strings.txt</p>
+
+<p>After a while looking for interesting strings in the output, I found a lsass.pdb string, which is a clear reference to a lsass process, which is a crucial process as hinted in the description.</p>
+
+<p>To dump the lsass db I used pypykatz being on Linux.</p>
+
+<p>┌──(kali㉿kali)-[~/…/offensive/CTFs/huntress2024/mimi]
+└─$ pypykatz lsa minidump mimi
+INFO:pypykatz file mimi
+FILE: ======== mimi =======
+== LogonSession ==
+authentication_id 709786 (ad49a)
+session_id 1
+username mimi
+domainname windows11
+logon_server WINDOWS11
+logon_time 2024-09-10T02:32:50.802254+00:00
+sid S-1-5-21-940291183-874774319-2012240919-1002
+luid 709786
+== MSV ==
+Username: mimi
+Domain: windows11
+LM: NA
+NT: 5e088b316cc30d7b2d0158cb4bd9497c
+SHA1: c1bd67cf651fdbcf27fd155f488721f52fff64fa
+DPAPI: c1bd67cf651fdbcf27fd155f488721f52fff64fa
+== WDIGEST [ad49a]==
+username mimi
+domainname windows11
+password flag{7a565a86761a2b89524bf7bb0d19bcea} # Here is the flag!!!
+password (hex)66006c00610067007b00370061003500360035006100380036003700360031006100320062003800390035003200340062006600370062006200300064003100390062006300650061007d0000000000</p>
+
+<pre><code class="language-plaintext">  ...
+
+
+Flag: flag{7a565a86761a2b89524bf7bb0d19bcea}</code></pre>
+
+<p>Discount Programming Device</p>
+
+<p>Add description here</p>
+
+<p>Checkign for file format</p>
+
+<p>┌──(kali㉿kali)-[~/…/offensive/CTFs/huntress2024/DiscountProgrammingDevice]
+└─$ file deof.py
+deof.py: ASCII text, with very long lines (4093)</p>
+
+<p>The file extension is .py but the file format indicates that the file is in reality ASCII text. So I checked the content of the file.</p>
+
+<h2 id="content-omitted-in-original-snippet">(content omitted in original snippet)</h2>
+
+<p>┌──(kali㉿kali)-[~/DiscountProgrammingDevice]
+└─$ python oops.py
+flag{2543ff1e714bC2eb9ff78128232785ad}</p>
+
+<pre><code class="language-plaintext">Flag: flag{2543ff1e714bC2eb9ff78128232785ad}</code></pre>
+
+<p>Ancient Fossil</p>
+
+<p>For this challenge we are given a file ancient.fossil and we have to find the flag analysing it.</p>
+
+<p>The sample is a .fossil file, an extension I hadn’t heard of at the time of the challenge. So I looked for information online, I found this interesting website
+. But before I start reading the entire thing, I decided to check that the file is actually a fossil format file.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ file ancient.fossil
+ancient.fossil: SQLite 3.x database (Fossil repository), last written using SQLite version 3046000, file counter 560, database pages 158, cookie 0x2b, schema 4, UTF-8, version-valid-for 560</p>
+
+<p>The output was quite confusing for me, as it presented the file as a SQLite database. But still was indicating it was a Fossil repository, so I concluded that this .fossil file can be manipulated with sqlite. So I look into the file with sqlite3, first I searched for tables in the database.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ sqlite3 ancient.fossil
+SQLite version 3.46.1 2024-08-13 09:16:08
+Enter “.help” for usage hints.
+sqlite&gt; SELECT name FROM sqlite_master WHERE type=‘table’;
+blob
+delta
+rcvfrom
+user
+config
+shun
+private
+reportfmt
+concealed
+filename
+mlink
+plink
+leaf
+event
+phantom
+orphan
+unclustered
+unsent
+tag
+tagxref
+backlink
+attachment
+ticket
+ticketchng
+cherrypick
+sqlite_stat1
+chat
+sqlite_sequence
+admin_log
+accesslog</p>
+
+<p>That is quite a lot of tables. After going through the various tables I didn’t find anything interesting, at first. So I went back the fossil website and read some more about the fossil format file, it is at this point that I stumbled upon these information.</p>
+
+<pre><code class="language-plaintext">Each artifact in the repository is named by a hash of its content. No prefixes, suffixes, or other information is added to an artifact before the hash is computed. The artifact name is just the (lower-case hexadecimal) hash of the raw artifact.</code></pre>
+
+<p>Also:</p>
+
+<pre><code class="language-plaintext">In the current implementation (as of 2017-02-27) the artifacts that make up a fossil repository are stored as delta- and zlib-compressed blobs in an SQLite database.</code></pre>
+
+<p>The first two tables in the SQLite were blob and delta, so I went back the db and checked again to have a better look on the content of these tables.</p>
+
+<p>sqlite&gt; select * from blob; # blob have multiple entries, 604.
+1|1|163|a6df33fb5e4fb160ad3a1611d4b0d05124e27b6a36a3197e7bbe5d6a0cbcc554|
+2|2|45|8ab2f4f61d77e3a9e76c30b747d02a2d2d01015f00eba889c3705601b8940982|
+3|2|329|47fcb20ec9819bec1d5081e04b902d46d26a96db7715a235fd5bbaa5ef8a1400|
+*
+602|402|45|66ee82da30288341f1ef1b2564067b6887a90e959439c267abd1f743c646fac6|
+603|402|329|6f14e52d986d2b2645556b2d6ab8f9fa15c378eb9d578d79d3ffb9abd01f1292|
+604|403|217|e410648e20a745481f21e0e20bcfe35acbbfe831c05258f639b948a9f02fb098|</p>
+
+<p>sqlite&gt; select * from delta; # delta was empty</p>
+
+<p>So what do I know? I know that the artifacts are stored in a blob and that “The artifact name is just the (lower-case hexadecimal) hash of the raw artifact”. At this point, I copied the contents of the “blob” table into a .txt file making sure of taking only the fourth column which represents the name of the artifact, then I searched for the string flag without success…</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ cat  hashed.txt  | cut -d”|” -f4 &gt; artifacts.txt</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ cat artifacts.txt
+a6df33fb5e4fb160ad3a1611d4b0d05124e27b6a36a3197e7bbe5d6a0cbcc554
+8ab2f4f61d77e3a9e76c30b747d02a2d2d01015f00eba889c3705601b8940982
+47fcb20ec9819bec1d5081e04b902d46d26a96db7715a235fd5bbaa5ef8a1400
+*
+66ee82da30288341f1ef1b2564067b6887a90e959439c267abd1f743c646fac6
+6f14e52d986d2b2645556b2d6ab8f9fa15c378eb9d578d79d3ffb9abd01f1292
+e410648e20a745481f21e0e20bcfe35acbbfe831c05258f639b948a9f02fb098</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ cat artifacts.txt | grep flag</p>
+
+<h2 id="empty-no-flag">Empty, no flag</h2>
+
+<p>Of course, these are random hash values.</p>
+
+<p>I then returned to the Fossil website to read more about the file format. That’s when I came across the download
+page, where I discovered a tool called Fossil, so I downloaded it.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ ./fossil
+Usage: ./fossil COMMAND …
+or: ./fossil help           — for a list of common commands
+or: ./fossil help COMMAND   — for help with the named command</p>
+
+<p>Commands and filenames may be passed on to fossil from a file
+by using:</p>
+
+<pre><code class="language-plaintext">./fossil --args FILENAME ...</code></pre>
+
+<p>Each line of the file is assumed to be a filename unless it starts
+with ’-’ and contains a space, in which case it is assumed to be
+another flag and is treated as such. —args FILENAME may be used
+in conjunction with any other flags.</p>
+
+<p>Next I checked for the help.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ ./fossil help
+Usage: ./fossil help TOPIC
+Things to try:</p>
+
+<p>./fossil help help
+./fossil help -o
+./fossil help -a
+./fossil search -h TOPIC</p>
+
+<p>Other common values for TOPIC:</p>
+
+<p>add          chat         fdiff        merge-info   rm           ui
+addremove    cherrypick   finfo        mv           settings     undo
+all          clean        gdiff        open         sql          unversioned
+amend        clone        grep         patch        ssl-config   update
+annotate     commit       help         pull         stash        version
+bisect       dbstat       info         push         status       xdiff
+blame        delete       init         rebuild      sync
+branch       describe     ls           remote       tag
+cat          diff         merge        repack       timeline
+changes      extras       merge-base   revert       tree
+This is fossil version 2.26 [dfc0f1b41f] 2025-03-13 10:34:34 UTC</p>
+
+<p>I tried some of the commands, but were not very helpful until I tried the open command.</p>
+
+<p>It creates a .fslckout file on the current directory. The help of the open command reads like follow.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ ./fossil open -help
+Usage: fossil open REPOSITORY ?VERSION? ?OPTIONS?</p>
+
+<p>Open a new connection to the repository name REPOSITORY.  A check-out
+for the repository is created with its root at the current working
+directory, or in DIR if the “—workdir DIR” is used.
+*</p>
+
+<p>Then I tried the ui command.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ ./fossil ui ancient.fossil
+Listening for HTTP requests on TCP port 8080</p>
+
+<p>Which opened a User Interface on localhost:8080. Looking for the menu entries I found a List of Artifacts entry.</p>
+
+<p>That menu redirected me to the localhost:8080/bloblist page, which appears to list all the artifacts in the repository. Judging by the table’s content, these artifacts correspond to the entries found in the blob table when viewed through SQLite.</p>
+
+<p>After digging further into the help option, I discovered the artifact command. Using it with the -a option displayed the full list of available commands, the most interesting was the artifact option.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ ./fossil help -a
+3-way-merge    clone          hook           reconstruct    sync
+add            close          http           redo           tag
+addremove      commit         import         remote         tarball
+alerts         configuration  info           remote-url     ticket
+all            dbstat         init           rename         timeline
+amend          deconstruct    interwiki      repack         tls-config
+annotate       delete         leaves         reparent       touch
+artifact       descendants    login-group    revert         tree
+*
+checkout       grep           purge          ssl-config
+cherrypick     hash-policy    push           stash
+clean          help           rebuild        status</p>
+
+<p>So I tried it to query an artifact.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─$ ./fossil artifact a6df33fb5e4fb160ad3a1611d4b0d05124e27b6a36a3197e7bbe5d6a0cbcc554
+C initial\sempty\scheck-in
+D 2024-10-16T20:57:31.743
+R d41d8cd98f00b204e9800998ecf8427e
+T *branch * trunk
+T *sym-trunk *
+U kali
+Z ffb27377fbc9243f5f3d06ee44d2ac33</p>
+
+<p>Now with the rest of the artifacts and grep for flag.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/Ancienfocil]
+└─forain(cat artifacts.txt); do fossil artifact $a; done | grep flag</p>
+
+<pre><code class="language-plaintext">Flag: flag{2ed33f365669ea9f10b1a4ea4566fe8c}</code></pre>
+
+<p>Keyboard Junkie</p>
+
+<p>Add description here</p>
+
+<p>Checking the file format</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/keyboardjunkie]
+└─$ file keyboard_junkie
+keyboard_junkie: pcap capture file, microsecond ts (little-endian) - version 2.4 (Memory-mapped Linux USB, capture length 245824)</p>
+
+<p>It is a .pcap capture file, so I opened it in Wireshark.</p>
+
+<p>wireshark keyboard_junkie</p>
+
+<p>After a quick walk on the traffic logs, I deducted that the intercepted traffic was from a USB (see the protocol) device to the host, probably a keyboard given the challenge description. That was a first for me, so I googled it, here
+and then I basically found the solution to this challenge here
+. I then followed the instructions written in these articles, keeping what worked for me.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/keyboardjunkie]
+└─$ tshark -r keyboard_junkie -T fields -e usb.capdata &gt; lefovers.txt</p>
+
+<p>The output was a bit messed up with spaces between lines.</p>
+
+<p>So I made a quick cleaning.</p>
+
+<p>sed ‘/$s/d’ -i leftovers.txt</p>
+
+<p>Then I just had to run the script and report the flag, using the code I found earlier in this ctf writeup
+.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/keyboardjunkie]
+└─$ cat mapstroke.py
+newmap = {
+2: “PostFail”,
+4: “a”, 5: “b”, 6: “c”, 7: “d”, 8: “e”, 9: “f”,
+10: “g”, 11: “h”, 12: “i”, 13: “j”, 14: “k”, 15: “l”, 16: “m”,
+17: “n”, 18: “o”, 19: “p”, 20: “q”, 21: “r”, 22: “s”, 23: “t”,
+24: “u”, 25: “v”, 26: “w”, 27: “x”, 28: “y”, 29: “z”, 30: “1”,
+31: “2”, 32: “3”, 33: “4”, 34: “5”, 35: “6”, 36: “7”, 37: “8”,
+38: “9”, 39: “0”, 40: “Enter”, 41: “esc”, 42: “del”, 43: “tab”,
+44: “space”, 45: ”-”, 47: ”[”, 48: ”]”, 56: ”/”, 57: “CapsLock”,
+79: “RightArrow”, 80: “LeftArrow”
+}</p>
+
+<p>with open(‘leftovers.txt’) as myKeys:
+for i, line in enumerate(myKeys, start=1):
+bytesArray = bytearray.fromhex(line.strip())</p>
+
+<pre><code class="language-plaintext">    for byte in bytesArray:
+        if byte != 0:
+            keyVal = int(byte)
+            if keyVal in newmap:
+                print(newmap[keyVal])
+            else:
+                print(f"No map found for this value: {keyVal}")</code></pre>
+
+<p>python mapstroke.py</p>
+
+<p>The flag was in the output.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/keyboardjunkie]
+└─$ python mapstroke.py
+No map found for this value: 128
+m
+s
+o
+space
+t
+h       # the
+e
+space
+a
+n
+s       # answer
+w
+e
+r
+space
+i
+s       # is
+space
+f
+l
+a       # flag
+g
+PostFail
+PostFail
+[
+PostFail
+f
+7
+7
+3
+3
+e
+0
+0
+9
+3
+b
+7
+d
+2
+8       # f7733e0093b7d281dd0a30fcf34a9634
+1
+d
+d
+0
+a
+3
+0
+f
+c
+f
+3
+4
+a
+9
+6
+3
+4
+PostFail
+PostFail
+]
+PostFail
+space
+h
+a
+h
+a       # ahahah
+h
+a
+h
+space
+l
+o       # lol
+l
+Enter
+No map found for this value: 1
+No map found for this value: 1
+c</p>
+
+<pre><code class="language-plaintext">Flag: flag{f7733e0093b7d281dd0a30fcf34a9634}</code></pre>
+
+<p>Obfuscation Station</p>
+
+<p>Add description here
+HelpfulDesk</p>
+
+<p>Add description here</p>
+
+<p>The challenge exposed a web service at <a href="http://challenge.ctf.games:30769" target="_blank" rel="noopener">http://challenge.ctf.games:30769</a>. On the /Security/Bulettin page, I found logs discussing vulnerabilities that had been fixed in version 1.2 of the software. Since the current version running on the server was 1.1 (as shown at the bottom of the page), I suspected it might still be vulnerable. So, I downloaded the 1.1 update to take a closer look.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/helpfulDesk/helpfuldesk11]
+└─$ ls
+appsettings.Development.json                               Microsoft.CodeAnalysis.CSharp.Workspaces.resources_5.dll
+appsettings.json                                           Microsoft.CodeAnalysis.CSharp.Workspaces.resources_6.dll
+dotnet-aspnet-codegenerator-design.dll                     Microsoft.CodeAnalysis.CSharp.Workspaces.resources_7.dll
+helpfuldesk-1.1.zip                                        Microsoft.CodeAnalysis.CSharp.Workspaces.resources_8.dll
+HelpfulDesk.deps.json                                      Microsoft.CodeAnalysis.CSharp.Workspaces.resources_9.dll
+HelpfulDesk.dll                                            Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+HelpfulDesk.exe                                            Microsoft.CodeAnalysis.dll
+HelpfulDesk.pdb                                            Microsoft.CodeAnalysis.Features.dll
+HelpfulDesk.runtimeconfig.json                             Microsoft.CodeAnalysis.Features.resources_10.dll
+HelpfulDesk.staticwebassets.runtime.json                   Microsoft.CodeAnalysis.Features.resources_11.dll
+Humanizer.dll                                              Microsoft.CodeAnalysis.Features.resources_12.dll
+Humanizer.resources_10.dll                                 Microsoft.CodeAnalysis.Features.resources_1.dl
+stringspdb.txt</p>
+
+<pre><code class="language-plaintext">                                                *</code></pre>
+
+<p>Microsoft.CodeAnalysis.CSharp.Workspaces.resources_1.dll   System.Security.Permissions.dll
+Microsoft.CodeAnalysis.CSharp.Workspaces.resources_2.dll   System.Windows.Extensions_1.dll
+Microsoft.CodeAnalysis.CSharp.Workspaces.resources_3.dll   System.Windows.Extensions.dll
+Microsoft.CodeAnalysis.CSharp.Workspaces.resources_4.dll</p>
+
+<p>The directory contained a lot of dll files, but one file particularly caught my attention: HelpfulDesk.pdb. So I started my enumeration on it.</p>
+
+<p>┌──(kali㉿kali)-[~/…/CTFs/huntress2024/helpfulDesk/helpfuldesk11]
+└─$ file HelpfulDesk.pdb
+HelpfulDesk.pdb: Microsoft Roslyn C# debugging symbols version 1.0</p>
+
+<p>I wasn’t familiar with the .pdb file format, so I Googled it and found some info here
+. After a bit of research, I learned that JetBrains dotPeek is a solid option for inspecting PDB files—and it worked perfectly. Before diving in, I ran the strings command to enumerate readable content. I spotted some interesting terms like userCredentials and credentialList, but nothing immediately useful. So I loaded the file into dotPeek and started digging through the code, where I found an interesting path.</p>
+
+<p>Following the path brought me into a setup wizard where I could set a new password to gain access to the application.</p>
+
+<p>On the dashboard, I found a list of several client entries, which seemed like a good place to start digging.</p>
+
+<p>Connecting to HOST-WIN-DX130S2 brought me to a page that contained the flag.txt file.</p>
+
+<pre><code class="language-plaintext">Flag: flag{03a6f458b7483e93c37bd94b6dda462b}</code></pre>
+
+<p>Linux Basics</p>
+
+<p>Add description here
+Malibu</p>
+
+<p>Establishing connection to the server. Pressing Enter twice the server answered with a 400 Bad Request.</p>
+
+<p>So I sent a correct HTTP request. The server response disclosed information about the running technology: MinIO server.</p>
+
+<p>Since I haven’t seen this technology before, I googled it and found information on this MinIO
+github repository. The first sentence in the README reads like follow:</p>
+
+<pre><code class="language-plaintext">MinIO is a High Performance Object Storage released under GNU Affero General Public License v3.0. It is API compatible with Amazon S3 cloud storage service.</code></pre>
+
+<p>Not having experience with Amazon S3 I read the documentation
+. Basically what I understood was that Amazon S3 is an object store and you store these objects in one or more buckets. So I had to find a way to enumerate the buckets on the server. For that I brute forced the server for common bucket names using this list
+.</p>
+
+<p>for bucket in (catlist.txt);doecho"∗∗∗∗∗∗∗bucket*******”; curl -s <a href="http://challenge.ctf.games:30126/$bucket" target="_blank" rel="noopener">http://challenge.ctf.games:30126/$bucket</a>; done</p>
+
+<p>Until I found an interesting bucket named bucket.</p>
+
+<p>At some point during the challenge, I noticed a subtle hint in the description suggesting that brute-forcing wasn’t necessary. The mention of an object to bring to the beach pointed directly to a “bucket”, hinting at the use of AWS CLI.</p>
+
+<p>Now to access the buckets! I downloaded the bucket content on my computer to perform a local enumeration.</p>
+
+<p>aws s3 sync s3://bucket/ ./ —no-sign-request —endpoint-url <a href="http://challenge.ctf.games:30126" target="_blank" rel="noopener">http://challenge.ctf.games:30126</a></p>
+
+<p>The directories contained files with random strings I tried to decode for a while…</p>
+
+<p>… until I just decided to grep for the string flag.</p>
+
+<pre><code class="language-plaintext">Flag: flag{800e6603e86fe0a68875d3335e0daf81}</code></pre>
+
+<p>Typo</p>
+
+<p>Add description here</p>
+
+<p>Password: userpass</p>
+
+<p>ssh -p 30511 <a href="mailto:user@challenge.ctf.games">user@challenge.ctf.games</a></p>
+
+<p>After establishing a connection to the challenge server, I was presented with the following output.</p>
+
+<p>The output comes from the sl command, which is typically triggered when someone mistypes ls. This suggests that sl is executed automatically upon connection, likely configured to run whenever a new shell session starts, possibly through an entry in ~/.bashrc or ~/.zshrc. Noticing that command output was returned automatically, I connected to the server and manually ran ls via ssh to check the contents of the current directory.</p>
+
+<p>ssh -p 30511 <a href="mailto:user@challenge.ctf.games">user@challenge.ctf.games</a> ls -al</p>
+
+<p>The flag.txt file was located in the current directory. All that was left to do was to run cat flag.txt to retrieve the flag.</p>
+
+<p>ssh -p 30511 <a href="mailto:user@challenge.ctf.games">user@challenge.ctf.games</a> cat flag.txt</p>
+
+<pre><code class="language-plaintext">Flag: flag{36a0354fbf59df454596660742bf09eb}</code></pre>
+
+<p>Finders Fee</p>
+
+<p>Add description here</p>
+
+<p>This challenge involved a simple privilege escalation. Once I connected to the machine, hinted by the challenge title, I began my escalation by checking for anything that might be found by commands like grep and find, readable text files, exposed configurations, hardcoded passwords, and eventually, SUID or SGID files.</p>
+
+<p>find / -type f -perm /u=s,g=s -exec ls -l {} ; 2&gt;/dev/null</p>
+
+<p>I found a /usr/bin/find binary with SGID bit set, GTFOBins!</p>
+
+<p>/usr/bin/find . -exec /bin/sh -p ; -quit</p>
+
+<pre><code class="language-plaintext">Flag: flag{5da1de289823cfc200adf91d6536d914}</code></pre>
+
+<p>I Can’t SSH</p>
+
+<p>Add description here</p>
+
+<p>After saving the key and setting correct permissions with:</p>
+
+<p>chmod 600 id_rsa</p>
+
+<p>I connected to the target server:</p>
+
+<p>ssh -i id_rsa -p 30442 <a href="mailto:user@challenge.ctf.games">user@challenge.ctf.games</a></p>
+
+<p>I ran into a libcrypto error, which usually means the private key format is either incompatible or malformed. To fix it, I copied the contents of the downloaded id_rsa and echoed it back into a new id_rsa file. Not the most elegant solution, I’m sure, but hey, it worked!</p>
+
+<p>┌──(kali㉿kali)-[~/…/offensive/CTFs/huntress2024/icantssh]
+└─$ echo “-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: AES-128-CBC,622AEAFD3F65C070D41882F436D6EC96</p>
+
+<p>GkSBqPbakjy92HoEBPmRqmp2Ie2hKF22GlQML+7KHNxW1OLNzevOeGLVLhJNBLwZ
+CpER+eXxvpMwVaJhmgoUMpBjBdWxBHchb2BcZ40ckaliwR6oeYsOQ4QShKUvOwcU
+5RZsMwvvh+ZnQiLHtst0+gIJBCs/+oFZn6vdJmn9XiGXPicuFK8OEs3ietPe+MiG
+*
+E4hRjTGuo7hgbjo6D8ilEpsv21g2TqcQqEzpsDj2rVB7vH266WTPgN2HAroa5NfF
+8XcQjoijZW74YoWyzlVhiAZe/aO9/B8l5/uJeYjc/xEeMm6AlzQgdGKigicDsMRg
+6VFRAu/1JbmJiEXsfiBnfJsW6Q3Q8WnTeH0K95UIRwgM1TvnOYTGOieq4mZsXB6M
+-----END RSA PRIVATE KEY-----” &gt; id_rsa</p>
+
+<p>I generated a new RSA key using:</p>
+
+<p>ssh-keygen -p -f id_rsa -m PEM</p>
+
+<p>I was then able to access the server and retrieve the flag.</p>
+
+<p>ssh -i id_rsa -p 30442 <a href="mailto:user@challenge.ctf.games">user@challenge.ctf.games</a></p>
+
+<pre><code class="language-plaintext">Flag: flag{eef128722ec1ce1542aa1b486dbb1361}</code></pre>
+
+<p>TXT Message</p>
+
+<p>Add description here</p>
+
+<p>While reading the challenge, I noticed that the first two letters in the word “odd” were green. When I hovered over them, I saw they were clickable, so I clicked to see what would happen. The link redirected me to a Wikipedia page
+. It turned out to be a wiki page on the od command, a nice and subtle clue.</p>
+
+<p>With this in mind, I began my DNS enumeration, since the challenge hinted at something hidden in the DNS records.</p>
+
+<p>dig ctf.games ANY</p>
+
+<p>I found several DNS records, but one stood out: it was a TXT record containing a series of numbers.</p>
+
+<p>146 154 141 147 173 061 064 145 060 067 062 146 067 060 065 144 064 065 070 070 062 064 060 061 144 061 064 061 143 065 066 062 146 144 143 060 142 175</p>
+
+<p>Which seemed particularly odd, just like the challenge title hinted. I figured the od command might be useful for decoding the string, given the challenge hint—but I couldn’t quite figure out how to make it work. After a few failed attempts, I realized why: od takes binary input and shows you what it looks like in various formats (octal, hex, ASCII, etc.), but it doesn’t accept octal text like 146 154 141… and turn it back into characters (man od).</p>
+
+<p>I decided to go back and read more about octal data and the od command on the Wikipedia page.</p>
+
+<p>I realized the numbers weren’t in proper octal format, so I formatted each one into a valid Python-supported octal representation before decoding them.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/cattle]
+└─fornin(echo “146 154 141 147 173 061 064 145 060 067 062 146 067 060 065 144 064 065 070 070 062 064 060 061 144 061 064 061 143 065 066 062 146 144 143 060 142 175”); do echo “0o$n ” &gt;&gt; raw_octal.txt; done &amp;&amp; tr —delete ‘\n’ &lt; raw_octal.txt &gt; formated_octal.txt</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/cattle]
+└─$ cat formated_octal.txt
+0o146 0o154 0o141 0o147 0o173 0o061 0o064 0o145 0o060 0o067 0o062 0o146 0o067 0o060 0o065 0o144 0o064 0o065 0o070 0o070 0o062 0o064 0o060 0o061 0o144 0o061 0o064 0o061 0o143 0o065 0o066 0o062 0o146 0o144 0o143 0o060 0o142 0o175</p>
+
+<p>So I searched for a Python script to convert octal values to ASCII, and ended up finding a helpful snippet on StackOverflow
+.</p>
+
+<p>┌──(kali㉿kali)-[~/…/offensive/CTFs/huntress2024/TXTmessage]
+└─$ cat octal2str.py
+def octal_to_str(octal_str):
+'''
+It takes an octal string and return a string
+:octal_str: octal str like “110 145 154”
+'''
+str_converted = ""
+for octal_char in octal_str.split(” ”):
+str_converted += chr(int(octal_char, 8))
+return str_converted</p>
+
+<p>print(octal_to_str(“0o146 0o154 0o141 0o147 0o173 0o061 0o064 0o145 0o060 0o067 0o062 0o146 0o067 0o060 0o065 0o144 0o064 0o065 0o070 0o070 0o062 0o064 0o060 0o061 0o144 0o061 0o064 0o061 0o143 0o065 0o066 0o062 0o146 0o144 0o143 0o060 0o142 0o175”))</p>
+
+<p>All I had to do was update the print statement with my own octal values, and that was it.</p>
+
+<p>┌──(kali㉿kali)-[~/…/offensive/CTFs/huntress2024/TXTmessage]
+└─$ python octal2str.py
+flag{14e072f705d45882401d141c562fdc0b}</p>
+
+<p>I modified the script to take octal values straight from the terminal, just to make testing different strings a bit easier. Totally unnecessary, but I did it for the giggles.</p>
+
+<p>import sys</p>
+
+<p>def octal_to_str(octal_str):
+'''
+It takes an octal string and return a string
+:octal_str: octal str like “110 145 154”
+:return: Decoded ASCII string
+'''
+str_converted = ""
+for octal_char in octal_str.split(” ”):
+str_converted += chr(int(octal_char, 8))
+return str_converted</p>
+
+<p>if <strong>name</strong> == “<strong>main</strong>”:
+if len(sys.argv) != 2:
+print(“Usage: python script.py “0o146 0o154 0o141 …"")
+else:
+input_str = sys.argv[1]
+print(octal_to_str(input_str))</p>
+
+<p>octal2ascii2.0.py in action!</p>
+
+<p>┌──(kali㉿kali)-[~/…/offensive/CTFs/huntress2024/TXTmessage]
+└─$ python octal2ascii2.0.py “0o146 0o154 0o141 0o147 0o173 0o061 0o064 0o145 0o060 0o067 0o062 0o146 0o067 0o060 0o065 0o144 0o064 0o065 0o070 0o070 0o062 0o064 0o060 0o061 0o144 0o061 0o064 0o061 0o143 0o065 0o066 0o062 0o146 0o144 0o143 0o060 0o142 0o175”
+flag{14e072f705d45882401d141c562fdc0b}</p>
+
+<pre><code class="language-plaintext">Flag: flag{14e072f705d45882401d141c562fdc0b}</code></pre>
+
+<p>Cattle</p>
+
+<p>Add description here</p>
+
+<p>First I downloaded the file and checked for the file format.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/cattle]
+└─$ file cattle
+cattle: ASCII text</p>
+
+<p>It was a simple ASCII text file, so I just used cat to view its contents.</p>
+
+<p>┌──(kali㉿kali)-[~/huntress2024/cattle]
+└─$ cat cattle
+OOO MoO MoO MoO MoO MoO MoO MoO MoO MMM moO MMM MMM moO MMM MOO MOo mOo MoO moO moo mOo
+MMM moO MMM MMM moO MMM MOO MOo mOo MoO moO moo mOo MMM moO MMM MMM moO MMM MOO MOo mOo
+MoO moO moo OOO moO OOO mOo mOo MMM moO MMM MOO MOo moO MoO mOo moo mOo mOo MMM moO moO
+*
+moO MoO mOo moo moO MoO MoO MoO MoO Moo mOo OOO moO OOO mOo mOo MMM moO MMM MOO MOo moO
+MoO mOo moo mOo mOo MMM moO moO MMM MOO MOo moO MoO mOo moo mOo mOo mOo MMM moO moO moO
+MMM MOO MOo moO MoO mOo moo moO MoO MoO MoO MoO MoO MoO MoO MoO MoO MoO MoO MoO MoO Moo
+mOo</p>
+
+<p>The file contents looked pretty strange at first glance, so I Googled the first line. That led me to this post
+, which explained that the text was actually written in a joke programming language called COW. After a bit more digging, I found an online JavaScript-based interpreter
+. From there, I simply pasted in the contents of the file—and out came the flag.</p>
+
+<pre><code class="language-plaintext">Flag: flag{6cd6392eb609c6ae4c332ef6a321d9dd}</code></pre>
+
+<p>This was the first challenge I completed during the event—and also the final write-up in this post. Thanks for reading!</p>
+
+<p>Some information may be outdated</p>
+</article>

@@ -1,0 +1,49 @@
+<!--
+{
+  "title": "No, Deep Learning Doesn't Mean \"No Labels\" — YANGA",
+  "description": "A popular AI security course teaches that the difference between ML and deep learning is that DL needs no labelled data. It's wrong, and it refutes itself one sentence later. The correction is a cleaner mental model.",
+  "layout": "base",
+  "activeNav": "blog",
+  "date": "2026-08-27",
+  "excerpt": "An intro AI security course claims DL's defining trait is that it needs no labels. That's the wrong axis — and the digit classifier it just described is trained on 60,000 labels."
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">deep-learning-labels-myth</span></div>
+  <h1>No, Deep Learning Doesn't Mean "No Labels"</h1>
+  <div class="article-meta">
+    <span>AI FUNDAMENTALS</span>
+    <span>August 2026</span>
+    <span>4 min read</span>
+  </div>
+</div>
+
+<article class="article-body">
+  <p class="lede">Two different questions get fused into one wrong sentence. Pulling them apart fixes the mental model.</p>
+
+  <p>I was working through an AI security course on TryHackMe when I hit a claim that stopped me. It walks you through a neural network recognising a handwritten digit — early layers catch edges and curves, deeper layers combine them, the output layer scores one node per digit — which is a fine explanation. Then it says this:</p>
+
+  <blockquote>The key distinction between [ML] and DL is that DL doesn't require labelled data. Where supervised ML needs a human to attach correct answers to training examples, a DL algorithm can take raw, unstructured input and determine its own features.</blockquote>
+
+  <p>This is wrong, and it's the kind of wrong worth fixing carefully, because the whole point of a fundamentals post is to hand you a model you can trust later.</p>
+
+  <p>The problem is that the sentence answers <em>two different questions with one distinction</em>. "Classical ML vs. deep learning" and "labelled vs. unlabelled" are separate axes. The first is about <strong>what the model is</strong> — a shallow algorithm like an SVM or a decision tree, or a deep neural network. The second is about <strong>what signal it learns from</strong> — labels a human attached (supervised), or structure the model finds on its own (unsupervised / self-supervised). Deep learning is a <em>subset</em> of machine learning; it is not a point on the supervision axis at all.</p>
+
+  <p>Once you separate them, the passage refutes itself. The handwritten-digit classifier it spends a paragraph describing is the canonical example of <strong>supervised deep learning</strong>. The standard version, MNIST, is trained on 60,000 images that <em>humans hand-labelled</em> with the correct digit. It is deep, and it is entirely label-dependent. So the very example given is a deep learning algorithm that needs labels — which is exactly what the next sentence says can't happen.</p>
+
+  <p class="post-callout" style="display:block;">
+    <span class="post-callout-label">Security thread</span>
+    This isn't pedantry for a red teamer — the training signal <em>is</em> the attack surface. Poisoning a supervised model means flipping labels on training examples someone curated. Poisoning a self-supervised model means slipping crafted text into the raw corpus it scraped — a different target, a different access requirement, a different defence. If your mental model says "DL needs no labels," you'll model the wrong poisoning path and miss where the data actually enters.
+  </p>
+
+  <p>So what was the author reaching for? There's a real distinction buried in there, and it's the <em>feature</em> half of the sentence, not the <em>label</em> half. Deep networks <strong>learn their own features</strong> from raw input, instead of you hand-engineering them the way classical ML often requires. That's true and it matters. But "learns its own features" and "needs no labels" are different claims. A digit classifier learns its own edge-and-curve features <em>and</em> still needs the labels telling it which pictures are 7s.</p>
+
+  <p>The other grain of truth — "no human intervention means larger datasets" — is really about <strong>self-supervised learning</strong>, the trick behind modern LLMs. The model manufactures its own labels from the raw data: hide the next word, predict it, check against the word that was actually there. No human labels a trillion tokens; the text labels itself. <em>That</em> is what let deep learning scale to the whole internet. But it's a specific training paradigm, not a property of deep learning in general. The author took something true about LLMs and over-generalised it into something false about all of DL.</p>
+
+  <p>Here's the sentence rewritten so it survives contact with its own example:</p>
+
+  <blockquote>The distinction between classical ML and deep learning is that a deep network learns its own features from raw input, instead of relying on hand-engineered ones. Whether it needs labels is a separate question: deep learning can be supervised (label-hungry, like a digit classifier) or self-supervised (generating its own signal, like an LLM). The latter is what let DL scale to enormous unlabelled datasets.</blockquote>
+
+  <p>Same length, one fewer myth. If you only remember one thing: <em>deep learning is what the model is; supervised or unsupervised is what it learns from.</em> They're independent, and any intro that collapses them will have you debugging your understanding later — usually at the exact moment you're trying to reason about where an attacker gets in.</p>
+</article>

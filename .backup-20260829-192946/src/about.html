@@ -1,7 +1,7 @@
 <!--
 {
-  "title": "whoami · YANGA · Offensive Security",
-  "description": "YANGA, offensive security consultant. 5+ years of hands-on penetration testing and 2 years expanding into AI agent security. Open to select engagements.",
+  "title": "whoami · Laury Guebe · Offensive Security",
+  "description": "Laury Guebe, offensive security consultant. 5+ years of hands-on penetration testing and 2 years expanding into AI agent security. Open to select engagements.",
   "layout": "base",
   "activeNav": "about"
 }
@@ -9,7 +9,7 @@
 
 <section class="project-hero">
   <h1>WHOAMI</h1>
-  <div class="breadcrumb-path"><a href="{{root}}index.html" class="logo logo-mono" aria-label="YANGA"><span class="logo-mark">Y<i class="lam">V</i>NG</span><span class="logo-sec"><i class="lam">V</i></span></a><span class="sep">/</span><span class="current">whoami</span></div>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><span class="current">whoami</span></div>
   <p class="project-tagline">Offensive security consultant. I build systems to understand their assumptions, then break them. 5+ years of hands-on penetration testing, now extending the same mindset to AI agents.</p>
   <div class="accent-bar green"></div>
   <div class="who-status"><span class="who-status-dot" aria-hidden="true"></span> Open to select engagements &nbsp;·&nbsp; web / infra pentest &nbsp;·&nbsp; AI agent security</div>
@@ -26,8 +26,8 @@
   <!-- IDENTITY + CREED -->
   <div class="who-idrow">
     <section class="id-card">
-      <div class="id-avatar"><i class="fa-solid fa-user-secret id-avatar-ph" aria-hidden="true"></i><img src="{{root}}images/avatar.gif" alt="YANGA" onerror="this.remove()"></div>
-      <div class="id-name id-wordmark"><span class="logo logo-mono" aria-label="YANGA"><span class="logo-mark">Y<i class="lam">V</i>NG</span><span class="logo-sec"><i class="lam">V</i></span></span></div>
+      <div class="id-avatar"><i class="fa-solid fa-user-secret id-avatar-ph" aria-hidden="true"></i><img src="{{root}}images/avatar.gif" alt="Laury Guebe" onerror="this.remove()"></div>
+      <div class="id-name">Laury Guebe</div>
       <div class="id-role">Offensive Security Consultant</div>
       <div class="id-loc">Rome, Italy</div>
       <div class="accent-bar green"></div>
@@ -42,15 +42,16 @@
     <div class="who-creed-col">
       <div class="bub who-creed">
       <div class="bub-creed">
-        <p class="creed-title">creed</p>
-        <p>I build systems to understand them: how components interact, where trust is established, and how data and authority move through them. Then I try to break them.</p>
-        <p>It is an old idea, understanding how something is built to find the flaws that matter, and it is simply how I work.</p>
-        <p>As a penetration tester I apply it to applications and infrastructure. Now I am applying it to AI and agent security, where software can reason, use tools, retain context, and act on behalf of users.</p>
+        <p class="creed-title">// creed</p>
+        <p>I believe the best way to understand how a system can be attacked is to understand how it is built.</p>
+        <p>I build systems to learn their architecture and assumptions: how components interact, where trust is established, and how data and authority move through the system. Then I try to break them.</p>
+        <p>As a penetration tester I apply that mindset to applications and infrastructure. Now I am applying it to AI and agent security, where software can reason, use tools, retain context, and act on behalf of users.</p>
         <p class="bub-sig">Build. Understand. Break.</p>
       </div>
       </div>
       <div class="who-facts">
         <div class="who-fact"><span>Experience</span><b>5+ years, hands-on pentest</b></div>
+        <div class="who-fact"><span>Certifications</span><b class="who-badge"></b></div>
         <div class="who-fact"><span>Focus</span><b>Web &amp; infra pentest &middot; AI agent security</b></div>
       </div>
     </div>
@@ -98,19 +99,29 @@
   <section class="who-section">
     <h2 class="section-heading">Currently</h2>
     <div class="cap-grid">
+      <div class="cap-card"><h3>Working toward OSCP</h3><p>Grinding lab machines and refining a repeatable exploitation and privilege-escalation workflow.</p></div>
       <div class="cap-card"><h3>Mapping the agent attack surface</h3><p>How untrusted data becomes instructions, then actions, across the RAG &rarr; MCP &rarr; A2A pipeline.</p></div>
       <div class="cap-card"><h3>Writing it down</h3><p>Turning engagements, labs, and research into <a href="{{root}}blog.html">write-ups</a>: the methodology and the failures, not just the wins.</p></div>
     </div>
   </section>
 
-  <!-- EDUCATION -->
-  <section class="who-section">
-    <h2 class="section-heading">Education</h2>
-    <div class="edu-list edu-list--row">
-      <div class="edu-item"><span class="edu-deg">MSc, Cybersecurity</span><span class="edu-meta">Sapienza University of Rome · 2021</span></div>
-      <div class="edu-item"><span class="edu-deg">BSc, Computer Science</span><span class="edu-meta">Sapienza University of Rome · 2018</span></div>
-    </div>
-  </section>
+  <!-- CERTS + EDUCATION -->
+  <div class="who-cols">
+    <section class="who-section">
+      <h2 class="section-heading">Certifications</h2>
+      <div class="cert-list">
+        <div class="cert-item"><span class="cert-name">OSCP</span><span class="cert-badge wip">In progress</span></div>
+        <div class="cert-item"><span class="cert-name">CPTS &middot; Hack The Box</span><span class="cert-badge wip">In training</span></div>
+      </div>
+    </section>
+    <section class="who-section">
+      <h2 class="section-heading">Education</h2>
+      <div class="edu-list">
+        <div class="edu-item"><span class="edu-deg">MSc, Cybersecurity</span><span class="edu-meta">Sapienza University of Rome · 2018–2021</span></div>
+        <div class="edu-item"><span class="edu-deg">BSc, Computer Science</span><span class="edu-meta">Sapienza University of Rome · 2013–2018</span></div>
+      </div>
+    </section>
+  </div>
 
   <!-- TOOLBOX -->
   <section class="who-section">
@@ -146,6 +157,7 @@
   <!-- LANGUAGES -->
   <section class="who-section">
     <h2 class="section-heading">Languages</h2>
+    <p class="who-note" style="margin-top:0;margin-bottom:12px;">Picking up languages is a personal hobby. I add one whenever I can.</p>
     <div class="lang-grid">
       <div class="lang-item"><span class="lang-name">French</span><span class="lang-meta"><span class="lang-level">Native</span><span class="lang-dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span></div>
       <div class="lang-item"><span class="lang-name">Italian</span><span class="lang-meta"><span class="lang-level">Bilingual</span><span class="lang-dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span></div>

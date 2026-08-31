@@ -1,0 +1,139 @@
+<!--
+{
+  "title": "Deep Learning Doesn't Mean \"No Labels\" — YANGA",
+  "description": "A TryHackMe AI room teaches that the difference between ML and deep learning is that DL needs no labelled data. It's a category mistake — and the course's own digit-classifier example refutes it.",
+  "layout": "base",
+  "activeNav": "blog",
+  "date": "2026-08-27",
+  "excerpt": "While working through the AI track on TryHackMe, I came across a passage that appears to contradict itself about machine learning and deep learning: it claims that deep learning requires no labelled data, only a paragraph after demonstrating a supervised learning example built entirely on labelled data. The problem, however, goes deeper than an inconsistent paragraph—the distinction it presents between ML and DL is technically misleading.",
+  "category": "Understand",
+  "catKey": "understand",
+  "section": "",
+  "read": "7 min",
+  "cover": "https://r3sup3r.github.io/images/posts/deep-learning-labels-myth/cover.png",
+  "icon": "fa-lightbulb"
+}
+-->
+
+<div class="article-hero">
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><span class="current">deep-learning-labels-myth</span></div>
+  <h1>Deep Learning Doesn't Mean "No Labels"</h1>
+  <div class="article-meta">
+    <a class="meta-tag" href="{{root}}blog.html#understand">Understand</a>
+    <span>August 2026</span>
+    <span>7 min read</span>
+  </div>
+</div>
+
+<article class="article-body">
+  <p class="lede">An intro AI course taught me deep learning needs no labels — immediately after walking through a neural network trained to recognise handwritten digits.</p>
+
+  <p>While going through TryHackMe's <em>The Building Blocks of AI</em> room — Task 5, <em>Neural Networks and Deep Learning</em> — I came across a statement that stopped me. The course says:</p>
+
+  <blockquote>The key distinction between ML and DL is that DL doesn't require labelled data. Where supervised ML needs a human to attach correct answers to training examples, a DL algorithm can take raw, unstructured input and determine its own features. No human intervention means larger datasets can be processed, which is why DL is sometimes described as scalable ML. The explosion of DL over the last decade is largely down to one thing: the mass digitisation of information suddenly gave these algorithms the volume of data they needed to realise their potential.</blockquote>
+
+  <p>I'm not an expert in ML or DL, but I know enough to feel that something didn't add up. The passage is easy to follow, and it's also technically misleading. The core claim — "the key distinction between ML and DL is that DL doesn't require labelled data" — is wrong. Not because the individual ideas in it are false; almost every one contains a grain of truth. It's wrong in <em>how those ideas are wired together</em>.</p>
+
+  <p>That's the kind of mistake worth pulling apart in introductory material, because a fundamentals course is supposed to leave you with a mental model that still holds when you go deeper — especially when you're eventually trying to work out how one of these systems can be attacked.</p>
+
+  <h2 id="two-axes">Two axes, not one</h2>
+
+  <p>The passage uses one distinction to answer two different questions. "Classical ML vs. deep learning" and "labelled vs. unlabelled" are not the same split. The first is about <em>what the model is</em> and how it learns its representations — a shallow algorithm like an SVM or a decision tree, or a deep neural network. The second is about <em>where the training signal comes from</em> — a label a human attached (supervised), or structure the model finds in the data itself (unsupervised / self-supervised). Deep learning is a subset of machine learning; it is not a point on the supervision axis at all.</p>
+
+  <figure class="figure">
+    <img src="{{root}}images/posts/deep-learning-labels-myth/two-axes.svg" alt="Left: the course's picture — a single line from classical ML (needs labels) to deep learning (no labels). Right: the actual picture — two axes, what the model is (classical to deep) and what it learns from (labelled to no labels), with SVM, MNIST, k-means and an LLM in the four quadrants and deep learning spanning both label states." loading="lazy">
+    <figcaption>The course flattens a two-dimensional space onto one line. Deep learning isn't the far end of a "labels" axis — it's a whole column that shows up with labels and without.</figcaption>
+  </figure>
+
+  <p>This isn't a contrarian reading — it's the standard framing. Deep learning is a subset of machine learning: an architecture, a kind of model, not a learning paradigm — which is how the field's reference text, <a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener noreferrer"><em>Deep Learning</em> (Goodfellow, Bengio &amp; Courville, 2016)</a>, lays it out. And practitioner comparisons say the labels part outright: deep learning <a href="https://wandb.ai/onlineinference/rl/reports/Reinforcement-Learning-vs-Deep-Learning-vs-Supervised-Learning-A-comprehensive-comparison--VmlldzoxMjEzNTQyNg" target="_blank" rel="noopener noreferrer">"often operates in a supervised fashion (training on labeled data) or unsupervised (learning representations without labels)."</a></p>
+
+  <p>Put the examples in a grid and the independence is obvious — deep learning fills a whole row, supervised and unsupervised alike:</p>
+
+  <table>
+    <thead><tr><th></th><th>Labelled (supervised)</th><th>No labels (self- / unsupervised)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Classical ML</strong></td><td>SVM, logistic regression, random forest</td><td>k-means, PCA, DBSCAN</td></tr>
+      <tr><td><strong>Deep learning</strong></td><td>MNIST digit classifier, an ImageNet CNN</td><td>autoencoders, an LLM's pre-training</td></tr>
+    </tbody>
+  </table>
+
+  <p>Deep learning is not the "unlabelled" branch of machine learning. It shows up on both sides of the label line.</p>
+
+  <h2 id="representation">What actually separates deep learning</h2>
+
+  <p>Here's where the course is reaching for something real. Deep-learning models can learn useful features straight from raw input. In a classical pipeline you engineer those features yourself:</p>
+
+  <pre><code>raw image  →  human-designed features  →  ML algorithm  →  prediction</code></pre>
+
+  <p>Someone decides, up front, that the model should look at edges, textures, colour histograms. A deep network collapses that step:</p>
+
+  <pre><code>raw image  →  neural network  →  learned representations  →  prediction</code></pre>
+
+  <p>and it builds those representations in layers, simple to abstract:</p>
+
+  <pre><code>pixels  →  edges  →  textures  →  shapes  →  objects  →  class</code></pre>
+
+  <p>That's <strong>representation learning</strong>, and it's the genuine line between deep and classical ML. But it's a claim about <em>features</em>, not <em>labels</em> — and those are two different jobs. <strong>Feature engineering</strong> asks: <em>what information should the model look at?</em> <strong>Labelling</strong> asks: <em>what's the correct answer for this example?</em> Deep learning can do the first for you and still need you to supply the second.</p>
+
+  <h2 id="self-refutation">It learns its own features — and still needs the labels</h2>
+
+  <p>Take the course's own digit classifier. It reads an image, runs it through its layers, and produces a score per digit:</p>
+
+  <pre><code>0 → 0.01   1 → 0.02   2 → 0.01   3 → 0.04   ...   7 → 0.81   ...   9 → 0.03</code></pre>
+
+  <p>The correct answer is <code>7</code>. The gap between the prediction and that answer is the loss, and the loss is what the network updates itself against. The network may well have learned the visual features that recognise a 7 on its own — but it only knows <em>7 is correct</em> because a human hand-labelled 60,000 images (that's <a href="https://yann.lecun.org/exdb/mnist/" target="_blank" rel="noopener noreferrer">MNIST</a>). Two things are true at once: <em>the model learns its own features</em>, and <em>the model learns from labelled examples</em>. There's no contradiction — which is exactly why "DL doesn't require labelled data" can't be the line between ML and DL.</p>
+
+  <h2 id="best-case">The strongest case for the course</h2>
+
+  <p>There is a real idea underneath the sentence, though. Modern deep learning genuinely does learn from enormous datasets that nobody hand-labelled — and the thing that makes that work isn't "deep learning," it's <strong>self-supervised learning</strong>. Take a sentence:</p>
+
+  <pre><code>The cat sat on the ____</code></pre>
+
+  <p>Hide the last word and train the model to predict it. The label — <code>mat</code> — was already sitting in the text; no human wrote it down. That's the core trick behind pre-training a modern language model, and it's a big deal. But notice the move: we went from <em>deep learning</em> to <em>one particular way of training a deep-learning model</em>. Self-supervision isn't a synonym for deep learning. A deep net can be trained supervised, self-supervised, unsupervised, or by reinforcement. The architecture and the training paradigm are related, not the same.</p>
+
+  <h2 id="the-mistake">The mistake underneath the mistake</h2>
+
+  <p>So the sharp criticism isn't "TryHackMe said something false." It's this: <strong>the course uses the presence or absence of labels to separate ML from DL, when those live on different axes.</strong> It takes three reasonable observations —</p>
+
+  <ol>
+    <li>deep learning can learn its own representations,</li>
+    <li>some deep-learning systems learn from unlabelled data,</li>
+    <li>modern AI scaled because huge datasets arrived —</li>
+  </ol>
+
+  <p>and wires them into <code>ML → labelled, DL → unlabelled</code>. They don't add up to that. The model that survives contact with modern AI looks more like two independent branches — pick one from each:</p>
+
+  <pre><code>Machine Learning
+├── model family
+│     ├── Classical ML      (SVM, trees, k-means, PCA…)
+│     └── Deep Learning     (multilayer neural networks)
+│
+└── training signal
+      ├── Supervised        (human labels)
+      ├── Self-supervised   (labels from the data itself)
+      ├── Unsupervised      (structure only)
+      └── Reinforcement     (reward)</code></pre>
+
+  <h2 id="rewrite">A cleaner version of the paragraph</h2>
+
+  <p>The original could keep its introductory simplicity and still be right:</p>
+
+  <blockquote>The key distinction between traditional machine learning and deep learning is not whether labels are required, but how features are learned. Traditional ML often relies on human-engineered features, while deep-learning models can learn hierarchical representations directly from raw input. Whether labels are needed is a separate question: a deep-learning model can be trained supervised, self-supervised, or otherwise. Self-supervised learning in particular let deep learning exploit enormous amounts of unlabelled data — a large part of why AI has scaled.</blockquote>
+
+  <h2 id="security">Why this matters if you attack these systems</h2>
+
+  <p>This can look like a fight over terminology. For a security seat it isn't — how a system learns tells you where its assumptions, and its attack surface, live. Two simplified pipelines:</p>
+
+  <pre><code>supervised:       data   → labelling  → labels + examples    → training → model
+self-supervised:  corpus → filtering  → self-sup. objective  → training → model</code></pre>
+
+  <p>The attacks aren't the same. Against the supervised system you go after the labelled examples, the labels, or whatever process produced them — flip labels and the decision boundary moves. Against the self-supervised one there's no human label to flip; you'd target the corpus itself, how it's collected, or the filtering in front of it. This is the ground OWASP files under <strong>LLM04, Data and Model Poisoning</strong> — and the point isn't that one is safe and the other isn't, it's that <em>the training mechanism decides what there is to attack.</em></p>
+
+  <p>If your mental model is "deep learning doesn't use labels," you've already lost half the picture. If instead it's <em>the model family is one thing, the training signal is another</em>, you can start asking the questions that matter: where does the training signal come from, who controls it, what data feeds it, and who can influence that data before it ever reaches the model.</p>
+
+  <h2 id="bigger-lesson">The bigger lesson</h2>
+
+  <p>None of this is a reason to write off introductory courses — simplifying is the job. But there's a difference between simplifying a concept and drawing the boundary in the wrong place. "Deep learning can learn features from raw data" is a useful simplification. "Deep learning doesn't require labelled data" is a rule you'll have to unlearn — and that's a bad thing to be carrying when you're trying to reason about how a system was built and where it breaks.</p>
+
+  <p>The distinction I'd keep is small: <em>deep learning is what the model is; supervised, self-supervised and unsupervised are where the training signal comes from.</em> Two different axes — and once you see them apart, a lot of modern AI gets easier to read.</p>
+</article>
