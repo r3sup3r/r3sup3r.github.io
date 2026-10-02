@@ -43,7 +43,7 @@ ok "$(find _site -name '*.html' | wc -l | tr -d ' ') pages"
 step "Scanning for credentials"
 HITS=$(grep -rnoE \
   --exclude-dir=.git --exclude-dir=_site --exclude-dir=node_modules \
-  --exclude-dir=crafting --exclude-dir=_to_delete \
+  --exclude-dir=crafting --exclude-dir=_to_delete --exclude-dir='.backup-*' \
   -e '(sk|pk|rk)_(test|live)_[A-Za-z0-9]{16,}' \
   -e 'sk-[A-Za-z0-9]{20,}' \
   -e 'gh[pousr]_[A-Za-z0-9]{36}' \

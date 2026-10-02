@@ -906,7 +906,7 @@
     e.preventDefault(); e.stopPropagation();
     applyMode(currentMode() === 'light' ? 'dark' : 'light');
   });
-  if (navUtils) navUtils.insertBefore(modeBtn, chip.nextSibling);
+  // light/dark toggle unwired for the moment — modeBtn kept but not inserted into the nav
   window.__yangaApplyMode = function(mode) {
     document.documentElement.setAttribute('data-mode', mode);
     var meta = document.querySelector('meta[name="theme-color"]');

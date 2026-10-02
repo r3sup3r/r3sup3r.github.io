@@ -30,10 +30,6 @@
           </section>
           <div class="snap">
             <div class="snap-card">
-              <div class="snap-label">Certifications</div>
-              <div class="snap-row"><span>OSCP</span><span class="snap-tag wip">In progress</span></div>
-            </div>
-            <div class="snap-card">
               <div class="snap-label">Focus</div>
               <div class="snap-row"><span>Web &amp; infrastructure pentest</span></div>
               <div class="snap-row"><span>AI agent security</span></div>
@@ -57,10 +53,11 @@
             <a href="blog.html" class="latest-all">All writing &rarr;</a>
           </div>
           {{#latestPosts}}
-        <a class="latest-post" href="{{root}}posts/{{slug}}">
+        <a class="latest-post" href="{{root}}posts/{{slug}}" data-cat="{{catKey}}">
           <div class="latest-meta"><span class="latest-cat">{{category}}</span><span class="latest-date">{{dateHuman}}</span></div>
           <h3>{{title}}</h3>
           <p>{{excerpt}}</p>
+          <div class="latest-foot">{{#read}}<span class="latest-read">{{read}}</span>{{/read}}<span class="latest-cue">Read <i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i></span></div>
         </a>
 {{/latestPosts}}
 {{#noPosts}}

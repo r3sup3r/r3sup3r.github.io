@@ -32,6 +32,7 @@ id_ed25519
 Thumbs.db
 
 # drafts + backups
+.backup-*/
 src/_drafts/
 *.bak
 

@@ -51,7 +51,7 @@
       var match = document.cookie.match(/yanga_mode=(\w+)/);
       if (match) m = match[1];
     }
-    return (m === 'light') ? 'light' : 'dark';
+    return 'dark'; // light mode unwired for the moment (force dark, ignore saved pref)
   }
 
   function getTheme() {

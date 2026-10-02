@@ -1,39 +1,33 @@
 <!--
 {
   "title": "YANGA · AI Agent Security",
-  "description": "Security across the AI agent pipeline: RAG, MCP, and A2A. Attack surface and defenses.",
+  "description": "Security across the AI agent pipeline: the language model on its own, and the agent that wraps it (RAG, A2A, MCP).",
   "layout": "base",
-  "activeNav": "airedteam",
-  "postSection": "ai"
+  "activeNav": "airedteam"
 }
 -->
 
 <section class="project-hero">
   <h1>AI AGENT SECURITY</h1>
-  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span>sections<span class="sep">/</span><span class="current">ai-agent-security</span></div>
-  <p class="project-tagline">Security across the AI agent pipeline: RAG, MCP, and A2A.</p>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a class="current" href="{{root}}sections/ai-red-teaming.html">ai-agent-security</a></div>
+  <p class="project-tagline">Security across the AI agent pipeline, from the model to the agent that acts on its output.</p>
   <div class="accent-bar green"></div>
 </section>
 
-<p class="section-intro">Where offensive security meets systems that reason and act. I treat the RAG &rarr; MCP &rarr; A2A pipeline as one continuous path of untrusted data, and probe where it turns into instructions, then into actions.</p>
+<p class="section-intro">Where offensive security meets systems that reason and act. Two folders: the LLM on its own, the model as attack surface, and the Agent that wraps it, where RAG, A2A, and MCP turn untrusted data into instructions, then into actions.</p>
 
-<div class="hub">
-  <div class="blog-timeline">
-{{#sectionPosts}}
-    <div class="tl-item" data-category="{{catKey}}">
-      <div class="tl-date">{{dateLabel}}</div>
-      <a class="tl-card" href="{{root}}posts/{{slug}}">
-        <h4><i class="fa-solid {{icon}}"></i>{{title}}</h4>
-        <p>{{excerpt}}</p>
-        <div class="tl-meta"><span class="tl-read">{{read}}</span></div>
-      </a>
-    </div>
-{{/sectionPosts}}
-  </div>
-{{#noSectionPosts}}
-  <div class="empty-state">
-    <span class="empty-state-tag">// no entries yet</span>
-    <p>First write-ups are in progress. New work lands here as it ships.</p>
-  </div>
-{{/noSectionPosts}}
+<div class="content-wrap pentest-section topic-grid">
+  <a class="topic-card topic-card--link" href="{{root}}sections/ai-red-teaming/llm.html">
+    <div class="card-tags"><span class="tw-tag topic">Folder</span></div>
+    <div class="topic-head"><i class="fa-solid fa-comment-dots"></i><h2>LLM</h2></div>
+    <p class="topic-intro">The model as attack surface: prompt injection, jailbreaks, and the ways a language model can be steered, leaked, or made to misbehave before any tool is ever attached.</p>
+    <span class="topic-cta">Open folder <i class="fa-solid fa-arrow-right"></i></span>
+  </a>
+
+  <a class="topic-card topic-card--link" href="{{root}}sections/ai-red-teaming/agent.html">
+    <div class="card-tags"><span class="tw-tag topic">Folder</span></div>
+    <div class="topic-head"><i class="fa-solid fa-robot"></i><h2>Agent</h2></div>
+    <p class="topic-intro">The model wired to data and tools, where retrieval, agent-to-agent messaging, and tool protocols widen the blast radius. Organised into RAG, A2A, and MCP.</p>
+    <span class="topic-cta">Open folder <i class="fa-solid fa-arrow-right"></i></span>
+  </a>
 </div>

@@ -13,6 +13,37 @@ const LAYOUTS  = path.join(SRC, '_layouts');
 const PARTIALS = path.join(SRC, '_partials');
 const OUT      = path.join(ROOT, '_site');
 
+// ── Markdown support (shared renderer with the dev-mode live preview) ──
+const _marked = require('./vendor/marked.min.js');
+const _mdParse = (typeof _marked === 'function') ? _marked
+  : (_marked.parse || (_marked.marked && _marked.marked.parse) || (_marked.default && _marked.default.parse));
+function mdToHtml(src){
+  try { return _mdParse(String(src == null ? '' : src), { mangle:false, headerIds:true, gfm:true }); }
+  catch(e){ return '<p>'+String(src == null ? '' : src).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</p>'; }
+}
+const _MD_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function _mdHumanDate(d){ if(!d) return ''; const dt=new Date(d+'T12:00:00Z'); return _MD_MONTHS[dt.getUTCMonth()]+' '+dt.getUTCFullYear(); }
+function _mdEsc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// Wrap a markdown post body in the same article chrome hand-authored HTML posts use.
+function wrapMarkdownPost(data, mdBody, outRel){
+  const heading = (data.heading || (data.title||'').replace(/\s*[·—-]\s*YANGA\s*$/,'') || 'Untitled');
+  const cat = data.category || 'Notes';
+  const catKey = data.catKey || 'all';
+  const dateHuman = _mdHumanDate(data.date);
+  const read = data.read || '';
+  const slug = String(outRel).replace(/^posts\//,'');
+  let meta = '<a class="meta-tag" href="{{root}}blog.html#'+catKey+'">'+_mdEsc(cat)+'</a>';
+  if(dateHuman) meta += '<span>'+dateHuman+'</span>';
+  if(read) meta += '<span>'+_mdEsc(read)+' read</span>';
+  if(data.series){ const n = Number.isFinite(data.seriesOrder) ? ' · '+String(data.seriesOrder).padStart(2,'0') : ''; meta += '<span class="series-meta">'+_mdEsc(data.series)+n+'</span>'; }
+  const bodyHtml = mdToHtml(mdBody);
+  return '<div class="article-hero">\n'
+    + '  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}blog.html">blog</a><span class="sep">/</span><a class="current" href="{{root}}posts/'+slug+'">'+_mdEsc(heading)+'</a></div>\n'
+    + '  <h1>'+_mdEsc(heading)+'</h1>\n'
+    + '  <div class="article-meta">'+meta+'</div>\n'
+    + '</div>\n\n<article class="article-body">\n'+bodyHtml+'\n</article>';
+}
+
 // Site-wide constants (used for feeds, canonical URLs, and structured data)
 const SITE_URL   = 'https://r3sup3r.github.io';
 const SITE_TITLE = 'YANGA';
@@ -31,7 +62,7 @@ const AUTHOR = {
 };
 
 // Static directories to copy as-is
-const STATIC_DIRS = ['css', 'js', 'sections/ai/img', 'images', 'posts/img', 'tools'];
+const STATIC_DIRS = ['css', 'js', 'sections/ai/img', 'images', 'posts/img', 'tools', 'files'];
 const STATIC_FILES = ['favicon.svg'];
 
 // ── Helpers ──────────────────────────────────
@@ -151,7 +182,7 @@ function collectPosts() {
   const dir = path.join(SRC, 'posts');
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir)
-    .filter(f => f.endsWith('.html'))
+    .filter(f => f.endsWith('.html') || f.endsWith('.md'))
     .map(f => {
       const raw = fs.readFileSync(path.join(dir, f), 'utf8');
       const m = raw.match(/^<!--\s*(\{[\s\S]*?\})\s*-->/);
@@ -160,11 +191,12 @@ function collectPosts() {
       if (!d.date) return null;
       if (d.draft) return null;
       const dt = new Date(d.date + 'T12:00:00Z');
+      const slug = f.endsWith('.md') ? f.slice(0, -3) + '.html' : f;
       const month = MONTHS[dt.getUTCMonth()];
       const title = (d.title || f).replace(/\s*[·—-]\s*YANGA$/, '');
       return {
-        slug: f,
-        url: `${SITE_URL}/posts/${f}`,
+        slug: slug,
+        url: `${SITE_URL}/posts/${slug}`,
         title,
         desc: d.description || d.excerpt || '',
         excerpt: d.excerpt || d.description || '',
@@ -195,6 +227,20 @@ function collectSeries(posts){
   return map;
 }
 const SERIES = collectSeries(POSTS);
+function renderPostNav(post, root){
+  const inSeries = !!(post.series && SERIES[post.series]);
+  const list = inSeries ? SERIES[post.series] : [...POSTS].sort((a,b)=>a.date-b.date);
+  const i = list.findIndex(p=>p.slug===post.slug);
+  if(i<0) return '';
+  const prev=list[i-1], next=list[i+1];
+  if(!prev && !next) return '';
+  function side(p, dir){
+    if(!p) return '<span class="post-nav-spacer"></span>';
+    const label = dir==='prev' ? '\u2190 Previous' : 'Next \u2192';
+    return `<a class="post-nav-link ${dir}" href="${root}posts/${p.slug}"><span class="post-nav-dir">${label}</span><span class="post-nav-title">${htmlEsc(p.title)}</span></a>`;
+  }
+  return `<nav class="post-nav" aria-label="Post navigation">${side(prev,'prev')}${side(next,'next')}</nav>`;
+}
 function htmlEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function renderSeriesCard(name, list, root, currentSlug, compact, noHead){
   const parts=list.length;
@@ -285,6 +331,9 @@ function buildPages() {
       } else if (entry.endsWith('.html')) {
         buildPage(full, relPath, layouts, partials);
         built++;
+      } else if (entry.endsWith('.md')) {
+        buildPage(full, relPath.replace(/\.md$/, '.html'), layouts, partials);
+        built++;
       }
     }
   }
@@ -295,7 +344,8 @@ function buildPages() {
 
 function buildPage(srcFile, relPath, layouts, partials) {
   const raw = fs.readFileSync(srcFile, 'utf8');
-  const { data, body } = parseFrontMatter(raw);
+  let { data, body } = parseFrontMatter(raw);
+  if (srcFile.endsWith('.md')) body = wrapMarkdownPost(data, body, relPath);
 
   const root = relPath === '404.html' ? '/' : computeRoot(relPath);
   const layoutName = data.layout || 'base';
@@ -348,7 +398,8 @@ function buildPage(srcFile, relPath, layouts, partials) {
   const twitterCard = cover ? 'summary_large_image' : 'summary';
   const jsonld = jsonLdFor(relPath, canonical, thisPost);
   const seriesCard = (thisPost && thisPost.series && SERIES[thisPost.series]) ? renderSeriesCard(thisPost.series, SERIES[thisPost.series], root, thisPost.slug) : '';
-  const adTrackSeries = SERIES['AD Track'] ? renderSeriesCard('AD Track', SERIES['AD Track'], root, thisPost ? thisPost.slug : null, true, true) : '';
+  const adTrackSeries = SERIES['AD Track'] ? renderSeriesCard('The Attack Chain', SERIES['AD Track'], root, thisPost ? thisPost.slug : null, false, false) : '';
+  const facingXamppSeries = SERIES['Facing XAMPP'] ? renderSeriesCard('Facing XAMPP', SERIES['Facing XAMPP'], root, thisPost ? thisPost.slug : null, false, false) : '';
 
   // Post listings (front-matter driven)
   const listPosts = POSTS.map(p => ({
@@ -370,10 +421,11 @@ function buildPage(srcFile, relPath, layouts, partials) {
     jsonld,
     seriesCard,
     adTrackSeries,
+    facingXamppSeries,
     posts: listPosts,
     hasPosts: listPosts.length > 0,
     noPosts: listPosts.length === 0,
-    latestPosts: listPosts.slice(0, 1),
+    latestPosts: listPosts.slice(0, 4),
     hasLatest: listPosts.length > 0,
   };
 
@@ -388,6 +440,7 @@ function buildPage(srcFile, relPath, layouts, partials) {
   // them (e.g. {{#posts}} listings) expand — the layout injects content at the
   // raw stage, which runs after the engine's section pass.
   templateData.content = render(content, templateData, partials);
+  if (thisPost) templateData.content += renderPostNav(thisPost, root);
   if (scripts) templateData.scripts = render(scripts, templateData, partials);
   if (preGlobalScripts) templateData.preGlobalScripts = render(preGlobalScripts, templateData, partials);
 

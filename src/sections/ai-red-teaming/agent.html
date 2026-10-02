@@ -1,0 +1,40 @@
+<!--
+{
+  "title": "YANGA · Agent",
+  "description": "Agent security: the LLM wired to data and tools. RAG, A2A, and MCP as attack surface.",
+  "layout": "base",
+  "activeNav": "airedteam"
+}
+-->
+
+<section class="project-hero">
+  <h1>AGENT</h1>
+  <div class="breadcrumb-path"><a href="{{root}}index.html">yanga</a><span class="sep">/</span><a href="{{root}}sections/ai-red-teaming.html">ai-agent-security</a><span class="sep">/</span><a class="current" href="{{root}}sections/ai-red-teaming/agent.html">agent</a></div>
+  <p class="project-tagline">The model wired to data and tools, and everything that widens the blast radius.</p>
+  <div class="accent-bar green"></div>
+</section>
+
+<p class="section-intro">An agent is an LLM given retrieval, memory, and the right to act. Each folder here takes one seam of that pipeline: where retrieved context, another agent's message, or a tool call carries untrusted data straight into a decision.</p>
+
+<div class="content-wrap pentest-section topic-grid">
+  <a class="topic-card topic-card--link" href="{{root}}sections/ai-red-teaming/agent/rag.html">
+    <div class="card-tags"><span class="tw-tag topic">Folder</span></div>
+    <div class="topic-head"><i class="fa-solid fa-database"></i><h2>RAG</h2></div>
+    <p class="topic-intro">Retrieval-augmented generation: when the context the model reads is attacker-controlled, retrieval becomes an injection channel. Context poisoning, and the reasoning that follows it.</p>
+    <span class="topic-cta">Open folder <i class="fa-solid fa-arrow-right"></i></span>
+  </a>
+
+  <a class="topic-card topic-card--link" href="{{root}}sections/ai-red-teaming/agent/a2a.html">
+    <div class="card-tags"><span class="tw-tag topic">Folder</span></div>
+    <div class="topic-head"><i class="fa-solid fa-arrows-left-right"></i><h2>A2A</h2></div>
+    <p class="topic-intro">Agent-to-agent messaging: one agent's output is another's untrusted input. Trust boundaries, delegation, and how a single instruction propagates across a mesh.</p>
+    <span class="topic-cta">Open folder <i class="fa-solid fa-arrow-right"></i></span>
+  </a>
+
+  <a class="topic-card topic-card--link" href="{{root}}sections/ai-red-teaming/agent/mcp.html">
+    <div class="card-tags"><span class="tw-tag topic">Folder</span></div>
+    <div class="topic-head"><i class="fa-solid fa-plug"></i><h2>MCP</h2></div>
+    <p class="topic-intro">Model Context Protocol: the tools and connectors an agent can call. Tool descriptions that read as instructions, over-broad scopes, and the confused-deputy problems that follow.</p>
+    <span class="topic-cta">Open folder <i class="fa-solid fa-arrow-right"></i></span>
+  </a>
+</div>
